@@ -98,7 +98,7 @@ namespace Innowise.MusicIdentityServer.Migrations
                         {
                             Id = "610268a8-2b23-494e-856c-6bba84e7ebcc",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "fa9496db-41e9-4c74-82e0-c5cdee05a7c4",
+                            ConcurrencyStamp = "db7d5203-2559-4d82-8ccd-ed380d5090bb",
                             Email = "admin@inowisemusic.com",
                             EmailConfirmed = false,
                             FirstName = "System",
@@ -106,9 +106,9 @@ namespace Innowise.MusicIdentityServer.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@INNOWISEMUSIC.COM",
                             NormalizedUserName = "ADMIN@INNOWISEMUSIC.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEFDIAngWqx9CAtdLGhu63xSx9a4AkPJtF/VzGTDQLV4J1RJarZWRUMjn0UPd/qClcA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEEAKq4ZzIyht+Uk7YhaRaNB3LaUDAHjq5uM0o6wOEump/SIw5X0Db3JnQ/FIzRywrQ==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "e7948eb9-21be-459b-9ce1-87c6b7390423",
+                            SecurityStamp = "2f9ec1a0-f10f-4218-881c-10a631b0c803",
                             TwoFactorEnabled = false,
                             UserName = "admin@inowisemusic.com"
                         },
@@ -116,7 +116,7 @@ namespace Innowise.MusicIdentityServer.Migrations
                         {
                             Id = "cf833103-d733-4402-b00c-1263ca230e72",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "53f65d0c-7d5c-477c-a2c9-8dea06522d69",
+                            ConcurrencyStamp = "64063d43-1b7e-4419-a74e-3ae7d62634e4",
                             Email = "user@inowisemusic.com",
                             EmailConfirmed = false,
                             FirstName = "System",
@@ -124,9 +124,9 @@ namespace Innowise.MusicIdentityServer.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "USER@BINNOWISEMUSIC.COM",
                             NormalizedUserName = "USER@INNOWISEMUSIC.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEGMTza3ftZwWQxeNknimo2HIRZZR1lv1CuKww6bOhaCiVuCUYGXiSfV5ji60xUC10A==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEGzjpMIaJMbeqbYixfwFJr5Fpqcqq1T2SePXAuMBR4ygbMrvdg4Uvf6wNwBQ6lZ/0A==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "373c1e68-a1fa-4825-8ad9-c0faee1c6f61",
+                            SecurityStamp = "28aa5441-a242-4fbf-ba15-1f3ef161cdfd",
                             TwoFactorEnabled = false,
                             UserName = "user@inowisemusic.com"
                         });

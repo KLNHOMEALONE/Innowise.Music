@@ -9,9 +9,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Innowise.MusicIdentityServer.Migrations
 {
     /// <inheritdoc />
-    public partial class NewIdentitydbinitialization : Migration
+    public partial class init : Migration
     {
-        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
@@ -53,6 +52,21 @@ namespace Innowise.MusicIdentityServer.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Authors",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    FirstName = table.Column<string>(type: "character varying(60)", maxLength: 60, nullable: true),
+                    LastName = table.Column<string>(type: "character varying(60)", maxLength: 60, nullable: true),
+                    Bio = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Authors", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -161,13 +175,55 @@ namespace Innowise.MusicIdentityServer.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Books",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Title = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: true),
+                    Year = table.Column<int>(type: "integer", nullable: true),
+                    Isbn = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    Summary = table.Column<string>(type: "character varying(60)", maxLength: 60, nullable: true),
+                    Image = table.Column<string>(type: "text", nullable: true),
+                    Price = table.Column<decimal>(type: "numeric", nullable: true),
+                    AuthorId = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Books", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Books_Authors_AuthorId",
+                        column: x => x.AuthorId,
+                        principalTable: "Authors",
+                        principalColumn: "Id");
+                });
+
             migrationBuilder.InsertData(
                 table: "AspNetRoles",
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { "0e543f8c-0093-4aa1-ad0b-18368c9b099d", null, "User", "USER" },
-                    { "95c93ace-7651-44c4-8737-52851d614f32", null, "Administrator", "ADMINISTRATOR" }
+                    { "0e543f8c-0093-4aa1-ad0b-18368c9b099d", "f0ecda90-6a4b-41df-b634-1f74220f556e", "User", "USER" },
+                    { "95c93ace-7651-44c4-8737-52851d614f32", "843d78e9-a36e-4c55-84dc-2009287721da", "Administrator", "ADMINISTRATOR" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "AspNetUsers",
+                columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmed", "FirstName", "LastName", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
+                values: new object[,]
+                {
+                    { "610268a8-2b23-494e-856c-6bba84e7ebcc", 0, "481c89e2-9aa6-4248-a5de-371f8935c08a", "admin@bookstore.com", false, "System", "Admin", false, null, "ADMIN@BOOKSTORE.COM", "ADMIN@BOOKSTORE.COM", "AQAAAAEAACcQAAAAEHnaYFK0aOJXYU0fld4HptEL9D9uC9/hwVg4Xx4t4dvX+DA7odSR4HmlRlbCHP7lpA==", null, false, "13d23d08-4360-46c0-b892-0fc5459b60a7", false, "admin@bookstore.com" },
+                    { "cf833103-d733-4402-b00c-1263ca230e72", 0, "77f00288-f544-4ec0-a347-605c63de3e57", "user@bookstore.com", false, "System", "User", false, null, "USER@BOOKSTORE.COM", "USER@BOOKSTORE.COM", "AQAAAAEAACcQAAAAELrlRaxmOXq0npIzZ5ebQzcWTY4mukh5x+0tFrfIUWW+rmDt76buuJRHPcYXGfGFkw==", null, false, "245d97d6-82b3-41a4-ab41-04135021a49f", false, "user@bookstore.com" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "AspNetUserRoles",
+                columns: new[] { "RoleId", "UserId" },
+                values: new object[,]
+                {
+                    { "95c93ace-7651-44c4-8737-52851d614f32", "610268a8-2b23-494e-856c-6bba84e7ebcc" },
+                    { "0e543f8c-0093-4aa1-ad0b-18368c9b099d", "cf833103-d733-4402-b00c-1263ca230e72" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -206,9 +262,13 @@ namespace Innowise.MusicIdentityServer.Migrations
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Books_AuthorId",
+                table: "Books",
+                column: "AuthorId");
         }
 
-        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
@@ -227,10 +287,16 @@ namespace Innowise.MusicIdentityServer.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "Books");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "Authors");
         }
     }
 }

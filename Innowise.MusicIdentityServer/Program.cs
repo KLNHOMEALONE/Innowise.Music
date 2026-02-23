@@ -19,7 +19,7 @@ builder.Services.AddIdentityCore<ApiUser>()
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<MusicIdentityDbContext>();
 
-builder.Services.AddAutoMapper(typeof(MapperConfig));
+builder.Services.AddAutoMapper(cfg => { }, typeof(Program));
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

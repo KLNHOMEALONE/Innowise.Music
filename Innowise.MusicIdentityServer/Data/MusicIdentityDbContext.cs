@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Innowise.MusicIdentityServer.Data;
 
@@ -18,7 +19,7 @@ public partial class MusicIdentityDbContext : IdentityDbContext<ApiUser>
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseNpgsql("Server=localhost;Port=5432;Database=MusicIdentity;User Id=admin;Password=admin");
+        => optionsBuilder.UseNpgsql("Server=localhost;Port=5432;Database=MusicIdentity;User Id=admin;Password=admin").ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Innowise.MusicIdentityServer.Migrations
 {
     [DbContext(typeof(MusicIdentityDbContext))]
-    [Migration("20260223210818_NewIdentitydbinitialization")]
-    partial class NewIdentitydbinitialization
+    [Migration("20260223224243_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -95,6 +95,44 @@ namespace Innowise.MusicIdentityServer.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "610268a8-2b23-494e-856c-6bba84e7ebcc",
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "db7d5203-2559-4d82-8ccd-ed380d5090bb",
+                            Email = "admin@inowisemusic.com",
+                            EmailConfirmed = false,
+                            FirstName = "System",
+                            LastName = "Admin",
+                            LockoutEnabled = false,
+                            NormalizedEmail = "ADMIN@INNOWISEMUSIC.COM",
+                            NormalizedUserName = "ADMIN@INNOWISEMUSIC.COM",
+                            PasswordHash = "AQAAAAIAAYagAAAAEEAKq4ZzIyht+Uk7YhaRaNB3LaUDAHjq5uM0o6wOEump/SIw5X0Db3JnQ/FIzRywrQ==",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "2f9ec1a0-f10f-4218-881c-10a631b0c803",
+                            TwoFactorEnabled = false,
+                            UserName = "admin@inowisemusic.com"
+                        },
+                        new
+                        {
+                            Id = "cf833103-d733-4402-b00c-1263ca230e72",
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "64063d43-1b7e-4419-a74e-3ae7d62634e4",
+                            Email = "user@inowisemusic.com",
+                            EmailConfirmed = false,
+                            FirstName = "System",
+                            LastName = "User",
+                            LockoutEnabled = false,
+                            NormalizedEmail = "USER@BINNOWISEMUSIC.COM",
+                            NormalizedUserName = "USER@INNOWISEMUSIC.COM",
+                            PasswordHash = "AQAAAAIAAYagAAAAEGzjpMIaJMbeqbYixfwFJr5Fpqcqq1T2SePXAuMBR4ygbMrvdg4Uvf6wNwBQ6lZ/0A==",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "28aa5441-a242-4fbf-ba15-1f3ef161cdfd",
+                            TwoFactorEnabled = false,
+                            UserName = "user@inowisemusic.com"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -222,6 +260,18 @@ namespace Innowise.MusicIdentityServer.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("AspNetUserRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            UserId = "cf833103-d733-4402-b00c-1263ca230e72",
+                            RoleId = "0e543f8c-0093-4aa1-ad0b-18368c9b099d"
+                        },
+                        new
+                        {
+                            UserId = "610268a8-2b23-494e-856c-6bba84e7ebcc",
+                            RoleId = "95c93ace-7651-44c4-8737-52851d614f32"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
