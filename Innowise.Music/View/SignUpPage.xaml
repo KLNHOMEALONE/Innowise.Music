@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Innowise.Music.View.SignUpPage"
+             BackgroundColor="{StaticResource PageBackgroundColor}"
+             xmlns:viewmodel="clr-namespace:Innowise.Music.ViewModel"
+             x:DataType="viewmodel:SignUpPageViewModel">
+    <Grid Background="{StaticResource BackgroundGradient}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Logo -->
+        <Label Grid.Row="1"
+               Text="innomusic"
+               Style="{StaticResource LogoLabelStyle}"
+               TextColor="{StaticResource PrimaryRed}"
+               Margin="0,0,0,40" />
+
+        <!-- Email Entry -->
+        <Entry Grid.Row="3"
+               Placeholder="E-Mail"
+               Style="{StaticResource EmailEntryStyle}"
+               Margin="30,0"
+               Keyboard="Email" />
+
+        <!-- Password Entry -->
+        <Entry Grid.Row="4"
+               Placeholder="Password"
+               Style="{StaticResource PasswordEntryStyle}"
+               Margin="30,20,30,15" />
+
+        <!-- Repeat Password Entry -->
+        <Entry Grid.Row="5"
+               Placeholder="Repeat password"
+               Style="{StaticResource PasswordEntryStyle}"
+               Margin="30,15,30,20" />
+
+        <!-- Sign Up Button -->
+        <Button Grid.Row="6"
+                Text="Sign up for innomusic"
+                Style="{StaticResource LoginButtonStyle}"
+                Margin="30,20,30,15" />
+
+        <!-- Google Button -->
+        <Button Grid.Row="7"
+                Text="Continue with Google"
+                Style="{StaticResource GoogleButtonStyle}"
+                Margin="30,15">
+            <Button.ImageSource>
+                <FontImageSource Glyph="G"
+                                 FontFamily="FontAwesome"
+                                 Size="20"
+                                  />
+            </Button.ImageSource>
+        </Button>
+
+        <!-- Log In Link -->
+        <Label Grid.Row="8"
+               Text="Log in"
+               Style="{StaticResource SignUpLabelStyle}"
+               Margin="0,30,0,0">
+            <Label.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding LoginCommand}" />
+            </Label.GestureRecognizers>
+        </Label>
+    </Grid>
+</ContentPage>

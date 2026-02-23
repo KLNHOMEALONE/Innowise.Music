@@ -1,0 +1,6 @@
+@Innowise.MusicIdentityServer_HostAddress = http://localhost:5236
+
+GET {{Innowise.MusicIdentityServer_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

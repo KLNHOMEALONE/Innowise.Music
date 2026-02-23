@@ -1,0 +1,90 @@
+﻿<?xml version = "1.0" encoding = "UTF-8" ?>
+<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Innowise.Music"
+             x:Class="Innowise.Music.App">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
+                <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- Colors -->
+            <Color x:Key="PrimaryRed">#D90429</Color>
+            <Color x:Key="PrimaryRedLight">#EF233C</Color>
+            <Color x:Key="PageBackgroundColor">#0A0000</Color>
+            <Color x:Key="InputBackgroundColor">#2D1A1A</Color>
+            <Color x:Key="InputTextColor">#FFFFFF</Color>
+            <Color x:Key="InputPlaceholderColor">#B0B0B0</Color>
+            <Color x:Key="GoogleButtonBackgroundColor">#0A0000</Color>
+            <Color x:Key="GoogleButtonBorderColor">#FFFFFF</Color>
+            <Color x:Key="SignUpTextColor">#FFFFFF</Color>
+
+            <!-- Gradient for background -->
+            <LinearGradientBrush x:Key="BackgroundGradient" StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Color="#4A0010" Offset="0.0" />
+                <GradientStop Color="#1A0005" Offset="0.5" />
+                <GradientStop Color="#0A0000" Offset="1.0" />
+            </LinearGradientBrush>
+
+            <!-- Gradient for login button -->
+            <LinearGradientBrush x:Key="LoginButtonGradient" StartPoint="0,0" EndPoint="1,0">
+                <GradientStop Color="{StaticResource PrimaryRed}" Offset="0.0" />
+                <GradientStop Color="{StaticResource PrimaryRedLight}" Offset="1.0" />
+            </LinearGradientBrush>
+
+            <!-- Styles -->
+            <Style x:Key="EmailEntryStyle" TargetType="Entry">
+                <Setter Property="TextColor" Value="{StaticResource InputTextColor}" />
+                <Setter Property="PlaceholderColor" Value="{StaticResource InputPlaceholderColor}" />
+                <Setter Property="BackgroundColor" Value="{StaticResource InputBackgroundColor}" />
+                <Setter Property="HeightRequest" Value="50" />
+                <Setter Property="FontSize" Value="16" />
+            </Style>
+
+            <Style x:Key="PasswordEntryStyle" TargetType="Entry">
+                <Setter Property="TextColor" Value="{StaticResource InputTextColor}" />
+                <Setter Property="PlaceholderColor" Value="{StaticResource InputPlaceholderColor}" />
+                <Setter Property="BackgroundColor" Value="{StaticResource InputBackgroundColor}" />
+                <Setter Property="HeightRequest" Value="50" />
+                <Setter Property="FontSize" Value="16" />
+                <Setter Property="IsPassword" Value="True" />
+            </Style>
+
+            <Style x:Key="LoginButtonStyle" TargetType="Button">
+                <Setter Property="BackgroundColor" Value="{StaticResource PrimaryRed}" />
+                <Setter Property="TextColor" Value="{StaticResource InputTextColor}" />
+                <Setter Property="HeightRequest" Value="50" />
+                <Setter Property="CornerRadius" Value="25" />
+                <Setter Property="FontSize" Value="16" />
+                <Setter Property="FontAttributes" Value="Bold" />
+                <Setter Property="Padding" Value="20,0" />
+            </Style>
+
+            <Style x:Key="GoogleButtonStyle" TargetType="Button">
+                <Setter Property="BackgroundColor" Value="{StaticResource GoogleButtonBackgroundColor}" />
+                <Setter Property="BorderColor" Value="{StaticResource GoogleButtonBorderColor}" />
+                <Setter Property="BorderWidth" Value="1" />
+                <Setter Property="HeightRequest" Value="50" />
+                <Setter Property="CornerRadius" Value="25" />
+                <Setter Property="FontSize" Value="16" />
+                <Setter Property="Padding" Value="20,0" />
+            </Style>
+
+            <Style x:Key="SignUpLabelStyle" TargetType="Label">
+                <Setter Property="TextColor" Value="{StaticResource SignUpTextColor}" />
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="HorizontalTextAlignment" Value="Center" />
+                <Setter Property="TextDecorations" Value="Underline" />
+            </Style>
+
+            <!-- Logo label style -->
+            <Style x:Key="LogoLabelStyle" TargetType="Label">
+                <Setter Property="FontSize" Value="36" />
+                <Setter Property="FontAttributes" Value="Bold" />
+                <Setter Property="HorizontalTextAlignment" Value="Center" />
+            </Style>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

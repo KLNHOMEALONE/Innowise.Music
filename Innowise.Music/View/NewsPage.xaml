@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Innowise.Music.View.NewsPage"
+             xmlns:viewmodel="clr-namespace:Innowise.Music.ViewModel"
+             xmlns:model="clr-namespace:Innowise.Music.Model"
+             x:DataType="viewmodel:NewsPageViewModel">
+    <CollectionView Margin="10" 
+                    ItemsSource="{Binding NewsCollection}" 
+                    SelectedItem="{Binding SelectedNews}" 
+                    SelectionChangedCommand="{Binding GoToDetailsCommand}"
+                    SelectionMode="Single">
+        <CollectionView.ItemsLayout>
+            <LinearItemsLayout Orientation="Vertical" ItemSpacing="20">
+
+            </LinearItemsLayout>
+        </CollectionView.ItemsLayout>
+        <CollectionView.ItemTemplate>
+            <DataTemplate x:DataType="model:News">
+                <Border Padding="5" >
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="5"></RoundRectangle>
+                    </Border.StrokeShape>
+                    <VerticalStackLayout>
+                        <Image HeightRequest="200" Aspect="AspectFill" Source="{Binding ImageUrl}">
+
+                        </Image>
+                        <Label FontSize="Medium" Text="{Binding Title}"></Label>
+                    </VerticalStackLayout>
+                </Border>
+            </DataTemplate>
+        </CollectionView.ItemTemplate>
+    </CollectionView>
+
+</ContentPage>
