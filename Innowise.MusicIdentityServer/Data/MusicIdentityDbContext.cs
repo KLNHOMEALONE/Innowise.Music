@@ -78,7 +78,7 @@ public partial class MusicIdentityDbContext : IdentityDbContext<ApiUser>
                 RoleId = "95c93ace-7651-44c4-8737-52851d614f32",
                 UserId = "610268a8-2b23-494e-856c-6bba84e7ebcc"
             }
-            );
+        );
 
         OnModelCreatingPartial(modelBuilder);
     }

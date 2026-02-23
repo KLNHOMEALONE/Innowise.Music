@@ -68,9 +68,10 @@ public class AuthenticationController : ControllerBase
         try
         {
             var user = await userManager.FindByEmailAsync(userDto.Email);
+            if (user == null) return Unauthorized(userDto);
             var passwordValid = await userManager.CheckPasswordAsync(user, userDto.Password);
 
-            if (user == null || passwordValid == false)
+            if (passwordValid == false)
             {
                 return Unauthorized(userDto);
             }
