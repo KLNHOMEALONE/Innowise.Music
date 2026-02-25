@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-02-25] - Auth Pages Design Improvements
+
+### Added
+- **Google Logo**: Integrated Google logo asset in `LoginPage.xaml` and `SignUpPage.xaml`.
+
+### Changed
+#### LoginPage.xaml
+- **Google Button**: Replaced standard `Button` with `Border` control matching design (white stroke, rounded corners, Google icon).
+- **Entry Fields**: Wrapped Email and Password entries in `Border` controls for rounded corners matching design mockup.
+- **Logo**: Changed from single `Label` to `HorizontalStackLayout` for two-tone effect.
+- **Login Button**: Replaced standard `Button` with `Border` control for styled text spans.
+
+#### SignUpPage.xaml
+- Updated to match `LoginPage.xaml` design and architecture:
+    - Wrapped `Entry` controls in `Border` for consistent styling.
+    - Updated Logo to use `HorizontalStackLayout` for two-tone effect.
+    - Updated Sign Up and Google buttons to use `Border` style for consistent branding.
+
+### Fixed
+- Entry fields now have proper rounded corners as per design specification.
+- Logo text now visually distinguishes "inno" vs "music" portions.
+
+---
+
 ## [2026-02-23] - Initial Development Phase
 
 ### Added

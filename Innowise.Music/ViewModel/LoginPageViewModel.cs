@@ -6,6 +6,12 @@ namespace Innowise.Music.ViewModel;
 public partial class LoginPageViewModel : ObservableObject
 {
     [RelayCommand]
+    private async Task Login()
+    {
+        // TODO: Implement login logic
+    }
+
+    [RelayCommand]
     private async Task SignUp()
     {
         await Shell.Current.GoToAsync(nameof(View.SignUpPage));

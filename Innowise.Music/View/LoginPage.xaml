@@ -19,49 +19,109 @@
         </Grid.RowDefinitions>
 
         <!-- Logo -->
-        <Label Grid.Row="1"
-               Text="innomusic"
-               Style="{StaticResource LogoLabelStyle}"
-               TextColor="{StaticResource PrimaryRed}"
-               Margin="0,0,0,40" />
+        <HorizontalStackLayout Grid.Row="1"
+                               HorizontalOptions="Center"
+                               Margin="0,0,0,40"
+                               Spacing="0">
+            <Label Text="inno"
+                   TextColor="{StaticResource PrimaryRed}"
+                   FontSize="36"
+                   FontAttributes="Bold" />
+            <Label Text="music"
+                   TextColor="{StaticResource PrimaryRed}"
+                   FontSize="36"
+                   FontAttributes="Bold"
+                   Opacity="0.6" />
+        </HorizontalStackLayout>
 
         <!-- Email Entry -->
-        <Entry Grid.Row="3"
-               Placeholder="E-Mail"
-               Style="{StaticResource EmailEntryStyle}"
-               Margin="30,0"
-               Keyboard="Email" />
+        <Border Grid.Row="3"
+                StrokeThickness="0"
+                Margin="30,0"
+                BackgroundColor="{StaticResource InputBackgroundColor}">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="5" />
+            </Border.StrokeShape>
+            <Entry Placeholder="E-Mail"
+                   TextColor="{StaticResource InputTextColor}"
+                   PlaceholderColor="{StaticResource InputPlaceholderColor}"
+                   HeightRequest="50"
+                   FontSize="16"
+                   Keyboard="Email"
+                   BackgroundColor="Transparent" />
+        </Border>
 
         <!-- Password Entry -->
-        <!--<Border StrokeThickness="2" Grid.Row="4" Margin="20,0, 20,0">
+        <Border Grid.Row="4"
+                StrokeThickness="0"
+                Margin="30,40,30,15"
+                BackgroundColor="{StaticResource InputBackgroundColor}">
             <Border.StrokeShape>
-                <RoundRectangle CornerRadius="25"></RoundRectangle>
+                <RoundRectangle CornerRadius="5" />
             </Border.StrokeShape>
-
-        </Border>-->
-        <Entry Grid.Row="4"
-               Placeholder="Password"
-               Style="{StaticResource PasswordEntryStyle}"
-               Margin="30,40,30,15" />
+            <Entry Placeholder="Password"
+                   TextColor="{StaticResource InputTextColor}"
+                   PlaceholderColor="{StaticResource InputPlaceholderColor}"
+                   HeightRequest="50"
+                   FontSize="16"
+                   IsPassword="True"
+                   BackgroundColor="Transparent" />
+        </Border>
 
         <!-- Login Button -->
-        <Button Grid.Row="5"
-                Text="Log in to innomusic"
-                Style="{StaticResource LoginButtonStyle}"
-                Margin="30,40,30,15" />
+        <Border Grid.Row="5"
+                StrokeThickness="0"
+                Margin="30,40,30,15"
+                BackgroundColor="{StaticResource PrimaryRed}"
+                HeightRequest="50"
+                HorizontalOptions="Fill">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="25" />
+            </Border.StrokeShape>
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding LoginCommand}" />
+            </Border.GestureRecognizers>
+            <Label HorizontalOptions="Center"
+                   VerticalOptions="Center"
+                   FontSize="16"
+                   FontAttributes="Bold">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text="Log in to " TextColor="White" />
+                        <Span Text="inno" TextColor="White" FontAttributes="Bold" />
+                        <Span Text="music" TextColor="#99FFFFFF" FontAttributes="Bold" />
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+        </Border>
 
         <!-- Google Button -->
-        <Button Grid.Row="6"
-                Text="Continue with Google"
-                Style="{StaticResource GoogleButtonStyle}"
-                Margin="30,15">
-            <Button.ImageSource>
-                <FontImageSource Glyph="G"
-                                 FontFamily="FontAwesome"
-                                 Size="20"
-                                 />
-            </Button.ImageSource>
-        </Button>
+        <Border Grid.Row="6"
+                Stroke="{StaticResource GoogleButtonBorderColor}"
+                StrokeThickness="1"
+                Margin="30,15"
+                BackgroundColor="Transparent"
+                HeightRequest="50"
+                HorizontalOptions="Fill">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="25" />
+            </Border.StrokeShape>
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding GoogleLoginCommand}" />
+            </Border.GestureRecognizers>
+            <Grid Padding="20,0">
+                <Image Source="google_logo.png"
+                       HorizontalOptions="Start"
+                       VerticalOptions="Center"
+                       HeightRequest="20"
+                       WidthRequest="20" />
+                <Label Text="Continue with Google"
+                       TextColor="White"
+                       FontSize="16"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center" />
+            </Grid>
+        </Border>
 
         <!-- Sign Up Link -->
         <Label Grid.Row="7"
