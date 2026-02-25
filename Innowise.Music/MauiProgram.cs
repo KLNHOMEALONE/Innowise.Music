@@ -16,6 +16,8 @@ namespace Innowise.Music
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+                    fonts.AddFont("Lexend-Regular.ttf", "LexendRegular");
+                    fonts.AddFont("Lexend-Semibold.ttf", "LexendSemibold");
                 });
 
             builder.Services.AddSingleton<HttpHelper>();
