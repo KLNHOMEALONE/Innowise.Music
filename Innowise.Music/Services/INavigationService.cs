@@ -1,0 +1,10 @@
+namespace Innowise.Music.Services;
+
+public interface INavigationService
+{
+    Task NavigateToAsync(string route);
+    Task NavigateToAsync(string route, IDictionary<string, object> parameters);
+    Task GoBackAsync();
+    Task GoBackAsync(IDictionary<string, object> parameters);
+    Task NavigateAndClearStackAsync(string route);
+}

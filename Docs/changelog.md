@@ -6,8 +6,12 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - **Google Logo**: Integrated Google logo asset in `LoginPage.xaml` and `SignUpPage.xaml`.
+- **NavigationService**: Created `INavigationService` and `NavigationService` to abstract MAUI Shell navigation, improving testability and adhering to MVVM best practices. Registered in `MauiProgram.cs`.
 
 ### Changed
+#### ViewModels
+- Refactored `LoginPageViewModel`, `SignUpPageViewModel`, and `NewsPageViewModel` to use `INavigationService` instead of hardcoded `Shell.Current.GoToAsync` calls.
+
 #### LoginPage.xaml
 - **Google Button**: Replaced standard `Button` with `Border` control matching design (white stroke, rounded corners, Google icon).
 - **Entry Fields**: Wrapped Email and Password entries in `Border` controls for rounded corners matching design mockup.

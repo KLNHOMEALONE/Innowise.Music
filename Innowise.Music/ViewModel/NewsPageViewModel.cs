@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Innowise.Music.Model;
@@ -10,12 +10,14 @@ namespace Innowise.Music.ViewModel;
 public partial class NewsPageViewModel : ObservableObject
 {
     private readonly WebNewsService _newsService;
+    private readonly INavigationService _navigationService;
     public ObservableCollection<News> NewsCollection { get; set; } = new ObservableCollection<News>();
     [ObservableProperty]
     private News _selectedNews;
-    public NewsPageViewModel(WebNewsService newsService)
+    public NewsPageViewModel(WebNewsService newsService, INavigationService navigationService)
     {
         _newsService = newsService;
+        _navigationService = navigationService;
         GetNewsList();
     }
 
@@ -32,7 +34,7 @@ public partial class NewsPageViewModel : ObservableObject
     {
         if (SelectedNews == null) return;
 
-        Shell.Current.GoToAsync($"{nameof(NewsDetailedPage)}", new Dictionary<string, object>()
+        _navigationService.NavigateToAsync(nameof(NewsDetailedPage), new Dictionary<string, object>()
         {
             {"News", SelectedNews}
         });

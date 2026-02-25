@@ -97,3 +97,12 @@
   - [x] Create changelog.md
   - [ ] Update project.md with architecture
   - [ ] Add API documentation
+
+## Task: Architectural Improvements (Navigation)
+- **Status**: Completed
+- **Description**: Abstract Shell navigation into an injectable service.
+- **Steps**:
+  - [x] Create INavigationService interface
+  - [x] Implement NavigationService
+  - [x] Register in Dependency Injection container
+  - [x] Refactor existing ViewModels to use the new service

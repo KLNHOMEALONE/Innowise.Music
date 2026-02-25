@@ -1,4 +1,4 @@
-﻿using Innowise.Music.Services;
+using Innowise.Music.Services;
 using Innowise.Music.View;
 using Innowise.Music.ViewModel;
 using Microsoft.Extensions.Logging;
@@ -22,6 +22,7 @@ namespace Innowise.Music
                 });
 
             builder.Services.AddSingleton<HttpHelper>();
+            builder.Services.AddSingleton<INavigationService, NavigationService>();
             builder.Services.AddSingleton<WebNewsService>();
             builder.Services.AddSingleton<MockNewsService>();
             builder.Services.AddSingleton<NewsPageViewModel>();
