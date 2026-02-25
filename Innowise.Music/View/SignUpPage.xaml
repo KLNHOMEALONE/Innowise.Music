@@ -26,12 +26,10 @@
                                Spacing="0">
             <Label Text="inno"
                    TextColor="{StaticResource PrimaryRed}"
-                   FontSize="36"
-                   FontAttributes="Bold" />
+                   Style="{StaticResource LogoLabelStyle}" />
             <Label Text="music"
                    TextColor="{StaticResource PrimaryRed}"
-                   FontSize="36"
-                   FontAttributes="Bold"
+                   Style="{StaticResource LogoLabelStyle}"
                    Opacity="0.6" />
         </HorizontalStackLayout>
 
