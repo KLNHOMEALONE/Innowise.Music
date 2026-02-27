@@ -11,16 +11,21 @@
 
 ## Task: Authentication Flow (Login/SignUp)
 - **Status**: In progress
-- **Description**: Implement login and sign-up pages with MVVM pattern
+- **Description**: Implement login and sign-up pages with MVVM pattern and JWT authentication.
 - **Steps**:
   - [x] Create LoginPage.xaml with ViewModel
   - [x] Create SignUpPage.xaml with ViewModel
   - [x] Implement navigation between Login and SignUp
   - [x] Apply shared styles and gradients
   - [x] Match UI design with mockups (Borders, Logos, Branded Buttons)
-  - [ ] Implement actual authentication logic
-  - [ ] Add form validation
-  - [ ] Integrate with identity service
+  - [ ] Create Auth models (DTOs) in the MAUI project
+  - [ ] Implement IAuthService and AuthService using SecureStorage
+  - [ ] Update HttpHelper to include Bearer token
+  - [ ] Register services in MauiProgram.cs
+  - [ ] Update LoginPageViewModel and SignUpPageViewModel
+  - [ ] Implement startup navigation logic based on auth state
+  - [x] Remove Blazor-specific AuthenticationStateProvider
+- **Dependencies**: Innowise.MusicIdentityServer
 
 ## Task: News Feature
 - **Status**: Completed

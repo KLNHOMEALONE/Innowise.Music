@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-02-27] - JWT Authentication Implementation
+
+### Added
+- **Auth Models**: Added `LoginUserDto`, `UserDto`, and `AuthenticationResponse` to the MAUI project to match IdentityServer models.
+- **IAuthService / AuthService**: Implemented authentication service using `HttpClient` and `SecureStorage` for token management.
+
+### Changed
+- **HttpHelper**: Updated to automatically include JWT Bearer token in the `Authorization` header if available in `SecureStorage`.
+- **MauiProgram.cs**: Registered `IAuthService` and `AuthService`.
+- **LoginPageViewModel**: Hooked up `AuthService` to the Login command.
+- **SignUpPageViewModel**: Hooked up `AuthService` to the Sign Up command.
+
+### Removed
+- **ApiAthenticationStateProvider**: Deleted the Blazor-specific authentication provider as it is not applicable for pure XAML MAUI projects.
+
+---
+
 ## [2026-02-25] - Auth Pages Design Improvements
 
 ### Added

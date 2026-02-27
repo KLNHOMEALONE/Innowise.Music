@@ -41,6 +41,7 @@
                 <RoundRectangle CornerRadius="5" />
             </Border.StrokeShape>
             <Entry Placeholder="E-Mail"
+                   Text="{Binding Email}"
                    TextColor="{StaticResource InputTextColor}"
                    PlaceholderColor="{StaticResource InputPlaceholderColor}"
                    HeightRequest="50"
@@ -58,6 +59,7 @@
                 <RoundRectangle CornerRadius="5" />
             </Border.StrokeShape>
             <Entry Placeholder="Password"
+                   Text="{Binding Password}"
                    TextColor="{StaticResource InputTextColor}"
                    PlaceholderColor="{StaticResource InputPlaceholderColor}"
                    HeightRequest="50"

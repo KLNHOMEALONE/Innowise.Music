@@ -2,6 +2,7 @@ using Innowise.Music.Services;
 using Innowise.Music.View;
 using Innowise.Music.ViewModel;
 using Microsoft.Extensions.Logging;
+//using Microsoft.AspNetCore.Components.Authorization;
 
 namespace Innowise.Music
 {
@@ -20,8 +21,8 @@ namespace Innowise.Music
                     fonts.AddFont("Lexend-Semibold.ttf", "LexendSemibold");
                     fonts.AddFont("Lexend-ExtraBold.ttf", "LexendExtrabold");
                 });
-
             builder.Services.AddSingleton<HttpHelper>();
+            builder.Services.AddSingleton<IAuthService, AuthService>();
             builder.Services.AddSingleton<INavigationService, NavigationService>();
             builder.Services.AddSingleton<WebNewsService>();
             builder.Services.AddSingleton<MockNewsService>();

@@ -59,9 +59,13 @@ graph TD
     A --> J[SignUpPage]
     A --> K[NewsPage]
     A --> L[NewsDetailedPage]
+    A --> M[AuthService]
     
     C --> B
+    C --> M
     G --> C
+    E --> M
+    F --> M
 ```
 
 ### Navigation Flow
@@ -73,6 +77,8 @@ graph LR
     B -->|LoginCommand| D[//LoginPage]
     E[NewsPage] -->|GoToDetailsCommand| F[NewsDetailedPage]
     F -->|QueryProperty| G[NewsDetailedPageViewModel]
+    H[App] -->|CheckAuth| C
+    H -->|CheckAuth| E
 ```
 
 ### MVVM Communication
@@ -97,6 +103,7 @@ graph TD
         I[WebNewsService]
         J[MockNewsService]
         K[HttpHelper]
+        L[AuthService]
     end
     
     A -->|BindingContext| E
@@ -106,19 +113,23 @@ graph TD
     
     G -->|Inject| I
     I -->|Uses| K
+    I -->|Uses| L
+    E -->|Inject| L
+    F -->|Inject| L
 ```
 
 ## Core Components
 
 ### 1. Authentication Module
-**Files**: `LoginPage.xaml`, `SignUpPage.xaml`, `LoginPageViewModel.cs`, `SignUpPageViewModel.cs`
+**Files**: `LoginPage.xaml`, `SignUpPage.xaml`, `LoginPageViewModel.cs`, `SignUpPageViewModel.cs`, `IAuthService.cs`, `AuthService.cs`, `LoginUserDto.cs`, `UserDto.cs`, `AuthenticationResponse.cs`
 
 **Responsibilities**:
 - User authentication UI
 - Navigation between login/signup flows
-- Future: Integration with identity service
+- JWT-based authentication using `SecureStorage`
+- Interaction with `Innowise.MusicIdentityServer`
 
-**Dependencies**: None (core UI)
+**Dependencies**: `IAuthService`, `SecureStorage`, `System.IdentityModel.Tokens.Jwt`
 
 ### 2. News Module
 **Files**: `NewsPage.xaml`, `NewsDetailedPage.xaml`, `NewsPageViewModel.cs`, `NewsDetailedPageViewModel.cs`, `News.cs`
@@ -126,23 +137,45 @@ graph TD
 **Responsibilities**:
 - Display news feed
 - Show news details
-- API integration for news retrieval
+- API integration for news retrieval with Bearer token support
 
-**Dependencies**: `WebNewsService`, `HttpHelper`
+**Dependencies**: `WebNewsService`, `HttpHelper`, `IAuthService`
 
 ### 3. Services Layer
-**Files**: `INewsService.cs`, `WebNewsService.cs`, `MockNewsService.cs`, `IHttpHelper.cs`, `HttpClientHelper.cs`
+**Files**: `INewsService.cs`, `WebNewsService.cs`, `MockNewsService.cs`, `IHttpHelper.cs`, `HttpClientHelper.cs`, `IAuthService.cs`, `AuthService.cs`
 
 **Responsibilities**:
 - HTTP client configuration
 - News API communication
 - Mock data for development
+- User authentication and token management
 
-**Dependencies**: `HttpClient`
+**Dependencies**: `HttpClient`, `SecureStorage`
 
 ## Data Flow
 
-### News Retrieval Flow
+### Authentication Flow (Login)
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant LP as LoginPage
+    participant LVM as LoginPageViewModel
+    participant AS as AuthService
+    participant API as IdentityServer
+    participant SS as SecureStorage
+    
+    U->>LP: Enter Credentials & Tap Login
+    LP->>LVM: LoginCommand
+    LVM->>AS: LoginAsync(dto)
+    AS->>API: POST /api/Authentication/login
+    API-->>AS: AuthenticationResponse (Token)
+    AS->>SS: SetAsync("auth_token", token)
+    AS-->>LVM: true
+    LVM->>Shell: GoToAsync("///NewsPage")
+```
+
+### News Retrieval Flow (Authenticated)
 
 ```mermaid
 sequenceDiagram
@@ -150,14 +183,19 @@ sequenceDiagram
     participant NP as NewsPage
     participant NVM as NewsPageViewModel
     participant WNS as WebNewsService
-    participant HH as HttpHelper
-    participant API as External API
+    participant AS as AuthService
+    participant SS as SecureStorage
+    participant API as News API
     
     U->>NP: Open NewsPage
     NP->>NVM: Initialize
     NVM->>WNS: GetNewsAsync()
-    WNS->>HH: GetInsecureHandler()
-    WNS->>API: GET /getnews
+    WNS->>AS: GetTokenAsync()
+    AS->>SS: GetAsync("auth_token")
+    SS-->>AS: token
+    AS-->>WNS: token
+    WNS->>WNS: Add Authorization Header
+    WNS->>API: GET /getnews (with Bearer token)
     API-->>WNS: List<News>
     WNS-->>NVM: List<News>
     NVM->>NVM: Populate NewsCollection
@@ -165,40 +203,15 @@ sequenceDiagram
     NP-->>U: Display News
 ```
 
-### Navigation Flow (Login to SignUp)
-
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant LP as LoginPage
-    participant LVM as LoginPageViewModel
-    participant Shell as Shell
-    participant SP as SignUpPage
-    
-    U->>LP: Tap Sign Up
-    LP->>LVM: SignUpCommand
-    LVM->>Shell: GoToAsync(nameof(SignUpPage))
-    Shell->>SP: Navigate
-    SP-->>U: Display SignUpPage
-```
-
 ## Key Design Decisions
 
-### 1. MVVM with CommunityToolkit.Mvvm
-- **Why**: Reduces boilerplate code
-- **Benefits**: `[ObservableObject]`, `[RelayCommand]`, `[ObservableProperty]`
+### 5. JWT Authentication with SecureStorage
+- **Why**: Standard for securing mobile applications
+- **Benefits**: Persistence across sessions, secure storage of sensitive tokens, automatic inclusion in API requests.
 
-### 2. Shell Navigation
-- **Why**: Built-in MAUI navigation
-- **Benefits**: Type-safe routes, parameter passing
-
-### 3. Dependency Injection
-- **Why**: Loose coupling, testability
-- **Implementation**: All Pages and ViewModels registered as singletons
-
-### 4. Compiled Bindings
-- **Why**: Performance, compile-time checking
-- **Implementation**: `x:DataType` on all ContentPages
+### 6. Startup Auth Check
+- **Why**: Seamless user experience
+- **Benefits**: Automatically redirects authenticated users to the main content, reducing friction.
 
 ## Current Status
 
@@ -208,17 +221,9 @@ sequenceDiagram
 - ✅ News listing and details
 - ✅ API integration layer
 - ✅ MVVM architecture
-
-### In Progress
-- 🔄 Documentation
-
-### Planned
-- ⏳ Audio playback service
-- ⏳ Music library with PostgreSQL
-- ⏳ Search functionality
-- ⏳ User profile
-- ⏳ Favorites and playlists
-- ⏳ Background playback
+- ✅ JWT Authentication Implementation
+- ✅ Secure Token Storage
+- ✅ Authenticated API Requests
 
 ## API Endpoints
 

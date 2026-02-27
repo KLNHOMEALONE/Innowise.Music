@@ -7,16 +7,44 @@ namespace Innowise.Music.ViewModel;
 public partial class LoginPageViewModel : ObservableObject
 {
     private readonly INavigationService _navigationService;
+    private readonly IAuthService _authService;
 
-    public LoginPageViewModel(INavigationService navigationService)
+    [ObservableProperty]
+    private string _email;
+
+    [ObservableProperty]
+    private string _password;
+
+    public LoginPageViewModel(INavigationService navigationService, IAuthService authService)
     {
         _navigationService = navigationService;
+        _authService = authService;
     }
 
     [RelayCommand]
     private async Task Login()
     {
-        // TODO: Implement login logic
+        if (string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(Password))
+        {
+            // Rocket: "You gotta fill in the blanks, kid!"
+            return;
+        }
+
+        var success = await _authService.LoginAsync(new Model.LoginUserDto
+        {
+            Email = Email,
+            Password = Password
+        });
+
+        if (success)
+        {
+            await _navigationService.NavigateToAsync($"///{nameof(View.NewsPage)}");
+        }
+        else
+        {
+            // Handle error
+            System.Diagnostics.Debug.WriteLine("Login failed");
+        }
     }
 
     [RelayCommand]
