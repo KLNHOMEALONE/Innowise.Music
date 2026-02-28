@@ -21,7 +21,7 @@
         {
             if (await _authService.IsAuthenticatedAsync())
             {
-                await Shell.Current.GoToAsync($"///{nameof(View.NewsPage)}");
+                //await Shell.Current.GoToAsync($"///{nameof(View.NewsPage)}");
             }
             else
             {
