@@ -1,0 +1,21 @@
+# File: .dockerignore
+# Description: Ignore rules for Docker build context
+# Dependencies: Dockerfile
+# Created: 2026-03-01
+
+**/.classpath
+**/.dockerignore
+**/.env
+**/.git
+**/.gitignore
+**/.project
+**/.settings
+**/.toolstarget
+**/.vs
+**/.vscode
+**/*.*proj.user
+**/*.dbmdl
+**/*.jfm
+**/bin
+**/obj
+**/logs

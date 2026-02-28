@@ -60,3 +60,4 @@
 /Innowise.MusicIdentityServer/bin/
 /.gemini/GEMINI.md
 /.gemini/key.txt
+/.qwen/oauth_creds.json

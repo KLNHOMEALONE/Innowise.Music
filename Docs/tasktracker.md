@@ -42,6 +42,15 @@
   - [ ] Add error handling for API failures
   - [ ] Add loading states
 
+## Task: Backend Dockerization
+- **Status**: Completed
+- **Description**: Containerize backend services (Postgres, Seq, Identity Server) for local development using Docker Compose.
+- **Steps**:
+  - [x] Create Dockerfile for Innowise.MusicIdentityServer
+  - [x] Create .dockerignore for Innowise.MusicIdentityServer
+  - [x] Create docker-compose.yml at workspace root
+  - [x] Configure environment variables and network overrides for containers
+
 ## Task: Audio Streaming Core
 - **Status**: Not started
 - **Description**: Implement audio playback functionality

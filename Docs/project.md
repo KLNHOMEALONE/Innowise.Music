@@ -5,8 +5,10 @@ Innowise.Music is a cross-platform audio streaming application built with .NET 9
 
 ## Technology Stack
 - **Framework**: .NET 9 MAUI
+- **Backend Architecture**: ASP.NET Core Identity Server, Docker Compose
 - **Architecture**: MVVM with CommunityToolkit.Mvvm
 - **Database**: PostgreSQL
+- **Logging**: Seq
 - **Dependency Injection**: Microsoft.Extensions.DependencyInjection
 - **Navigation**: Shell-based navigation
 
