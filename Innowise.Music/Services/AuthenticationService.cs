@@ -1,7 +1,7 @@
 /*
- * File: AuthService.cs
- * Description: Implementation of IAuthService using HttpClient and SecureStorage.
- * Dependencies: Model\LoginUserDto, Model\UserDto, Model\AuthenticationResponse, Services\IAuthService, Services\HttpHelper
+ * File: AuthenticationService.cs
+ * Description: Implementation of IAuthenticationService using HttpClient and SecureStorage.
+ * Dependencies: Model\LoginUserDto, Model\UserDto, Model\AuthenticationResponse, Services\IAuthenticationService, Services\HttpHelper
  * Created: 2026-02-27
  */
 
@@ -10,12 +10,12 @@ using Innowise.Music.Model;
 
 namespace Innowise.Music.Services;
 
-public class AuthService : IAuthService
+public class AuthenticationService : IAuthenticationService
 {
     private readonly HttpClient _httpClient;
     private const string AuthTokenKey = "auth_token";
 
-    public AuthService(HttpHelper httpHelper)
+    public AuthenticationService(HttpHelper httpHelper)
     {
         var handler = httpHelper.GetInsecureHandler();
         _httpClient = new HttpClient(handler);
@@ -47,7 +47,7 @@ public class AuthService : IAuthService
         catch (Exception ex)
         {
             // Log error (Rocket style: "Blasted API is down!")
-            System.Diagnostics.Debug.WriteLine($"AuthService Login Error: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"AuthenticationService Login Error: {ex.Message}");
         }
         return false;
     }
@@ -62,7 +62,7 @@ public class AuthService : IAuthService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"AuthService Register Error: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"AuthenticationService Register Error: {ex.Message}");
             return false;
         }
     }

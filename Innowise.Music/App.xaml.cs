@@ -4,13 +4,13 @@ namespace Innowise.Music
 {
     public partial class App : Application
     {
-        private readonly Services.IAuthService _authService;
+        private readonly Services.IAuthenticationService _authenticationService;
         private readonly INavigationService _navigationService;
 
-        public App(Services.IAuthService authService, INavigationService navigationService)
+        public App(Services.IAuthenticationService authenticationService, INavigationService navigationService)
         {
             InitializeComponent();
-            _authService = authService;
+            _authenticationService = authenticationService;
             _navigationService = navigationService;
         }
 
@@ -23,7 +23,7 @@ namespace Innowise.Music
 
         private async void CheckAuthStatus()
         {
-            if (await _authService.IsAuthenticatedAsync())
+            if (await _authenticationService.IsAuthenticatedAsync())
             {
                 await _navigationService.NavigateToAsync($"///{nameof(View.NewsPage)}");
             }

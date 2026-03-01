@@ -7,11 +7,11 @@ public class WebNewsService : INewsService
 {
     private List<News> _news = new();
     private readonly HttpClient _httpClient;
-    private readonly IAuthService _authService;
+    private readonly IAuthenticationService _authenticationService;
 
-    public WebNewsService(HttpHelper httpHelper, IAuthService authService)
+    public WebNewsService(HttpHelper httpHelper, IAuthenticationService authenticationService)
     {
-        _authService = authService;
+        _authenticationService = authenticationService;
         var handler = httpHelper.GetInsecureHandler();
         _httpClient = new HttpClient(handler);
     }
@@ -21,7 +21,7 @@ public class WebNewsService : INewsService
     {
         var url = DeviceInfo.Platform == DevicePlatform.Android ? "https://10.0.2.2:7008/getnews" : "https://localhost:7008/getnews";
         
-        var token = await _authService.GetTokenAsync();
+        var token = await _authenticationService.GetTokenAsync();
         if (!string.IsNullOrEmpty(token))
         {
             _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);

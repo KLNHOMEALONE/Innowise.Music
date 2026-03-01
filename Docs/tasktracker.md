@@ -27,11 +27,11 @@
   - [x] Implement navigation between Login and SignUp
   - [x] Apply shared styles and gradients
   - [x] Match UI design with mockups (Borders, Logos, Branded Buttons)
-  - [ ] Create Auth models (DTOs) in the MAUI project
-  - [ ] Implement IAuthService and AuthService using SecureStorage
-  - [ ] Update HttpHelper to include Bearer token
-  - [ ] Register services in MauiProgram.cs
-  - [ ] Update LoginPageViewModel and SignUpPageViewModel
+  - [x] Create Auth models (DTOs) in the MAUI project
+  - [x] Implement IAuthService and AuthService using SecureStorage
+  - [x] Update HttpHelper to include Bearer token
+  - [x] Register services in MauiProgram.cs
+  - [x] Update LoginPageViewModel and SignUpPageViewModel
   - [ ] Implement startup navigation logic based on auth state
   - [x] Remove Blazor-specific AuthenticationStateProvider
 - **Dependencies**: Innowise.MusicIdentityServer

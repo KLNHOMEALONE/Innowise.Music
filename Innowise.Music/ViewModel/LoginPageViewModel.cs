@@ -7,7 +7,7 @@ namespace Innowise.Music.ViewModel;
 public partial class LoginPageViewModel : ObservableObject
 {
     private readonly INavigationService _navigationService;
-    private readonly IAuthService _authService;
+    private readonly IAuthenticationService _authenticationService;
 
     [ObservableProperty]
     private string _email;
@@ -15,10 +15,10 @@ public partial class LoginPageViewModel : ObservableObject
     [ObservableProperty]
     private string _password;
 
-    public LoginPageViewModel(INavigationService navigationService, IAuthService authService)
+    public LoginPageViewModel(INavigationService navigationService, IAuthenticationService authenticationService)
     {
         _navigationService = navigationService;
-        _authService = authService;
+        _authenticationService = authenticationService;
     }
 
     [RelayCommand]
@@ -30,7 +30,7 @@ public partial class LoginPageViewModel : ObservableObject
             return;
         }
 
-        var success = await _authService.LoginAsync(new Model.LoginUserDto
+        var success = await _authenticationService.LoginAsync(new Model.LoginUserDto
         {
             Email = Email,
             Password = Password
