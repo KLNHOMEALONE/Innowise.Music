@@ -12,6 +12,7 @@
 
             <!-- Colors -->
             <Color x:Key="PrimaryRed">#D90429</Color>
+            <Color x:Key="PrimaryRedMuted">#99D90429</Color>
             <Color x:Key="PrimaryRedLight">#EF233C</Color>
             <Color x:Key="PageBackgroundColor">#0A0000</Color>
             <Color x:Key="InputBackgroundColor">#2D1A1A</Color>

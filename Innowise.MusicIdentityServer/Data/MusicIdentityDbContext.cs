@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -51,9 +51,9 @@ public partial class MusicIdentityDbContext : IdentityDbContext<ApiUser>
             new ApiUser
             {
                 Id = "610268a8-2b23-494e-856c-6bba84e7ebcc",
-                Email = "admin@inowisemusic.com",
+                Email = "admin@innowisemusic.com",
                 NormalizedEmail = "ADMIN@INNOWISEMUSIC.COM",
-                UserName = "admin@inowisemusic.com",
+                UserName = "admin@innowisemusic.com",
                 NormalizedUserName = "ADMIN@INNOWISEMUSIC.COM",
                 FirstName = "System",
                 LastName = "Admin",
@@ -63,9 +63,9 @@ public partial class MusicIdentityDbContext : IdentityDbContext<ApiUser>
             new ApiUser
             {
                 Id = "cf833103-d733-4402-b00c-1263ca230e72",
-                Email = "user@inowisemusic.com",
-                NormalizedEmail = "USER@BINNOWISEMUSIC.COM",
-                UserName = "user@inowisemusic.com",
+                Email = "user@innowisemusic.com",
+                NormalizedEmail = "USER@INNOWISEMUSIC.COM",
+                UserName = "user@innowisemusic.com",
                 NormalizedUserName = "USER@INNOWISEMUSIC.COM",
                 FirstName = "System",
                 LastName = "User",

@@ -1,4 +1,5 @@
-﻿using Innowise.Music.Services;
+﻿using System.ComponentModel.Design;
+using Innowise.Music.Services;
 
 namespace Innowise.Music
 {
@@ -25,7 +26,12 @@ namespace Innowise.Music
         {
             if (await _authenticationService.IsAuthenticatedAsync())
             {
+#if DEBUG
+                await _navigationService.NavigateToAsync($"///{nameof(View.LoginPage)}");
+#else
                 await _navigationService.NavigateToAsync($"///{nameof(View.NewsPage)}");
+#endif
+
             }
             else
             {
