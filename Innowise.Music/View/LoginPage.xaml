@@ -4,6 +4,7 @@
              x:Class="Innowise.Music.View.LoginPage"
              BackgroundColor="{StaticResource PageBackgroundColor}"
              xmlns:viewmodel="clr-namespace:Innowise.Music.ViewModel"
+             xmlns:controls="clr-namespace:Innowise.Music.Controls"
              x:DataType="viewmodel:LoginPageViewModel"
              Shell.NavBarIsVisible="False">
     <Grid Background="{StaticResource BackgroundGradient}">
@@ -35,40 +36,18 @@
         </Label>
 
         <!-- Email Entry -->
-        <Border Grid.Row="3"
-                StrokeThickness="0"
-                Margin="30,0"
-                BackgroundColor="{StaticResource InputBackgroundColor}">
-            <Border.StrokeShape>
-                <RoundRectangle CornerRadius="5" />
-            </Border.StrokeShape>
-            <Entry Placeholder="E-Mail"
-                   Text="{Binding Email}"
-                   TextColor="{StaticResource InputTextColor}"
-                   PlaceholderColor="{StaticResource InputPlaceholderColor}"
-                   HeightRequest="50"
-                   FontSize="16"
-                   Keyboard="Email"
-                   BackgroundColor="Transparent" />
-        </Border>
+        <controls:InputEntryControl Grid.Row="3"
+                                    Margin="30,0"
+                                    Placeholder="E-Mail"
+                                    Text="{Binding Email}"
+                                    Keyboard="Email" />
 
         <!-- Password Entry -->
-        <Border Grid.Row="4"
-                StrokeThickness="0"
-                Margin="30,40,30,15"
-                BackgroundColor="{StaticResource InputBackgroundColor}">
-            <Border.StrokeShape>
-                <RoundRectangle CornerRadius="5" />
-            </Border.StrokeShape>
-            <Entry Placeholder="Password"
-                   Text="{Binding Password}"
-                   TextColor="{StaticResource InputTextColor}"
-                   PlaceholderColor="{StaticResource InputPlaceholderColor}"
-                   HeightRequest="50"
-                   FontSize="16"
-                   IsPassword="True"
-                   BackgroundColor="Transparent" />
-        </Border>
+        <controls:InputEntryControl Grid.Row="4"
+                                    Margin="30,40,30,15"
+                                    Placeholder="Password"
+                                    Text="{Binding Password}"
+                                    IsPassword="True" />
 
         <!-- Login Button -->
         <Border Grid.Row="5"

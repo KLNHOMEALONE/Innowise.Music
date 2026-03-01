@@ -2,21 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
-## [2026-03-01] - Project Structure & Docker HTTPS Reorganization
+## [2026-03-01] - UI Refactoring & Critical Authentication Fixes
 
 ### Added
-- **Secrets Management**: Extracted hardcoded database and Kestrel certificate passwords from `docker-compose.yml` into a `.env` file.
-- **Git Ignore**: Added `.env` to `.gitignore` to prevent accidental credential leaks.
-- **HTTPS Support**: Exposed port `7008` in `docker-compose.yml` for secure communication with the Identity Server.
-- **Local SSL Trust**: Verified and trusted the local development certificate using `dotnet dev-certs https --trust`.
+- **InputEntryControl**: Created a reusable user control for text and password inputs to centralize styling and reduce boilerplate in `LoginPage.xaml` and `SignUpPage.xaml`.
+- **PrimaryRedMuted**: Added a new color resource (`#99D90429`) for the "music" part of the logo to match design specs without using `Opacity` on individual labels.
+- **Database Migration**: Added `UpdateSeedData` migration to correct seeded user credentials and normalized fields in the Identity Server database.
 
 ### Changed
-- **Solution File**: Relocated `Innowise.Music.sln` to the root directory for better visibility and multi-project management.
-- **Docker Service Naming**: Renamed `identity-server` to `innowise.musicidentityserver` in `docker-compose.yml` to match Visual Studio and `launchSettings.json` conventions.
-- **Docker Build Context**: Updated build context to root (`.`) and corrected the Dockerfile path to `Innowise.MusicIdentityServer/Dockerfile`.
-- **AuthService**: Updated `AuthService.cs` to use the unified HTTPS port `7008` for both Android and Desktop platforms.
+- **Logo Refactoring**: Updated logos in `LoginPage` and `SignUpPage` to use a single `Label` with `FormattedString` instead of `HorizontalStackLayout`, improving layout performance and code readability.
+- **Auth Flow Debugging**: Identified and resolved a critical issue where seeded users (`admin@innowisemusic.com`) were stuck with old `bookstore.com` normalized identities and incorrect email spellings.
+- **Docker Cleanup**: Forced a full database volume wipe (`docker compose down -v`) to ensure the fixed Entity Framework seed data was correctly applied to the Postgres instance.
 
-## [2026-03-01] - Docker Compose Configuration
+### Fixed
+- **Authentication Failure**: Fixed 401 Unauthorized errors caused by mismatched `NormalizedEmail` and `NormalizedUserName` fields in the Identity Server's seed data.
+- **XAML Boilerplate**: Reduced code duplication by abstracting `Border` and `Entry` combinations into the new `InputEntryControl`.
 
 ### Added
 - **Docker Compose**: Created `docker-compose.yml` to orchestrate PostgreSQL, Seq (logging), and Identity Server containers.

@@ -19,7 +19,7 @@
   - [x] Define shared resources in App.xaml
 
 ## Task: Authentication Flow (Login/SignUp)
-- **Status**: In progress
+- **Status**: Completed
 - **Description**: Implement login and sign-up pages with MVVM pattern and JWT authentication.
 - **Steps**:
   - [x] Create LoginPage.xaml with ViewModel
@@ -32,9 +32,12 @@
   - [x] Update HttpHelper to include Bearer token
   - [x] Register services in MauiProgram.cs
   - [x] Update LoginPageViewModel and SignUpPageViewModel
-  - [ ] Implement startup navigation logic based on auth state
+  - [x] Implement startup navigation logic based on auth state
   - [x] Remove Blazor-specific AuthenticationStateProvider
+  - [x] Create reusable `InputEntryControl` for form fields
+  - [x] Fix IdentityServer seed data typos and normalization issues
 - **Dependencies**: Innowise.MusicIdentityServer
+
 
 ## Task: News Feature
 - **Status**: Completed
