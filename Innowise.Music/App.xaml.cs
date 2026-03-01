@@ -1,13 +1,17 @@
-﻿namespace Innowise.Music
+﻿using Innowise.Music.Services;
+
+namespace Innowise.Music
 {
     public partial class App : Application
     {
         private readonly Services.IAuthService _authService;
+        private readonly INavigationService _navigationService;
 
-        public App(Services.IAuthService authService)
+        public App(Services.IAuthService authService, INavigationService navigationService)
         {
             InitializeComponent();
             _authService = authService;
+            _navigationService = navigationService;
         }
 
         protected override Window CreateWindow(IActivationState? activationState)
@@ -21,11 +25,11 @@
         {
             if (await _authService.IsAuthenticatedAsync())
             {
-                //await Shell.Current.GoToAsync($"///{nameof(View.NewsPage)}");
+                await _navigationService.NavigateToAsync($"///{nameof(View.NewsPage)}");
             }
             else
             {
-                await Shell.Current.GoToAsync($"///{nameof(View.LoginPage)}");
+                await _navigationService.NavigateToAsync($"///{nameof(View.LoginPage)}");
             }
         }
     }

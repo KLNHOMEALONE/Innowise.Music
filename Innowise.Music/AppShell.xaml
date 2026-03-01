@@ -5,10 +5,17 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:Innowise.Music"
     xmlns:view="clr-namespace:Innowise.Music.View"
-    Title="Innowise.Music">
+    Title="Innowise.Music"
+    FlyoutBehavior="Disabled">
 
     <ShellContent
         ContentTemplate="{DataTemplate view:LoginPage}"
-        Route="LoginPage" />
+        Route="LoginPage"
+        FlyoutItemIsVisible="False" />
+
+    <ShellContent
+        ContentTemplate="{DataTemplate view:NewsPage}"
+        Route="NewsPage"
+        FlyoutItemIsVisible="False" />
 
 </Shell>

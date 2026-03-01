@@ -8,6 +8,7 @@ namespace Innowise.Music
         {
             InitializeComponent();
             Routing.RegisterRoute(nameof(SignUpPage), typeof(SignUpPage));
+            Routing.RegisterRoute(nameof(NewsDetailedPage), typeof(NewsDetailedPage));
         }
     }
 }

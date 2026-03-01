@@ -61,6 +61,6 @@ public partial class SignUpPageViewModel : ObservableObject
     [RelayCommand]
     private async Task Login()
     {
-        await _navigationService.NavigateAndClearStackAsync(nameof(View.LoginPage));
+        await _navigationService.GoBackAsync();
     }
 }
