@@ -8,8 +8,8 @@ services:
     image: postgres:15-alpine
     container_name: music_postgres
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: musicidentity
     ports:
       - "5432:5432"
@@ -27,10 +27,10 @@ services:
       - "5342:5341"
     restart: unless-stopped
 
-  identity-server:
+  innowise.musicidentityserver:
     build:
-      context: ./Innowise.MusicIdentityServer
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Innowise.MusicIdentityServer/Dockerfile
     container_name: music_identity_server
     depends_on:
       - postgres
@@ -38,10 +38,13 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
-      - ConnectionStrings__PostgresAppDbConnection=Server=postgres;Port=5432;Database=musicidentity;User Id=admin;Password=admin
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=${KESTREL_CERT_PASSWORD}
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/home/app/.aspnet/https/Innowise.MusicIdentityServer.pfx
+      - ConnectionStrings__PostgresAppDbConnection=Server=postgres;Port=5432;Database=musicidentity;User Id=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
       - Serilog__WriteTo__1__Args__serverUrl=http://seq:5341
     ports:
       - "5236:8080" # Mapping to launchSettings.json port
+      - "7008:8081" # HTTPS mapping for MAUI app
     restart: unless-stopped
 
 volumes:

@@ -2,5 +2,5 @@
 
 public interface IHttpHelper
 {
-    HttpClientHandler GetInsecureHandler();
+    HttpMessageHandler GetInsecureHandler();
 }

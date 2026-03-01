@@ -15,33 +15,30 @@ Innowise.Music is a cross-platform audio streaming application built with .NET 9
 ## Project Structure
 
 ```
-Innowise.Music/
-├── Model/                    # Data models
-│   └── News.cs
-├── View/                     # XAML pages
-│   ├── LoginPage.xaml(.cs)
-│   ├── SignUpPage.xaml(.cs)
-│   ├── NewsPage.xaml(.cs)
-│   └── NewsDetailedPage.xaml(.cs)
-├── ViewModel/                # ViewModels
-│   ├── LoginPageViewModel.cs
-│   ├── SignUpPageViewModel.cs
-│   ├── NewsPageViewModel.cs
-│   └── NewsDetailedPageViewModel.cs
-├── Services/                 # Business logic
-│   ├── INewsService.cs
-│   ├── WebNewsService.cs
-│   ├── MockNewsService.cs
-│   ├── IHttpHelper.cs
-│   └── HttpClientHelper.cs
-├── Resources/                # Fonts, images, styles
-│   └── Styles/
-│       ├── Colors.xaml
-│       └── Styles.xaml
-├── App.xaml                  # Application resources
-├── AppShell.xaml.cs          # Shell navigation
-├── MauiProgram.cs            # DI configuration
-└── Innowise.Music.csproj     # Project file
+Innowise.Music/ (Root)
+├── Innowise.Music.sln        # Main solution file
+├── docker-compose.yml        # Docker orchestration
+├── Innowise.Music/           # MAUI Client Application
+│   ├── Model/                # Data models
+│   ├── View/                 # XAML pages
+│   ├── ViewModel/            # ViewModels
+│   ├── Services/             # Business logic
+│   ├── Resources/            # Fonts, images, styles
+│   ├── App.xaml              # Application resources
+│   ├── AppShell.xaml.cs      # Shell navigation
+│   ├── MauiProgram.cs        # DI configuration
+│   └── Innowise.Music.csproj # Project file
+├── Innowise.MusicIdentityServer/ # Backend Identity Server
+│   ├── Controllers/          # API Controllers
+│   ├── Data/                 # DB Context and Entities
+│   ├── Models/               # DTOs
+│   ├── Migrations/           # EF Core Migrations
+│   ├── Program.cs            # Server entry point
+│   └── Innowise.MusicIdentityServer.csproj
+└── Docs/                     # Project documentation
+    ├── changelog.md
+    ├── project.md
+    └── tasktracker.md
 ```
 
 ## Component Architecture
@@ -229,14 +226,16 @@ sequenceDiagram
 
 ## API Endpoints
 
-### News Service
+### Identity & News Service (Unified)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
+| POST | `/api/Authentication/login` | User login |
+| POST | `/api/Authentication/register` | User registration |
 | GET | `/getnews` | Retrieve all news items |
 
-**Base URL**:
+**Base URL (HTTPS)**:
 - Android Emulator: `https://10.0.2.2:7008`
-- Desktop/Other: `https://localhost:7008`
+- Desktop/iOS Simulator: `https://localhost:7008`
 
 ## Coding Standards
 
@@ -265,6 +264,7 @@ Refer to `QWEN.md` for detailed coding standards. Key points:
 ### Current
 - HTTPS for all API calls
 - SSL bypass for localhost development (HttpHelper)
+- **Secrets Management**: Docker Compose secrets (database passwords, Kestrel certificates) are managed via a local `.env` file, which is strictly excluded from source control.
 
 ### Planned
 - JWT authentication

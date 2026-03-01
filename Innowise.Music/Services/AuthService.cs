@@ -23,7 +23,7 @@ public class AuthService : IAuthService
 
     private string GetApiUrl(string endpoint)
     {
-        var baseUrl = DeviceInfo.Platform == DevicePlatform.Android ? "https://10.0.2.2:7032" : "https://localhost:7032";
+        var baseUrl = DeviceInfo.Platform == DevicePlatform.Android ? "https://10.0.2.2:7008" : "https://localhost:7008";
         return $"{baseUrl}/api/Authentication/{endpoint}";
     }
 

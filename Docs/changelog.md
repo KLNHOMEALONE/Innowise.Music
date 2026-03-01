@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-03-01] - Project Structure & Docker HTTPS Reorganization
+
+### Added
+- **Secrets Management**: Extracted hardcoded database and Kestrel certificate passwords from `docker-compose.yml` into a `.env` file.
+- **Git Ignore**: Added `.env` to `.gitignore` to prevent accidental credential leaks.
+- **HTTPS Support**: Exposed port `7008` in `docker-compose.yml` for secure communication with the Identity Server.
+- **Local SSL Trust**: Verified and trusted the local development certificate using `dotnet dev-certs https --trust`.
+
+### Changed
+- **Solution File**: Relocated `Innowise.Music.sln` to the root directory for better visibility and multi-project management.
+- **Docker Service Naming**: Renamed `identity-server` to `innowise.musicidentityserver` in `docker-compose.yml` to match Visual Studio and `launchSettings.json` conventions.
+- **Docker Build Context**: Updated build context to root (`.`) and corrected the Dockerfile path to `Innowise.MusicIdentityServer/Dockerfile`.
+- **AuthService**: Updated `AuthService.cs` to use the unified HTTPS port `7008` for both Android and Desktop platforms.
+
 ## [2026-03-01] - Docker Compose Configuration
 
 ### Added

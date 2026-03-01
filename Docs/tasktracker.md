@@ -1,5 +1,14 @@
 # Task Tracker - Innowise.Music
 
+## Task: Project Reorganization
+- **Status**: Completed
+- **Description**: Relocate solution file and verify paths for multi-project support.
+- **Steps**:
+  - [x] Move `Innowise.Music.sln` to root
+  - [x] Verify project references in `.sln`
+  - [x] Verify Docker Compose paths
+  - [x] Update documentation (project.md, changelog.md)
+
 ## Task: Project Setup and Core Infrastructure
 - **Status**: Completed
 - **Description**: Initial MAUI project setup with .NET 9, MVVM pattern, and dependency injection
@@ -50,6 +59,9 @@
   - [x] Create .dockerignore for Innowise.MusicIdentityServer
   - [x] Create docker-compose.yml at workspace root
   - [x] Configure environment variables and network overrides for containers
+  - [x] Fix service naming for Visual Studio compatibility
+  - [x] Configure HTTPS port mapping (7008)
+  - [x] Verify build and context paths
 
 ## Task: Audio Streaming Core
 - **Status**: Not started
