@@ -17,29 +17,29 @@ namespace Innowise.MusicIdentityServer.Controllers;
 [AllowAnonymous]
 public class AuthenticationController : ControllerBase
 {
-    private readonly ILogger<AuthenticationController> logger;
-    private readonly IMapper mapper;
-    private readonly UserManager<ApiUser> userManager;
-    private readonly IConfiguration configuration;
+    private readonly ILogger<AuthenticationController> _logger;
+    private readonly IMapper _mapper;
+    private readonly UserManager<ApiUser> _userManager;
+    private readonly IConfiguration _configuration;
 
     public AuthenticationController(ILogger<AuthenticationController> logger, IMapper mapper, UserManager<ApiUser> userManager, IConfiguration configuration)
     {
-        this.logger = logger;
-        this.mapper = mapper;
-        this.userManager = userManager;
-        this.configuration = configuration;
+        this._logger = logger;
+        this._mapper = mapper;
+        this._userManager = userManager;
+        this._configuration = configuration;
     }
 
     [HttpPost]
     [Route("register")]
     public async Task<IActionResult> Register(UserDto userDto)
     {
-        logger.LogInformation($"Registration Attempt for {userDto.Email} ");
+        _logger.LogInformation($"Registration Attempt for {userDto.Email} ");
         try
         {
-            var user = mapper.Map<ApiUser>(userDto);
+            var user = _mapper.Map<ApiUser>(userDto);
             user.UserName = userDto.Email;
-            var result = await userManager.CreateAsync(user, userDto.Password);
+            var result = await _userManager.CreateAsync(user, userDto.Password);
 
             if (result.Succeeded == false)
             {
@@ -50,12 +50,12 @@ public class AuthenticationController : ControllerBase
                 return BadRequest(ModelState);
             }
 
-            await userManager.AddToRoleAsync(user, "User");
+            await _userManager.AddToRoleAsync(user, "User");
             return Accepted();
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, $"Something Went Wrong in the {nameof(Register)}");
+            _logger.LogError(ex, $"Something Went Wrong in the {nameof(Register)}");
             return Problem($"Something Went Wrong in the {nameof(Register)}", statusCode: 500);
         }
     }
@@ -64,12 +64,12 @@ public class AuthenticationController : ControllerBase
     [Route("login")]
     public async Task<ActionResult<AuthenticationResponse>> Login(LoginUserDto userDto)
     {
-        logger.LogInformation($"Login Attempt for {userDto.Email} ");
+        _logger.LogInformation($"Login Attempt for {userDto.Email} ");
         try
         {
-            var user = await userManager.FindByEmailAsync(userDto.Email);
+            var user = await _userManager.FindByEmailAsync(userDto.Email);
             if (user == null) return Unauthorized(userDto);
-            var passwordValid = await userManager.CheckPasswordAsync(user, userDto.Password);
+            var passwordValid = await _userManager.CheckPasswordAsync(user, userDto.Password);
 
             if (passwordValid == false)
             {
@@ -89,20 +89,20 @@ public class AuthenticationController : ControllerBase
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, $"Something Went Wrong in the {nameof(Register)}");
+            _logger.LogError(ex, $"Something Went Wrong in the {nameof(Register)}");
             return Problem($"Something Went Wrong in the {nameof(Register)}", statusCode: 500);
         }
     }
 
     private async Task<string> GenerateToken(ApiUser user)
     {
-        var securitykey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtSettings:Key"]));
+        var securitykey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Key"]));
         var credentials = new SigningCredentials(securitykey, SecurityAlgorithms.HmacSha256);
 
-        var roles = await userManager.GetRolesAsync(user);
-        var roleClaims = roles.Select(q => new Claim(ClaimTypes.Role, q)).ToList();
+        var roles = await _userManager.GetRolesAsync(user);
+        var roleClaims = roles.Select(role => new Claim(ClaimTypes.Role, role)).ToList();
 
-        var userClaims = await userManager.GetClaimsAsync(user);
+        var userClaims = await _userManager.GetClaimsAsync(user);
 
         var claims = new List<Claim>
             {
@@ -115,10 +115,10 @@ public class AuthenticationController : ControllerBase
         .Union(roleClaims);
 
         var token = new JwtSecurityToken(
-            issuer: configuration["JwtSettings:Issuer"],
-            audience: configuration["JwtSettings:Audience"],
+            issuer: _configuration["JwtSettings:Issuer"],
+            audience: _configuration["JwtSettings:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddHours(Convert.ToInt32(configuration["JwtSettings:Duration"])),
+            expires: DateTime.UtcNow.AddHours(Convert.ToInt32(_configuration["JwtSettings:Duration"])),
             signingCredentials: credentials
         );
 
