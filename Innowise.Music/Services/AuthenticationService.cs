@@ -6,24 +6,29 @@
  */
 
 using System.Net.Http.Json;
+using Innowise.Music.Configuration;
 using Innowise.Music.Model;
-
+using Microsoft.Extensions.Options;
 namespace Innowise.Music.Services;
 
 public class AuthenticationService : IAuthenticationService
 {
     private readonly HttpClient _httpClient;
+    private readonly ApiSettings _apiSettings;
     private const string AuthTokenKey = "auth_token";
 
-    public AuthenticationService(HttpHelper httpHelper)
+    public AuthenticationService(HttpHelper httpHelper, IOptions<ApiSettings> apiSettings)
     {
+        _apiSettings = apiSettings.Value;
         var handler = httpHelper.GetInsecureHandler();
         _httpClient = new HttpClient(handler);
     }
 
     private string GetApiUrl(string endpoint)
     {
-        var baseUrl = DeviceInfo.Platform == DevicePlatform.Android ? "https://10.0.2.2:7008" : "https://localhost:7008";
+        var baseUrl = DeviceInfo.Platform == DevicePlatform.Android
+            ? _apiSettings.AndroidBaseUrl
+            : _apiSettings.BaseUrl;
         return $"{baseUrl}/api/Authentication/{endpoint}";
     }
 

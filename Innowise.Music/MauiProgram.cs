@@ -1,3 +1,4 @@
+using Innowise.Music.Configuration;
 using Innowise.Music.Services;
 using Innowise.Music.View;
 using Innowise.Music.ViewModel;
@@ -11,6 +12,10 @@ namespace Innowise.Music
         public static MauiApp CreateMauiApp()
         {
             var builder = MauiApp.CreateBuilder();
+            
+            // Load configuration
+            builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+            
             builder
                 .UseMauiApp<App>()
                 .ConfigureFonts(fonts =>
@@ -21,6 +26,9 @@ namespace Innowise.Music
                     fonts.AddFont("Lexend-Semibold.ttf", "LexendSemibold");
                     fonts.AddFont("Lexend-ExtraBold.ttf", "LexendExtrabold");
                 });
+            
+            // Register configuration
+            builder.Services.Configure<ApiSettings>(builder.Configuration.GetSection(ApiSettings.SectionName));
             builder.Services.AddSingleton<HttpHelper>();
             builder.Services.AddSingleton<IAuthenticationService, AuthenticationService>();
             builder.Services.AddSingleton<INavigationService, NavigationService>();
