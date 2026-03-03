@@ -17,11 +17,10 @@ public class AuthenticationService : IAuthenticationService
     private readonly ApiSettings _apiSettings;
     private const string AuthTokenKey = "auth_token";
 
-    public AuthenticationService(HttpHelper httpHelper, IOptions<ApiSettings> apiSettings)
+    public AuthenticationService(HttpClient httpClient, IOptions<ApiSettings> apiSettings)
     {
         _apiSettings = apiSettings.Value;
-        var handler = httpHelper.GetInsecureHandler();
-        _httpClient = new HttpClient(handler);
+        _httpClient = httpClient;
     }
 
     private string GetApiUrl(string endpoint)
