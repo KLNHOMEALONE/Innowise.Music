@@ -5,10 +5,12 @@
  * Created: 2026-02-27
  */
 
+using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Json;
 using Innowise.Music.Configuration;
 using Innowise.Music.Model;
 using Microsoft.Extensions.Options;
+
 namespace Innowise.Music.Services;
 
 public class AuthenticationService : IAuthenticationService
@@ -16,6 +18,7 @@ public class AuthenticationService : IAuthenticationService
     private readonly HttpClient _httpClient;
     private readonly ApiSettings _apiSettings;
     private const string AuthTokenKey = "auth_token";
+    private const string RefreshTokenKey = "refresh_token";
 
     public AuthenticationService(HttpClient httpClient, IOptions<ApiSettings> apiSettings)
     {
@@ -44,6 +47,10 @@ public class AuthenticationService : IAuthenticationService
                 if (authResponse != null && !string.IsNullOrEmpty(authResponse.Token))
                 {
                     await SecureStorage.Default.SetAsync(AuthTokenKey, authResponse.Token);
+                    if (!string.IsNullOrEmpty(authResponse.RefreshToken))
+                    {
+                        await SecureStorage.Default.SetAsync(RefreshTokenKey, authResponse.RefreshToken);
+                    }
                     return true;
                 }
             }
@@ -74,6 +81,7 @@ public class AuthenticationService : IAuthenticationService
     public async Task LogoutAsync()
     {
         SecureStorage.Default.Remove(AuthTokenKey);
+        SecureStorage.Default.Remove(RefreshTokenKey);
     }
 
     public async Task<string?> GetTokenAsync()
@@ -81,10 +89,66 @@ public class AuthenticationService : IAuthenticationService
         return await SecureStorage.Default.GetAsync(AuthTokenKey);
     }
 
+    public async Task<string?> GetRefreshTokenAsync()
+    {
+        return await SecureStorage.Default.GetAsync(RefreshTokenKey);
+    }
+
     public async Task<bool> IsAuthenticatedAsync()
     {
         var token = await GetTokenAsync();
-        return !string.IsNullOrEmpty(token);
-        // Note: In a real app, we should also check if the token is expired using JwtSecurityTokenHandler
+        if (string.IsNullOrEmpty(token))
+            return false;
+
+        var handler = new JwtSecurityTokenHandler();
+        var jwtSecurityToken = handler.ReadJwtToken(token);
+        
+        // If token expires in more than 1 minute, we are good
+        if (jwtSecurityToken.ValidTo > DateTime.UtcNow.AddMinutes(1))
+        {
+            return true;
+        }
+
+        // Token is expired or about to expire, let's try to refresh it
+        var refreshToken = await GetRefreshTokenAsync();
+        if (string.IsNullOrEmpty(refreshToken))
+        {
+            await LogoutAsync();
+            return false;
+        }
+
+        try
+        {
+            var request = new TokenRequestDto
+            {
+                Token = token,
+                RefreshToken = refreshToken
+            };
+
+            var url = GetApiUrl("refresh");
+            var response = await _httpClient.PostAsJsonAsync(url, request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var authResponse = await response.Content.ReadFromJsonAsync<AuthenticationResponse>();
+                if (authResponse != null && !string.IsNullOrEmpty(authResponse.Token))
+                {
+                    await SecureStorage.Default.SetAsync(AuthTokenKey, authResponse.Token);
+                    if (!string.IsNullOrEmpty(authResponse.RefreshToken))
+                    {
+                        await SecureStorage.Default.SetAsync(RefreshTokenKey, authResponse.RefreshToken);
+                    }
+                    return true;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"AuthenticationService Refresh Error: {ex.Message}");
+        }
+
+        // If we reach here, refresh failed, so force logout
+        await LogoutAsync();
+        return false;
     }
 }

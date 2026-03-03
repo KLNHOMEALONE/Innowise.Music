@@ -36,6 +36,7 @@
   - [x] Remove Blazor-specific AuthenticationStateProvider
   - [x] Create reusable `InputEntryControl` for form fields
   - [x] Fix IdentityServer seed data typos and normalization issues
+  - [x] Implement Refresh Token functionality (IdentityServer & MAUI Client)
 - **Dependencies**: Innowise.MusicIdentityServer
 
 

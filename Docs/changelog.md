@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-03-03] - JWT Refresh Token Implementation
+
+### Added
+- **IdentityServer Refresh Tokens**: Updated `ApiUser` model with `RefreshToken` and `RefreshTokenExpiryTime` properties and created EF Core migration (`AddRefreshToken`).
+- **Refresh Endpoint**: Added `/api/Authentication/refresh` endpoint to IdentityServer to validate expired JWTs and issue new access/refresh token pairs.
+- **Client Token Handling**: Created `TokenRequestDto` in both backend and MAUI client projects. Updated `AuthenticationResponse` to include `RefreshToken`.
+- **Silent Refresh**: Enhanced MAUI `AuthenticationService.IsAuthenticatedAsync()` to inspect JWT expiration locally via `JwtSecurityTokenHandler`. If the token is near expiration or expired, it automatically calls the backend refresh endpoint, stores the new tokens in `SecureStorage`, and maintains the user session seamlessly.
+
 ## [2026-03-01] - UI Refactoring & Critical Authentication Fixes
 
 ### Added
