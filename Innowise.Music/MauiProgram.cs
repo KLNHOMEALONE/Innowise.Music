@@ -2,8 +2,9 @@ using Innowise.Music.Configuration;
 using Innowise.Music.Services;
 using Innowise.Music.View;
 using Innowise.Music.ViewModel;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-//using Microsoft.AspNetCore.Components.Authorization;
+using System.Reflection;
 
 namespace Innowise.Music
 {
@@ -13,8 +14,13 @@ namespace Innowise.Music
         {
             var builder = MauiApp.CreateBuilder();
             
-            // Load configuration
-            builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+            var assembly = Assembly.GetExecutingAssembly();
+            var stream = assembly.GetManifestResourceStream("Innowise.Music.appsettings.json");
+            
+            if (stream != null)
+            {
+                builder.Configuration.AddJsonStream(stream);
+            }
             
             builder
                 .UseMauiApp<App>()
@@ -30,6 +36,13 @@ namespace Innowise.Music
             // Register configuration
             builder.Services.Configure<ApiSettings>(builder.Configuration.GetSection(ApiSettings.SectionName));
             builder.Services.AddSingleton<HttpHelper>();
+
+            builder.Services.AddSingleton<HttpClient>(provider =>
+            {
+                var httpHelper = provider.GetRequiredService<HttpHelper>();
+                return new HttpClient(httpHelper.GetInsecureHandler());
+            });
+
             builder.Services.AddSingleton<IAuthenticationService, AuthenticationService>();
             builder.Services.AddSingleton<INavigationService, NavigationService>();
             builder.Services.AddSingleton<WebNewsService>();
