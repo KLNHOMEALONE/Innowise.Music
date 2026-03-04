@@ -15,7 +15,7 @@
                 
                 <!-- Header -->
                 <Grid ColumnDefinitions="Auto, *">
-                    <Border Grid.Column="0" WidthRequest="40" HeightRequest="40" StrokeShape="RoundRectangle 20" BackgroundColor="{StaticResource Magenta}">
+                    <Border Grid.Column="0" WidthRequest="40" HeightRequest="40" StrokeShape="RoundRectangle 20" BackgroundColor="{StaticResource Magenta}" StrokeThickness="0">
                         <Label Text="J" HorizontalOptions="Center" VerticalOptions="Center" FontAttributes="Bold" TextColor="White" />
                     </Border>
                     <Label Grid.Column="1" Text="{Binding UserName, StringFormat='Hi, {0}'}" 
@@ -34,17 +34,16 @@
                             AlignContent="Start">
                     <BindableLayout.ItemTemplate>
                         <DataTemplate x:DataType="vm:HomeItem">
-                            <!-- WidthRequest is roughly half screen minus padding (e.g. 160) -->
-                            <Border BackgroundColor="{StaticResource Gray900}" StrokeShape="RoundRectangle 8" HeightRequest="60" WidthRequest="160" Margin="0,0,0,10">
-                                <Grid ColumnDefinitions="60, *">
+                            <Border BackgroundColor="{StaticResource InputBackgroundColor}" StrokeShape="RoundRectangle 4" HeightRequest="56" WidthRequest="175" Margin="0,0,0,8" StrokeThickness="0">
+                                <Grid ColumnDefinitions="56, *">
                                     <Image Source="{Binding ImageUrl}" Aspect="AspectFill" Grid.Column="0" />
                                     <Label Grid.Column="1" Text="{Binding Title}" 
                                            TextColor="White" 
                                            VerticalOptions="Center" 
                                            Margin="10,0" 
-                                           FontSize="14" 
+                                           FontSize="10" 
                                            FontAttributes="Bold" 
-                                           MaxLines="2" />
+                                           MaxLines="1" />
                                 </Grid>
                             </Border>
                         </DataTemplate>
@@ -57,7 +56,7 @@
                     <Label Text="Invent Animate" TextColor="White" FontSize="20" FontAttributes="Bold" />
                 </VerticalStackLayout>
 
-                <Border BackgroundColor="{StaticResource Gray900}" StrokeShape="RoundRectangle 12" Padding="15">
+                <Border BackgroundColor="{StaticResource InputBackgroundColor}" StrokeShape="RoundRectangle 12" Padding="15" StrokeThickness="0">
                     <Grid ColumnDefinitions="*, *" RowDefinitions="Auto, Auto, Auto, Auto">
                         <Image Grid.RowSpan="4" Grid.Column="0" Source="shade_astray.png" WidthRequest="150" HeightRequest="150" Aspect="AspectFill" Margin="0,0,15,0" />
                         
@@ -82,7 +81,7 @@
                             <BindableLayout.ItemTemplate>
                                 <DataTemplate x:DataType="vm:HomeItem">
                                     <VerticalStackLayout Spacing="8" WidthRequest="110">
-                                        <Border WidthRequest="110" HeightRequest="110" StrokeShape="RoundRectangle 55">
+                                        <Border WidthRequest="110" HeightRequest="110" StrokeShape="RoundRectangle 55" StrokeThickness="0">
                                             <Image Source="{Binding ImageUrl}" Aspect="AspectFill" />
                                         </Border>
                                         <Label Text="{Binding Title}" TextColor="White" HorizontalOptions="Center" FontSize="12" />
@@ -101,7 +100,7 @@
                             <BindableLayout.ItemTemplate>
                                 <DataTemplate x:DataType="vm:HomeItem">
                                     <VerticalStackLayout Spacing="8" WidthRequest="120">
-                                        <Border WidthRequest="120" HeightRequest="120" StrokeShape="RoundRectangle 4">
+                                        <Border WidthRequest="120" HeightRequest="120" StrokeShape="RoundRectangle 4" StrokeThickness="0">
                                             <Image Source="{Binding ImageUrl}" Aspect="AspectFill" />
                                         </Border>
                                         <Label Text="{Binding Title}" TextColor="White" FontSize="12" />
@@ -120,7 +119,7 @@
                             <BindableLayout.ItemTemplate>
                                 <DataTemplate x:DataType="vm:HomeItem">
                                     <VerticalStackLayout Spacing="8" WidthRequest="120">
-                                        <Border WidthRequest="120" HeightRequest="120" StrokeShape="RoundRectangle 4">
+                                        <Border WidthRequest="120" HeightRequest="120" StrokeShape="RoundRectangle 4" StrokeThickness="0">
                                             <Image Source="{Binding ImageUrl}" Aspect="AspectFill" />
                                         </Border>
                                         <Label Text="{Binding Title}" TextColor="White" FontSize="12" />
