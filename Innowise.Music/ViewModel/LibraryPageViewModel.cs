@@ -13,14 +13,14 @@ public partial class LibraryPageViewModel : ObservableObject
 
     public ObservableCollection<LibraryItem> LibraryItems { get; } = new()
     {
-        new LibraryItem("Local files", "45 songs", "", "📁", "#2A1F1F", false) { TitlePrefix = "↓ " },
-        new LibraryItem("Liked songs", "112 songs", "", "♡", "#D90429", false),
-        new LibraryItem("Return to Fore...", "Album / Chick C...", "https://example.com/chick_album.jpg", "", "", false),
-        new LibraryItem("Ambient Chill", "Playlist / John...", "https://example.com/ambient.jpg", "", "", false),
-        new LibraryItem("What Game S...", "Song / Chick C...", "https://example.com/what_game.jpg", "", "", false),
-        new LibraryItem("Chick Corea", "Artist", "https://example.com/chick_corea.jpg", "", "", true),
-        new LibraryItem("Return to Fore...", "Album / Chick C...", "https://example.com/chick_album.jpg", "", "", false),
-        new LibraryItem("Return to Fore...", "Album / Chick C...", "https://example.com/chick_album.jpg", "", "", false)
+        new LibraryItem("Local files", "45 songs", "local_files.png", "", "#2A1F1F", false) { TitlePrefix = "↓ " },
+        new LibraryItem("Liked songs", "112 songs", "liked_songs.png", "", "#D90429", false),
+        new LibraryItem("Return to Fore...", "Album / Chick C...", "return_to_forever.png", "", "", false),
+        new LibraryItem("Ambient Chill", "Playlist / John...", "playlist_big.png", "", "", false),
+        new LibraryItem("What Game S...", "Song / Chick C...", "return_to_forever.png", "", "", false),
+        new LibraryItem("Chick Corea", "Artist", "chick_corea.png", "", "", true),
+        new LibraryItem("Return to Fore...", "Album / Chick C...", "return_to_forever.png", "", "", false),
+        new LibraryItem("Return to Fore...", "Album / Chick C...", "return_to_forever.png", "", "", false)
     };
 
     public LibraryPageViewModel()
