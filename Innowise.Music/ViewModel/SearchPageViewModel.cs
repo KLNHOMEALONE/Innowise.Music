@@ -25,13 +25,29 @@ public partial class SearchPageViewModel : ObservableObject
 
     public ObservableCollection<RecentSearchItem> RecentSearches { get; } = new()
     {
-        new RecentSearchItem("Invent Animate", "Artist", "https://example.com/artist1.jpg"),
-        new RecentSearchItem("Heavener", "Album", "https://example.com/album1.jpg"),
-        new RecentSearchItem("Shade Astray", "Song", "https://example.com/album2.jpg")
+        new RecentSearchItem("Invent Animate", "Artist", "shade_astray.png"),
+        new RecentSearchItem("Heavener", "Album", "shade_astray.png"),
+        new RecentSearchItem("Shade Astray", "Song", "shade_astray.png")
     };
+    
+    public ObservableCollection<SearchResultItem> SearchResults { get; } = new();
 
     public SearchPageViewModel()
     {
+        LoadMockData();
+    }
+
+    private void LoadMockData()
+    {
+        SearchResults.Add(new SearchResultItem("Shade Astray", "Song / Invent Animate", "shade_astray.png", true));
+        SearchResults.Add(new SearchResultItem("Return To Forever", "Album / Chick Corea", "return_to_forever.png", false));
+        SearchResults.Add(new SearchResultItem("Ambient chill", "Playlist", "playlist_big.png", false));
+        SearchResults.Add(new SearchResultItem("Shade Astray", "Song / Invent Animate", "shade_astray.png", true));
+        SearchResults.Add(new SearchResultItem("Return To Forever", "Album / Chick Corea", "return_to_forever.png", false));
+        SearchResults.Add(new SearchResultItem("Ambient chill", "Playlist", "playlist_big.png", false));
+        SearchResults.Add(new SearchResultItem("Shade Astray", "Song / Invent Animate", "shade_astray.png", true));
+        SearchResults.Add(new SearchResultItem("Return To Forever", "Album / Chick Corea", "return_to_forever.png", false));
+        SearchResults.Add(new SearchResultItem("Ambient chill", "Playlist", "playlist_big.png", false));
     }
 }
 
@@ -60,5 +76,21 @@ public class RecentSearchItem
         Title = title;
         Type = type;
         ImageUrl = imageUrl;
+    }
+}
+
+public class SearchResultItem
+{
+    public string Title { get; }
+    public string Subtitle { get; }
+    public string ImageUrl { get; }
+    public bool IsFavorited { get; }
+
+    public SearchResultItem(string title, string subtitle, string imageUrl, bool isFavorited)
+    {
+        Title = title;
+        Subtitle = subtitle;
+        ImageUrl = imageUrl;
+        IsFavorited = isFavorited;
     }
 }
