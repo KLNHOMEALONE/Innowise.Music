@@ -52,4 +52,11 @@ public partial class LoginPageViewModel : ObservableObject
     {
         await _navigationService.NavigateToAsync(nameof(View.SignUpPage));
     }
+
+    [RelayCommand]
+    private async Task GoogleLogin()
+    {
+        // TODO: Implement Google login
+        await Task.CompletedTask;
+    }
 }

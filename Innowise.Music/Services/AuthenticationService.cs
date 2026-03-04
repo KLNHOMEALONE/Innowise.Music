@@ -78,10 +78,11 @@ public class AuthenticationService : IAuthenticationService
         }
     }
 
-    public async Task LogoutAsync()
+    public Task LogoutAsync()
     {
         SecureStorage.Default.Remove(AuthTokenKey);
         SecureStorage.Default.Remove(RefreshTokenKey);
+        return Task.CompletedTask;
     }
 
     public async Task<string?> GetTokenAsync()

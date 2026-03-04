@@ -1,40 +1,79 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 
-namespace Innowise.Music.ViewModel;
-
-public partial class EventsPageViewModel : ObservableObject
+namespace Innowise.Music.ViewModel
 {
-    public ObservableCollection<string> Categories { get; } = new()
+    public partial class EventsPageViewModel : ObservableObject
     {
-        "Concerts", "Festivals", "Clubs", "Nearby"
-    };
+        [ObservableProperty]
+        private bool _isMapViewVisible = true;
 
-    public ObservableCollection<MusicEvent> UpcomingEvents { get; } = new()
-    {
-        new MusicEvent("Invent Animate - Heavener Tour", "March 15, 2026", "The Masquerade, Atlanta", "https://example.com/event1.jpg"),
-        new MusicEvent("Silent Planet - SUPERBLOOM", "March 22, 2026", "Tabernacle, Atlanta", "https://example.com/event2.jpg"),
-        new MusicEvent("Metalcore Festival 2026", "April 10-12, 2026", "Georgia International Convention Center", "https://example.com/festival.jpg"),
-        new MusicEvent("Currents - The Death We Seek", "May 05, 2026", "Buckhead Theatre, Atlanta", "https://example.com/event3.jpg")
-    };
+        [ObservableProperty]
+        private bool _isListViewVisible = false;
 
-    public EventsPageViewModel()
-    {
+        public ObservableCollection<EventGroup> EventGroups { get; } = new();
+
+        public EventsPageViewModel()
+        {
+            LoadMockData();
+        }
+
+        [RelayCommand]
+        private void ShowMapView()
+        {
+            IsMapViewVisible = true;
+            IsListViewVisible = false;
+        }
+
+        [RelayCommand]
+        private void ShowListView()
+        {
+            IsMapViewVisible = false;
+            IsListViewVisible = true;
+        }
+
+        private void LoadMockData()
+        {
+            var januaryEvents = new EventGroup("January 2026")
+            {
+                new MusicEvent("Chick Corea", "19 Jan 2026 at 20:00", "Jazz bar, Warsaw", "chick_corea.png"),
+                new MusicEvent("Chick Corea", "19 Jan 2026 at 20:00", "Jazz bar, Warsaw", "chick_corea.png")
+            };
+
+            var februaryEvents = new EventGroup("February 2026")
+            {
+                new MusicEvent("Chick Corea", "15 Feb 2026 at 20:00", "Jazz bar, Warsaw", "chick_corea.png")
+            };
+
+            EventGroups.Add(januaryEvents);
+            EventGroups.Add(februaryEvents);
+        }
     }
-}
 
-public class MusicEvent
-{
-    public string Title { get; }
-    public string Date { get; }
-    public string Venue { get; }
-    public string ImageUrl { get; }
-
-    public MusicEvent(string title, string date, string venue, string imageUrl)
+    public class EventGroup : ObservableCollection<MusicEvent>
     {
-        Title = title;
-        Date = date;
-        Venue = venue;
-        ImageUrl = imageUrl;
+        public string Month { get; }
+
+        public EventGroup(string month)
+        {
+            Month = month;
+        }
+    }
+
+    public class MusicEvent
+    {
+        public string Title { get; }
+        public string Date { get; }
+        public string Venue { get; }
+        public string ImageUrl { get; }
+
+        public MusicEvent(string title, string date, string venue, string imageUrl)
+        {
+            Title = title;
+            Date = date;
+            Venue = venue;
+            ImageUrl = imageUrl;
+        }
     }
 }

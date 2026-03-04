@@ -28,6 +28,31 @@
     <Color x:Key="Gray900">#212121</Color>
     <Color x:Key="Gray950">#141414</Color>
 
+    <!-- Custom Colors -->
+    <Color x:Key="PrimaryRed">#D90429</Color>
+    <Color x:Key="PrimaryRedMuted">#99D90429</Color>
+    <Color x:Key="PrimaryRedLight">#EF233C</Color>
+    <Color x:Key="PageBackgroundColor">#0A0000</Color>
+    <Color x:Key="InputBackgroundColor">#2D1A1A</Color>
+    <Color x:Key="InputTextColor">#FFFFFF</Color>
+    <Color x:Key="InputPlaceholderColor">#B0B0B0</Color>
+    <Color x:Key="GoogleButtonBackgroundColor">#0A0000</Color>
+    <Color x:Key="GoogleButtonBorderColor">#FFFFFF</Color>
+    <Color x:Key="SignUpTextColor">#FFFFFF</Color>
+
+    <!-- Gradient for background -->
+    <LinearGradientBrush x:Key="BackgroundGradient" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#4A0010" Offset="0.0" />
+        <GradientStop Color="#1A0005" Offset="0.5" />
+        <GradientStop Color="#0A0000" Offset="1.0" />
+    </LinearGradientBrush>
+
+    <!-- Gradient for login button -->
+    <LinearGradientBrush x:Key="LoginButtonGradient" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="{StaticResource PrimaryRed}" Offset="0.0" />
+        <GradientStop Color="{StaticResource PrimaryRedLight}" Offset="1.0" />
+    </LinearGradientBrush>
+
     <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource Primary}"/>
     <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource Secondary}"/>
     <SolidColorBrush x:Key="TertiaryBrush" Color="{StaticResource Tertiary}"/>

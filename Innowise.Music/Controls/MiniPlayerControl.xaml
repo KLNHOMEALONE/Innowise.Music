@@ -17,7 +17,7 @@
                 </VerticalStackLayout>
                 
                 <HorizontalStackLayout Grid.Column="2" Spacing="20" VerticalOptions="Center">
-                    <Border BackgroundColor="{StaticResource PrimaryRed}" WidthRequest="20" HeightRequest="20" StrokeShape="RoundRectangle 10" StrokeThickness="0">
+                    <Border BackgroundColor="#D90429" WidthRequest="20" HeightRequest="20" StrokeShape="RoundRectangle 10" StrokeThickness="0">
                         <Label Text="✔" TextColor="White" FontSize="12" HorizontalOptions="Center" VerticalOptions="Center" />
                     </Border>
                     <Label Text="▶" TextColor="White" FontSize="24" />

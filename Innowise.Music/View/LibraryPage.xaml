@@ -15,7 +15,7 @@
                 
                 <!-- Header -->
                 <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="15" VerticalOptions="Center">
-                    <Border Grid.Column="0" WidthRequest="36" HeightRequest="36" StrokeShape="RoundRectangle 18" BackgroundColor="{StaticResource PrimaryRed}" StrokeThickness="0">
+                    <Border Grid.Column="0" WidthRequest="36" HeightRequest="36" StrokeShape="RoundRectangle 18" BackgroundColor="#D90429" StrokeThickness="0">
                         <Label Text="J" HorizontalOptions="Center" VerticalOptions="Center" FontAttributes="Bold" TextColor="Black" FontSize="16" />
                     </Border>
 

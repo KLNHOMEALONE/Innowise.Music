@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-03-05] - XAML Resource Resolution Fixes
+
+### Fixed
+- Resolved `StaticResource` not found issues by replacing `PrimaryRed` with its hex value `#D90429` in:
+    - `LibraryPage.xaml` (BackgroundColor of Border)
+    - `SignUpPage.xaml` (TextColor in Span, BackgroundColor of Border)
+    - `LoginPage.xaml` (TextColor in Span, BackgroundColor of Border)
+    - `EventsPage.xaml` (Color of BoxViews, BackgroundColor of Button)
+    - `Resources/Styles/Styles.xaml` (Dark theme `Shell.TabBarForegroundColor` and `Shell.TabBarTitleColor`)
+    - `Controls/MiniPlayerControl.xaml` (BackgroundColor of Border)
+    - `AppShell.xaml` (Shell.TabBarTitleColor and Shell.TabBarForegroundColor)
+    - `App.xaml` (BackgroundColor in LoginButtonStyle)
+
 ## [2026-03-04] - Main Navigation & Home Page Implementation
 
 ### Added

@@ -6,7 +6,7 @@ namespace Innowise.Music.Converters
 {
     public class BoolToFavoriteIconConverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is bool isFavorited)
             {
@@ -15,7 +15,7 @@ namespace Innowise.Music.Converters
             return "add_icon.svg";
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }

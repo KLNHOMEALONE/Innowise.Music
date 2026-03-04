@@ -29,7 +29,7 @@
             <Label.FormattedText>
                 <FormattedString>
                     <Span Text="inno"
-                          TextColor="{StaticResource PrimaryRed}" />
+                          TextColor="#D90429" />
                     <Span Text="music"
                           TextColor="{StaticResource PrimaryRedMuted}" />
                 </FormattedString>
@@ -61,7 +61,7 @@
         <Border Grid.Row="6"
                 StrokeThickness="0"
                 Margin="30,20,30,15"
-                BackgroundColor="{StaticResource PrimaryRed}"
+                BackgroundColor="#D90429"
                 HeightRequest="50"
                 HorizontalOptions="Fill">
             <Border.StrokeShape>

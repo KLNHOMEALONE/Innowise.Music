@@ -1,11 +1,12 @@
 using Innowise.Music.Configuration;
+using Innowise.Music.Controls;
 using Innowise.Music.Services;
 using Innowise.Music.View;
 using Innowise.Music.ViewModel;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Reflection;
-using Innowise.Music.Controls;
+using Microsoft.Maui.Maps;
 
 namespace Innowise.Music
 {
@@ -25,6 +26,7 @@ namespace Innowise.Music
             
             builder
                 .UseMauiApp<App>()
+                .UseMauiMaps()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("Lexend-Regular.ttf", "LexendRegular");
@@ -64,6 +66,8 @@ namespace Innowise.Music
             builder.Services.AddSingleton<EventsPage>();
             builder.Services.AddSingleton<MiniPlayerViewModel>();
             builder.Services.AddSingleton<MiniPlayerControl>();
+            builder.Services.AddSingleton<AppShellViewModel>();
+            builder.Services.AddSingleton<AppShell>();
 
 #if DEBUG
             builder.Logging.AddDebug();

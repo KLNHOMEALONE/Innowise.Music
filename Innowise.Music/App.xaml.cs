@@ -5,39 +5,17 @@ namespace Innowise.Music
 {
     public partial class App : Application
     {
-        private readonly Services.IAuthenticationService _authenticationService;
-        private readonly INavigationService _navigationService;
+        private readonly IServiceProvider _serviceProvider;
 
-        public App(Services.IAuthenticationService authenticationService, INavigationService navigationService)
+        public App(IServiceProvider serviceProvider)
         {
             InitializeComponent();
-            _authenticationService = authenticationService;
-            _navigationService = navigationService;
+            _serviceProvider = serviceProvider;
         }
 
         protected override Window CreateWindow(IActivationState? activationState)
         {
-            var window = new Window(new AppShell());
-            CheckAuthStatus();
-            return window;
+            var appShell = _serviceProvider.GetRequiredService<AppShell>();
+            return new Window(appShell);
         }
-
-        private async void CheckAuthStatus()
-        {
-            if (await _authenticationService.IsAuthenticatedAsync())
-            {
-#if DEBUG
-                //await _navigationService.NavigateToAsync($"///{nameof(View.LoginPage)}");
-                await _navigationService.NavigateToAsync($"///{nameof(View.HomePage)}");
-#else
-                await _navigationService.NavigateToAsync($"///{nameof(View.NewsPage)}");
-#endif
-
-            }
-            else
-            {
-                await _navigationService.NavigateToAsync($"///{nameof(View.LoginPage)}");
-            }
-        }
-    }
-}
+    }}

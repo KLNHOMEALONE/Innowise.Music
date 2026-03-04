@@ -5,28 +5,65 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:Innowise.Music"
     xmlns:view="clr-namespace:Innowise.Music.View"
+    xmlns:vm="clr-namespace:Innowise.Music.ViewModel"
+    x:DataType="vm:AppShellViewModel"
     Title="Innowise.Music"
     FlyoutBehavior="Disabled">
+
+    <Shell.Resources>
+        <Style x:Key="HomeTabStyle" TargetType="Tab">
+            <Setter Property="Icon" Value="home_icon.svg" />
+            <Style.Triggers>
+                <DataTrigger TargetType="Tab" Binding="{Binding SelectedRoute}" Value="//HomePage">
+                    <Setter Property="Icon" Value="home_filled_icon.svg" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="SearchTabStyle" TargetType="Tab">
+            <Setter Property="Icon" Value="search_icon.svg" />
+            <Style.Triggers>
+                <DataTrigger TargetType="Tab" Binding="{Binding SelectedRoute}" Value="//SearchPage">
+                    <Setter Property="Icon" Value="search_filled_icon.svg" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="LibraryTabStyle" TargetType="Tab">
+            <Setter Property="Icon" Value="library_icon.svg" />
+            <Style.Triggers>
+                <DataTrigger TargetType="Tab" Binding="{Binding SelectedRoute}" Value="//LibraryPage">
+                    <Setter Property="Icon" Value="library_filled_icon.svg" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="EventsTabStyle" TargetType="Tab">
+            <Setter Property="Icon" Value="events_icon.svg" />
+            <Style.Triggers>
+                <DataTrigger TargetType="Tab" Binding="{Binding SelectedRoute}" Value="//EventsPage">
+                    <Setter Property="Icon" Value="events_filled_icon.svg" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Shell.Resources>
 
     <ShellContent
         ContentTemplate="{DataTemplate view:LoginPage}"
         Route="LoginPage"
         FlyoutItemIsVisible="False" />
 
-    <TabBar Shell.TabBarBackgroundColor="{StaticResource PageBackgroundColor}"
-            Shell.TabBarTitleColor="{StaticResource PrimaryRed}"
-            Shell.TabBarForegroundColor="{StaticResource PrimaryRed}"
+    <TabBar Shell.TabBarBackgroundColor="#0A0000"
+            Shell.TabBarTitleColor="#D90429"
+            Shell.TabBarForegroundColor="#D90429"
             Shell.TabBarUnselectedColor="{StaticResource White}">
-        <Tab Title="Home" Icon="home_icon.svg">
+        <Tab Title="Home" Style="{StaticResource HomeTabStyle}">
             <ShellContent ContentTemplate="{DataTemplate view:HomePage}" Route="HomePage" />
         </Tab>
-        <Tab Title="Search" Icon="search_icon.svg">
+        <Tab Title="Search" Style="{StaticResource SearchTabStyle}">
             <ShellContent ContentTemplate="{DataTemplate view:SearchPage}" Route="SearchPage" />
         </Tab>
-        <Tab Title="Library" Icon="library_icon.svg">
+        <Tab Title="Library" Style="{StaticResource LibraryTabStyle}">
             <ShellContent ContentTemplate="{DataTemplate view:LibraryPage}" Route="LibraryPage" />
         </Tab>
-        <Tab Title="Events" Icon="events_icon.svg">
+        <Tab Title="Events" Style="{StaticResource EventsTabStyle}">
             <ShellContent ContentTemplate="{DataTemplate view:EventsPage}" Route="EventsPage" />
         </Tab>
     </TabBar>
