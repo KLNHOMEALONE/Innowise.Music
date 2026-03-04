@@ -13,7 +13,10 @@
         Route="LoginPage"
         FlyoutItemIsVisible="False" />
 
-    <TabBar>
+    <TabBar Shell.TabBarBackgroundColor="{StaticResource PageBackgroundColor}"
+            Shell.TabBarTitleColor="{StaticResource PrimaryRed}"
+            Shell.TabBarForegroundColor="{StaticResource PrimaryRed}"
+            Shell.TabBarUnselectedColor="{StaticResource White}">
         <Tab Title="Home" Icon="home_icon.svg">
             <ShellContent ContentTemplate="{DataTemplate view:HomePage}" Route="HomePage" />
         </Tab>
