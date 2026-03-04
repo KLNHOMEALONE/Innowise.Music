@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:Innowise.Music.ViewModel"
+             xmlns:controls="clr-namespace:Innowise.Music.Controls"
              x:Class="Innowise.Music.View.SearchPage"
              x:DataType="vm:SearchPageViewModel"
              BackgroundColor="{StaticResource Gray950}"
@@ -101,23 +102,6 @@
             </VerticalStackLayout>
         </ScrollView>
         
-        <!-- Mini Player -->
-        <Border Grid.Row="1" BackgroundColor="{StaticResource Gray900}" StrokeShape="RoundRectangle 0" Padding="10">
-            <Grid ColumnDefinitions="50, *, Auto" VerticalOptions="Center">
-                <Border Grid.Column="0" WidthRequest="50" HeightRequest="50" StrokeShape="RoundRectangle 4">
-                    <Image Source="https://example.com/album2.jpg" Aspect="AspectFill" />
-                </Border>
-                
-                <VerticalStackLayout Grid.Column="1" Margin="15,0" VerticalOptions="Center">
-                    <Label Text="Shade Astray" TextColor="White" FontAttributes="Bold" FontSize="14" />
-                    <Label Text="Invent Animate" TextColor="Gray" FontSize="12" />
-                </VerticalStackLayout>
-                
-                <HorizontalStackLayout Grid.Column="2" Spacing="20" VerticalOptions="Center">
-                    <Label Text="✔" TextColor="{StaticResource Magenta}" FontSize="20" />
-                    <Label Text="▶" TextColor="White" FontSize="24" />
-                </HorizontalStackLayout>
-            </Grid>
-        </Border>
+        <controls:MiniPlayerControl Grid.Row="1" />
     </Grid>
 </ContentPage>

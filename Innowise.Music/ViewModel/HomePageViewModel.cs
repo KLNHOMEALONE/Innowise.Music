@@ -21,25 +21,25 @@ public partial class HomePageViewModel : ObservableObject
     private void LoadMockData()
     {
         // Quick Access (Pills)
-        QuickAccessItems.Add(new HomeItem { Title = "Return to Forever", ImageUrl = "https://example.com/album1.jpg" });
-        QuickAccessItems.Add(new HomeItem { Title = "Chick Corea", ImageUrl = "https://example.com/artist1.jpg" });
-        QuickAccessItems.Add(new HomeItem { Title = "Ambient Chill", ImageUrl = "https://example.com/playlist1.jpg" });
-        QuickAccessItems.Add(new HomeItem { Title = "Heavener", ImageUrl = "https://example.com/album2.jpg" });
+        QuickAccessItems.Add(new HomeItem { Title = "Return to Forever", ImageUrl = "return_to_forever.png" });
+        QuickAccessItems.Add(new HomeItem { Title = "Chick Corea", ImageUrl = "chick_corea.png" });
+        QuickAccessItems.Add(new HomeItem { Title = "Ambient Chill", ImageUrl = "playlist_big.png" });
+        QuickAccessItems.Add(new HomeItem { Title = "Heavener", ImageUrl = "shade_astray.png" });
 
         // Recommended Artists
-        RecommendedArtists.Add(new HomeItem { Title = "Chick Corea", ImageUrl = "https://example.com/artist1.jpg", Subtitle = "Artist" });
-        RecommendedArtists.Add(new HomeItem { Title = "Invent Animate", ImageUrl = "https://example.com/artist2.jpg", Subtitle = "Artist" });
-        RecommendedArtists.Add(new HomeItem { Title = "Chick Corea", ImageUrl = "https://example.com/artist1.jpg", Subtitle = "Artist" });
+        RecommendedArtists.Add(new HomeItem { Title = "Chick Corea", ImageUrl = "chick_corea.png", Subtitle = "Artist" });
+        RecommendedArtists.Add(new HomeItem { Title = "Invent Animate", ImageUrl = "shade_astray.png", Subtitle = "Artist" });
+        RecommendedArtists.Add(new HomeItem { Title = "Chick Corea", ImageUrl = "chick_corea.png", Subtitle = "Artist" });
 
         // Featured Songs
-        FeaturedSongs.Add(new HomeItem { Title = "Heavener", ImageUrl = "https://example.com/album2.jpg", Subtitle = "Invent Animate" });
-        FeaturedSongs.Add(new HomeItem { Title = "Return to forever", ImageUrl = "https://example.com/album1.jpg", Subtitle = "Chick Corea" });
-        FeaturedSongs.Add(new HomeItem { Title = "Ambient", ImageUrl = "https://example.com/playlist1.jpg", Subtitle = "Various Artists" });
+        FeaturedSongs.Add(new HomeItem { Title = "Heavener", ImageUrl = "shade_astray.png", Subtitle = "Invent Animate" });
+        FeaturedSongs.Add(new HomeItem { Title = "Return to forever", ImageUrl = "return_to_forever.png", Subtitle = "Chick Corea" });
+        FeaturedSongs.Add(new HomeItem { Title = "Ambient", ImageUrl = "playlist_big.png", Subtitle = "Various Artists" });
 
         // Recent Items
-        RecentItems.Add(new HomeItem { Title = "Heavener", ImageUrl = "https://example.com/album2.jpg", Subtitle = "Invent Animate" });
-        RecentItems.Add(new HomeItem { Title = "Return to forever", ImageUrl = "https://example.com/album1.jpg", Subtitle = "Chick Corea" });
-        RecentItems.Add(new HomeItem { Title = "Ambient", ImageUrl = "https://example.com/playlist1.jpg", Subtitle = "Various Artists" });
+        RecentItems.Add(new HomeItem { Title = "Heavener", ImageUrl = "shade_astray.png", Subtitle = "Invent Animate" });
+        RecentItems.Add(new HomeItem { Title = "Return to forever", ImageUrl = "return_to_forever.png", Subtitle = "Chick Corea" });
+        RecentItems.Add(new HomeItem { Title = "Ambient", ImageUrl = "playlist_big.png", Subtitle = "Various Artists" });
     }
 }
 

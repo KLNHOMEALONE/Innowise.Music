@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Innowise.Music.ViewModel"
+             x:Class="Innowise.Music.Controls.MiniPlayerControl"
+             x:DataType="vm:MiniPlayerViewModel">
+    <Border BackgroundColor="{StaticResource InputBackgroundColor}" StrokeThickness="0" StrokeShape="RoundRectangle 8" Margin="8,0,8,8" Padding="10">
+        <Grid>
+            <Grid ColumnDefinitions="45, *, Auto">
+                <Border Grid.Column="0" WidthRequest="45" HeightRequest="45" StrokeShape="RoundRectangle 4" StrokeThickness="0">
+                    <Image Source="{Binding ImageUrl}" Aspect="AspectFill" />
+                </Border>
+                
+                <VerticalStackLayout Grid.Column="1" Margin="10,0" VerticalOptions="Center">
+                    <Label Text="{Binding TrackTitle}" TextColor="White" FontAttributes="Bold" FontSize="14" />
+                    <Label Text="{Binding ArtistName}" TextColor="Gray" FontSize="12" />
+                </VerticalStackLayout>
+                
+                <HorizontalStackLayout Grid.Column="2" Spacing="20" VerticalOptions="Center">
+                    <Border BackgroundColor="{StaticResource PrimaryRed}" WidthRequest="20" HeightRequest="20" StrokeShape="RoundRectangle 10" StrokeThickness="0">
+                        <Label Text="✔" TextColor="White" FontSize="12" HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+                    <Label Text="▶" TextColor="White" FontSize="24" />
+                </HorizontalStackLayout>
+            </Grid>
+            <!-- Progress bar line -->
+            <BoxView VerticalOptions="End" HorizontalOptions="Fill" HeightRequest="2" Color="White" Margin="-10,0,-10,-10" TranslationY="10" />
+        </Grid>
+    </Border>
+</ContentView>

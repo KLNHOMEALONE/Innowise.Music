@@ -5,6 +5,7 @@ using Innowise.Music.ViewModel;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Reflection;
+using Innowise.Music.Controls;
 
 namespace Innowise.Music
 {
@@ -63,6 +64,8 @@ namespace Innowise.Music
             builder.Services.AddSingleton<LibraryPage>();
             builder.Services.AddSingleton<EventsPageViewModel>();
             builder.Services.AddSingleton<EventsPage>();
+            builder.Services.AddSingleton<MiniPlayerViewModel>();
+            builder.Services.AddSingleton<MiniPlayerControl>();
 
 #if DEBUG
             builder.Logging.AddDebug();
