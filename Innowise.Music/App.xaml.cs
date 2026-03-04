@@ -27,7 +27,8 @@ namespace Innowise.Music
             if (await _authenticationService.IsAuthenticatedAsync())
             {
 #if DEBUG
-                await _navigationService.NavigateToAsync($"///{nameof(View.LoginPage)}");
+                //await _navigationService.NavigateToAsync($"///{nameof(View.LoginPage)}");
+                await _navigationService.NavigateToAsync($"///{nameof(View.HomePage)}");
 #else
                 await _navigationService.NavigateToAsync($"///{nameof(View.NewsPage)}");
 #endif
