@@ -32,11 +32,11 @@
 
                 <!-- Filter Chips -->
                 <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never" Margin="0,20,0,0">
-                    <HorizontalStackLayout BindableLayout.ItemsSource="{Binding FilterChips}" Spacing="10">
+                    <HorizontalStackLayout BindableLayout.ItemsSource="{Binding FilterChips}" Spacing="8">
                         <BindableLayout.ItemTemplate>
                             <DataTemplate x:DataType="x:String">
-                                <Border BackgroundColor="Transparent" Stroke="{StaticResource Gray600}" StrokeThickness="1" StrokeShape="RoundRectangle 20" Padding="15,8">
-                                    <Label Text="{Binding .}" TextColor="White" FontSize="14" />
+                                <Border BackgroundColor="{StaticResource InputBackgroundColor}" StrokeThickness="0" StrokeShape="RoundRectangle 20" Padding="16,8">
+                                    <Label Text="{Binding .}" TextColor="White" FontSize="14" FontAttributes="Bold" />
                                 </Border>
                             </DataTemplate>
                         </BindableLayout.ItemTemplate>
