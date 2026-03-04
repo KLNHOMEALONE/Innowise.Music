@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Innowise.Music.ViewModel"
+             x:Class="Innowise.Music.View.EventsPage"
+             x:DataType="vm:EventsPageViewModel"
+             BackgroundColor="{StaticResource Gray950}"
+             Shell.NavBarIsVisible="False"
+             Title="Events">
+
+    <Grid RowDefinitions="*, Auto">
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Spacing="25" Padding="20">
+                
+                <Label Text="Find Events" TextColor="White" FontSize="32" FontAttributes="Bold" />
+
+                <!-- Categories -->
+                <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+                    <HorizontalStackLayout BindableLayout.ItemsSource="{Binding Categories}" Spacing="10">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <Border BackgroundColor="{StaticResource Gray900}" StrokeShape="RoundRectangle 20" Padding="15,8">
+                                    <Label Text="{Binding .}" TextColor="White" FontSize="14" />
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </HorizontalStackLayout>
+                </ScrollView>
+
+                <!-- Featured Event -->
+                <Label Text="Featured Event" TextColor="White" FontSize="20" FontAttributes="Bold" />
+                <Border BackgroundColor="{StaticResource Gray900}" StrokeShape="RoundRectangle 12" HeightRequest="200" Padding="0">
+                    <Grid>
+                        <Image Source="https://example.com/featured_event.jpg" Aspect="AspectFill" Opacity="0.6" />
+                        <VerticalStackLayout VerticalOptions="End" Padding="20" Spacing="5">
+                             <Border BackgroundColor="{StaticResource Magenta}" HorizontalOptions="Start" Padding="8,2" StrokeShape="RoundRectangle 4">
+                                 <Label Text="SELLING FAST" TextColor="White" FontSize="10" FontAttributes="Bold" />
+                             </Border>
+                             <Label Text="Metalcore Festival 2026" TextColor="White" FontSize="24" FontAttributes="Bold" />
+                             <Label Text="Atlanta, GA • April 10-12" TextColor="LightGray" FontSize="14" />
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
+
+                <!-- Upcoming Events List -->
+                <Label Text="Upcoming near you" TextColor="White" FontSize="20" FontAttributes="Bold" />
+                <VerticalStackLayout BindableLayout.ItemsSource="{Binding UpcomingEvents}" Spacing="20">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="vm:MusicEvent">
+                            <Grid ColumnDefinitions="60, *" ColumnSpacing="15">
+                                <!-- Date Badge -->
+                                <Border Grid.Column="0" BackgroundColor="{StaticResource Gray900}" StrokeShape="RoundRectangle 8" HeightRequest="60">
+                                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center">
+                                         <Label Text="MAR" TextColor="{StaticResource Magenta}" FontSize="12" HorizontalOptions="Center" FontAttributes="Bold" />
+                                         <Label Text="15" TextColor="White" FontSize="20" HorizontalOptions="Center" FontAttributes="Bold" />
+                                    </VerticalStackLayout>
+                                </Border>
+
+                                <!-- Event Details -->
+                                <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                                    <Label Text="{Binding Title}" TextColor="White" FontAttributes="Bold" FontSize="16" MaxLines="1" LineBreakMode="TailTruncation" />
+                                    <Label Text="{Binding Venue}" TextColor="Gray" FontSize="13" />
+                                    <Label Text="{Binding Date}" TextColor="Gray" FontSize="12" />
+                                </VerticalStackLayout>
+                            </Grid>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+        
+        <!-- Mini Player -->
+        <Border Grid.Row="1" BackgroundColor="{StaticResource Gray900}" StrokeShape="RoundRectangle 0" Padding="10">
+            <Grid ColumnDefinitions="50, *, Auto" VerticalOptions="Center">
+                <Border Grid.Column="0" WidthRequest="50" HeightRequest="50" StrokeShape="RoundRectangle 4">
+                    <Image Source="https://example.com/album2.jpg" Aspect="AspectFill" />
+                </Border>
+                
+                <VerticalStackLayout Grid.Column="1" Margin="15,0" VerticalOptions="Center">
+                    <Label Text="Shade Astray" TextColor="White" FontAttributes="Bold" FontSize="14" />
+                    <Label Text="Invent Animate" TextColor="Gray" FontSize="12" />
+                </VerticalStackLayout>
+                
+                <HorizontalStackLayout Grid.Column="2" Spacing="20" VerticalOptions="Center">
+                    <Label Text="✔" TextColor="{StaticResource Magenta}" FontSize="20" />
+                    <Label Text="▶" TextColor="White" FontSize="24" />
+                </HorizontalStackLayout>
+            </Grid>
+        </Border>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Innowise.Music.ViewModel"
+             x:Class="Innowise.Music.View.SearchPage"
+             x:DataType="vm:SearchPageViewModel"
+             BackgroundColor="{StaticResource Gray950}"
+             Shell.NavBarIsVisible="False"
+             Title="Search">
+
+    <Grid RowDefinitions="*, Auto">
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Spacing="25" Padding="20">
+                
+                <Label Text="Search" TextColor="White" FontSize="32" FontAttributes="Bold" />
+
+                <!-- Search Bar -->
+                <Border BackgroundColor="White" StrokeShape="RoundRectangle 8" HeightRequest="50" Padding="15,0">
+                    <Grid ColumnDefinitions="Auto, *">
+                        <Label Grid.Column="0" Text="🔍" VerticalOptions="Center" Margin="0,0,10,0" />
+                        <Entry Grid.Column="1" 
+                               Text="{Binding SearchQuery}" 
+                               Placeholder="What do you want to listen to?" 
+                               PlaceholderColor="Gray"
+                               TextColor="Black"
+                               VerticalOptions="Center" />
+                    </Grid>
+                </Border>
+
+                <!-- Filter Chips -->
+                <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+                    <HorizontalStackLayout BindableLayout.ItemsSource="{Binding FilterChips}" Spacing="10">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <Border BackgroundColor="{StaticResource Gray900}" StrokeShape="RoundRectangle 20" Padding="15,8">
+                                    <Label Text="{Binding .}" TextColor="White" FontSize="14" />
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </HorizontalStackLayout>
+                </ScrollView>
+
+                <!-- Browse All Section -->
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="Browse all" TextColor="White" FontSize="20" FontAttributes="Bold" />
+                    
+                    <FlexLayout BindableLayout.ItemsSource="{Binding Genres}" 
+                                Wrap="Wrap" 
+                                JustifyContent="SpaceBetween" 
+                                AlignItems="Start" 
+                                AlignContent="Start">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="vm:GenreItem">
+                                <Border BackgroundColor="{Binding Color}" 
+                                        StrokeShape="RoundRectangle 8" 
+                                        HeightRequest="100" 
+                                        WidthRequest="160" 
+                                        Margin="0,0,0,15"
+                                        Padding="10">
+                                    <Grid>
+                                        <Label Text="{Binding Name}" TextColor="White" FontAttributes="Bold" FontSize="16" />
+                                        <Image Source="{Binding ImageUrl}" 
+                                               Rotation="25" 
+                                               TranslationX="20" 
+                                               TranslationY="20"
+                                               HorizontalOptions="End" 
+                                               VerticalOptions="End" 
+                                               WidthRequest="60" 
+                                               HeightRequest="60" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </FlexLayout>
+                </VerticalStackLayout>
+
+                <!-- Recent Searches -->
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="Recent searches" TextColor="White" FontSize="20" FontAttributes="Bold" />
+                    
+                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding RecentSearches}" Spacing="15">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="vm:RecentSearchItem">
+                                <Grid ColumnDefinitions="50, *, Auto">
+                                    <Border Grid.Column="0" WidthRequest="50" HeightRequest="50" StrokeShape="RoundRectangle 25">
+                                        <Image Source="{Binding ImageUrl}" Aspect="AspectFill" />
+                                    </Border>
+                                    
+                                    <VerticalStackLayout Grid.Column="1" Margin="15,0" VerticalOptions="Center">
+                                        <Label Text="{Binding Title}" TextColor="White" FontAttributes="Bold" FontSize="14" />
+                                        <Label Text="{Binding Type}" TextColor="Gray" FontSize="12" />
+                                    </VerticalStackLayout>
+                                    
+                                    <Label Grid.Column="2" Text="✕" TextColor="Gray" FontSize="18" VerticalOptions="Center" />
+                                </Grid>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+        
+        <!-- Mini Player -->
+        <Border Grid.Row="1" BackgroundColor="{StaticResource Gray900}" StrokeShape="RoundRectangle 0" Padding="10">
+            <Grid ColumnDefinitions="50, *, Auto" VerticalOptions="Center">
+                <Border Grid.Column="0" WidthRequest="50" HeightRequest="50" StrokeShape="RoundRectangle 4">
+                    <Image Source="https://example.com/album2.jpg" Aspect="AspectFill" />
+                </Border>
+                
+                <VerticalStackLayout Grid.Column="1" Margin="15,0" VerticalOptions="Center">
+                    <Label Text="Shade Astray" TextColor="White" FontAttributes="Bold" FontSize="14" />
+                    <Label Text="Invent Animate" TextColor="Gray" FontSize="12" />
+                </VerticalStackLayout>
+                
+                <HorizontalStackLayout Grid.Column="2" Spacing="20" VerticalOptions="Center">
+                    <Label Text="✔" TextColor="{StaticResource Magenta}" FontSize="20" />
+                    <Label Text="▶" TextColor="White" FontSize="24" />
+                </HorizontalStackLayout>
+            </Grid>
+        </Border>
+    </Grid>
+</ContentPage>

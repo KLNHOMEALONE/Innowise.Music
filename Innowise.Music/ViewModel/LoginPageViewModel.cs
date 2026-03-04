@@ -38,7 +38,7 @@ public partial class LoginPageViewModel : ObservableObject
 
         if (success)
         {
-            await _navigationService.NavigateToAsync($"///{nameof(View.NewsPage)}");
+            await _navigationService.NavigateToAsync($"///{nameof(View.HomePage)}");
         }
         else
         {

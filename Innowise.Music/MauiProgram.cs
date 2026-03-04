@@ -55,6 +55,14 @@ namespace Innowise.Music
             builder.Services.AddSingleton<LoginPage>();
             builder.Services.AddSingleton<SignUpPageViewModel>();
             builder.Services.AddSingleton<SignUpPage>();
+            builder.Services.AddSingleton<HomePageViewModel>();
+            builder.Services.AddSingleton<HomePage>();
+            builder.Services.AddSingleton<SearchPageViewModel>();
+            builder.Services.AddSingleton<SearchPage>();
+            builder.Services.AddSingleton<LibraryPageViewModel>();
+            builder.Services.AddSingleton<LibraryPage>();
+            builder.Services.AddSingleton<EventsPageViewModel>();
+            builder.Services.AddSingleton<EventsPage>();
 
 #if DEBUG
             builder.Logging.AddDebug();

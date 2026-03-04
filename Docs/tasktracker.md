@@ -136,3 +136,19 @@
   - [x] Implement NavigationService
   - [x] Register in Dependency Injection container
   - [x] Refactor existing ViewModels to use the new service
+
+## Task: TabBar and Main Pages Implementation
+- **Status**: Completed
+- **Description**: Implement main navigation using a TabBar, create Home, Search, Library, and Events pages with ViewModels, and update login navigation flow to point to Home.
+- **Steps**:
+  - [x] Update `AppShell.xaml` to use `<TabBar>` with four tabs.
+  - [x] Update `LoginPageViewModel` to navigate to `///HomePage` after login.
+  - [x] Create basic XAML Views for Home, Search, Library, and Events.
+  - [x] Implement `HomePage.xaml` layout (header, pills, featured card, horizontal collections, sticky mini-player).
+  - [x] Implement `SearchPage.xaml` layout (search bar, filter chips, recents grid, sticky mini-player).
+  - [x] Implement `LibraryPage.xaml` layout (list view with play buttons/menus, sticky mini-player).
+  - [x] Setup `EventsPage.xaml` placeholder.
+  - [x] Populate ViewModels with mock data (Initial mock data for all main pages).
+  - [x] Register new pages and ViewModels in `MauiProgram.cs`.
+  - [x] Ensure dark mode colors (`App.xaml`) and accents match designs.
+

@@ -13,9 +13,19 @@
         Route="LoginPage"
         FlyoutItemIsVisible="False" />
 
-    <ShellContent
-        ContentTemplate="{DataTemplate view:NewsPage}"
-        Route="NewsPage"
-        FlyoutItemIsVisible="False" />
+    <TabBar>
+        <Tab Title="Home" Icon="home_icon.svg">
+            <ShellContent ContentTemplate="{DataTemplate view:HomePage}" Route="HomePage" />
+        </Tab>
+        <Tab Title="Search" Icon="search_icon.svg">
+            <ShellContent ContentTemplate="{DataTemplate view:SearchPage}" Route="SearchPage" />
+        </Tab>
+        <Tab Title="Library" Icon="library_icon.svg">
+            <ShellContent ContentTemplate="{DataTemplate view:LibraryPage}" Route="LibraryPage" />
+        </Tab>
+        <Tab Title="Events" Icon="events_icon.svg">
+            <ShellContent ContentTemplate="{DataTemplate view:EventsPage}" Route="EventsPage" />
+        </Tab>
+    </TabBar>
 
 </Shell>

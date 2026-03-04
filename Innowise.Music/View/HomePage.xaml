@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Innowise.Music.ViewModel"
+             x:Class="Innowise.Music.View.HomePage"
+             x:DataType="vm:HomePageViewModel"
+             BackgroundColor="{StaticResource Gray950}"
+             Shell.NavBarIsVisible="False"
+             Title="Home">
+
+    <Grid RowDefinitions="*, Auto">
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Spacing="25" Padding="20">
+                
+                <!-- Header -->
+                <Grid ColumnDefinitions="Auto, *">
+                    <Border Grid.Column="0" WidthRequest="40" HeightRequest="40" StrokeShape="RoundRectangle 20" BackgroundColor="{StaticResource Magenta}">
+                        <Label Text="J" HorizontalOptions="Center" VerticalOptions="Center" FontAttributes="Bold" TextColor="White" />
+                    </Border>
+                    <Label Grid.Column="1" Text="{Binding UserName, StringFormat='Hi, {0}'}" 
+                           TextColor="White" 
+                           FontSize="24" 
+                           FontAttributes="Bold" 
+                           Margin="15,0,0,0" 
+                           VerticalOptions="Center" />
+                </Grid>
+
+                <!-- Quick Access Grid -->
+                <FlexLayout BindableLayout.ItemsSource="{Binding QuickAccessItems}" 
+                            Wrap="Wrap" 
+                            JustifyContent="SpaceBetween" 
+                            AlignItems="Start" 
+                            AlignContent="Start">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="vm:HomeItem">
+                            <!-- WidthRequest is roughly half screen minus padding (e.g. 160) -->
+                            <Border BackgroundColor="{StaticResource Gray900}" StrokeShape="RoundRectangle 8" HeightRequest="60" WidthRequest="160" Margin="0,0,0,10">
+                                <Grid ColumnDefinitions="60, *">
+                                    <Image Source="{Binding ImageUrl}" Aspect="AspectFill" Grid.Column="0" />
+                                    <Label Grid.Column="1" Text="{Binding Title}" 
+                                           TextColor="White" 
+                                           VerticalOptions="Center" 
+                                           Margin="10,0" 
+                                           FontSize="14" 
+                                           FontAttributes="Bold" 
+                                           MaxLines="2" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </FlexLayout>
+
+                <!-- Featured Section -->
+                <VerticalStackLayout Spacing="5">
+                    <Label Text="New release from" TextColor="White" FontSize="20" FontAttributes="Bold" />
+                    <Label Text="Invent Animate" TextColor="White" FontSize="20" FontAttributes="Bold" />
+                </VerticalStackLayout>
+
+                <Border BackgroundColor="{StaticResource Gray900}" StrokeShape="RoundRectangle 12" Padding="15">
+                    <Grid ColumnDefinitions="*, *" RowDefinitions="Auto, Auto, Auto, Auto">
+                        <Image Grid.RowSpan="4" Grid.Column="0" Source="https://example.com/album2.jpg" WidthRequest="150" HeightRequest="150" Aspect="AspectFill" Margin="0,0,15,0" />
+                        
+                        <Label Grid.Row="0" Grid.Column="1" Text="Album" TextColor="Gray" FontSize="12" />
+                        <Label Grid.Row="1" Grid.Column="1" Text="Heavener" TextColor="White" FontSize="24" FontAttributes="Bold" />
+                        <Label Grid.Row="2" Grid.Column="1" Text="2 days ago" TextColor="Gray" FontSize="12" />
+                        
+                        <HorizontalStackLayout Grid.Row="3" Grid.Column="1" Spacing="15" VerticalOptions="End" HorizontalOptions="End">
+                             <Label Text="+" TextColor="White" FontSize="24" VerticalOptions="Center" />
+                             <Border BackgroundColor="White" WidthRequest="40" HeightRequest="40" StrokeShape="RoundRectangle 20">
+                                 <Label Text="▶" TextColor="Black" HorizontalOptions="Center" VerticalOptions="Center" Margin="3,0,0,0" />
+                             </Border>
+                        </HorizontalStackLayout>
+                    </Grid>
+                </Border>
+
+                <!-- Artists You Like -->
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="Artists you like" TextColor="White" FontSize="18" FontAttributes="Bold" />
+                    <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+                        <HorizontalStackLayout BindableLayout.ItemsSource="{Binding RecommendedArtists}" Spacing="20">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="vm:HomeItem">
+                                    <VerticalStackLayout Spacing="8" WidthRequest="110">
+                                        <Border WidthRequest="110" HeightRequest="110" StrokeShape="RoundRectangle 55">
+                                            <Image Source="{Binding ImageUrl}" Aspect="AspectFill" />
+                                        </Border>
+                                        <Label Text="{Binding Title}" TextColor="White" HorizontalOptions="Center" FontSize="12" />
+                                    </VerticalStackLayout>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </HorizontalStackLayout>
+                    </ScrollView>
+                </VerticalStackLayout>
+
+                <!-- Featuring Songs You Like -->
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="Featuring songs you like" TextColor="White" FontSize="18" FontAttributes="Bold" />
+                    <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+                        <HorizontalStackLayout BindableLayout.ItemsSource="{Binding FeaturedSongs}" Spacing="15">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="vm:HomeItem">
+                                    <VerticalStackLayout Spacing="8" WidthRequest="120">
+                                        <Border WidthRequest="120" HeightRequest="120" StrokeShape="RoundRectangle 4">
+                                            <Image Source="{Binding ImageUrl}" Aspect="AspectFill" />
+                                        </Border>
+                                        <Label Text="{Binding Title}" TextColor="White" FontSize="12" />
+                                    </VerticalStackLayout>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </HorizontalStackLayout>
+                    </ScrollView>
+                </VerticalStackLayout>
+
+                <!-- Get Back to Listening -->
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="Get back to listening" TextColor="White" FontSize="18" FontAttributes="Bold" />
+                    <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+                        <HorizontalStackLayout BindableLayout.ItemsSource="{Binding RecentItems}" Spacing="15">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="vm:HomeItem">
+                                    <VerticalStackLayout Spacing="8" WidthRequest="120">
+                                        <Border WidthRequest="120" HeightRequest="120" StrokeShape="RoundRectangle 4">
+                                            <Image Source="{Binding ImageUrl}" Aspect="AspectFill" />
+                                        </Border>
+                                        <Label Text="{Binding Title}" TextColor="White" FontSize="12" />
+                                    </VerticalStackLayout>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </HorizontalStackLayout>
+                    </ScrollView>
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+        
+        <!-- Mini Player -->
+        <Border Grid.Row="1" BackgroundColor="{StaticResource Gray900}" StrokeShape="RoundRectangle 0" Padding="10">
+            <Grid ColumnDefinitions="50, *, Auto" VerticalOptions="Center">
+                <Border Grid.Column="0" WidthRequest="50" HeightRequest="50" StrokeShape="RoundRectangle 4">
+                    <Image Source="https://example.com/album2.jpg" Aspect="AspectFill" />
+                </Border>
+                
+                <VerticalStackLayout Grid.Column="1" Margin="15,0" VerticalOptions="Center">
+                    <Label Text="Shade Astray" TextColor="White" FontAttributes="Bold" FontSize="14" />
+                    <Label Text="Invent Animate" TextColor="Gray" FontSize="12" />
+                </VerticalStackLayout>
+                
+                <HorizontalStackLayout Grid.Column="2" Spacing="20" VerticalOptions="Center">
+                    <Label Text="✔" TextColor="{StaticResource Magenta}" FontSize="20" />
+                    <Label Text="▶" TextColor="White" FontSize="24" />
+                </HorizontalStackLayout>
+            </Grid>
+        </Border>
+    </Grid>
+</ContentPage>

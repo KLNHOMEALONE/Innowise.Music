@@ -2,13 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
-## [2026-03-03] - JWT Refresh Token Implementation
+## [2026-03-04] - Main Navigation & Home Page Implementation
 
 ### Added
-- **IdentityServer Refresh Tokens**: Updated `ApiUser` model with `RefreshToken` and `RefreshTokenExpiryTime` properties and created EF Core migration (`AddRefreshToken`).
-- **Refresh Endpoint**: Added `/api/Authentication/refresh` endpoint to IdentityServer to validate expired JWTs and issue new access/refresh token pairs.
-- **Client Token Handling**: Created `TokenRequestDto` in both backend and MAUI client projects. Updated `AuthenticationResponse` to include `RefreshToken`.
-- **Silent Refresh**: Enhanced MAUI `AuthenticationService.IsAuthenticatedAsync()` to inspect JWT expiration locally via `JwtSecurityTokenHandler`. If the token is near expiration or expired, it automatically calls the backend refresh endpoint, stores the new tokens in `SecureStorage`, and maintains the user session seamlessly.
+- **TabBar Navigation**: Replaced basic Shell navigation with a full `TabBar` containing Home, Search, Library, and Events sections.
+- **New Icons**: Added SVG icons for the bottom navigation bar (`home_icon.svg`, `search_icon.svg`, etc.).
+- **Main Pages**: Created `HomePage`, `SearchPage`, `LibraryPage`, and `EventsPage` with their respective ViewModels.
+- **Rich Layouts**: Implemented detailed, dark-themed layouts for all main sections:
+    - **HomePage**: Personalized dashboard with quick access, featured cards, and horizontal collections.
+    - **SearchPage**: Functional search bar, filter chips, and a "Browse All" genre grid.
+    - **LibraryPage**: List of playlists, artists, and albums with a special "Liked Songs" tile.
+    - **EventsPage**: Upcoming shows list with date badges and featured event cards.
+- **Persistent Mini Player**: Added a consistent sticky playback control bar at the bottom of all main pages.
+- **Mock Data**: Populated all ViewModels with realistic mock data to facilitate UI development and testing.
+
+### Changed
+- **Auth Flow**: Updated `LoginPageViewModel` to route users directly to the new `HomePage` upon successful login.
+- **DI Registration**: Registered all new pages and viewmodels in `MauiProgram.cs`.
+
+### Fixed
+- **Android ANR Crash**: Fixed an "Application Not Responding" issue on Android caused by nesting `CollectionView` controls within a `ScrollView`. Replaced `CollectionView` with `BindableLayout` (using `FlexLayout` and `HorizontalStackLayout`) to resolve the layout measurement loop while maintaining the same design.
 
 ## [2026-03-01] - UI Refactoring & Critical Authentication Fixes
 

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Innowise.Music.ViewModel"
+             xmlns:graphics="clr-namespace:Microsoft.Maui.Graphics;assembly=Microsoft.Maui"
+             x:Class="Innowise.Music.View.LibraryPage"
+             x:DataType="vm:LibraryPageViewModel"
+             BackgroundColor="{StaticResource Gray950}"
+             Shell.NavBarIsVisible="False"
+             Title="Library">
+
+    <Grid RowDefinitions="*, Auto">
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Spacing="20" Padding="20">
+                
+                <!-- Header -->
+                <Grid ColumnDefinitions="Auto, *, Auto" VerticalOptions="Center">
+                    <Border Grid.Column="0" WidthRequest="35" HeightRequest="35" StrokeShape="RoundRectangle 17.5" BackgroundColor="{StaticResource Magenta}">
+                        <Label Text="J" HorizontalOptions="Center" VerticalOptions="Center" FontAttributes="Bold" TextColor="White" />
+                    </Border>
+                    <Label Grid.Column="1" Text="Your Library" TextColor="White" FontSize="24" FontAttributes="Bold" Margin="15,0" VerticalOptions="Center" />
+                    <HorizontalStackLayout Grid.Column="2" Spacing="20" VerticalOptions="Center">
+                        <Label Text="🔍" FontSize="20" TextColor="White" />
+                        <Label Text="+" FontSize="24" TextColor="White" />
+                    </HorizontalStackLayout>
+                </Grid>
+
+                <!-- Filter Chips -->
+                <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+                    <HorizontalStackLayout BindableLayout.ItemsSource="{Binding FilterChips}" Spacing="10">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <Border BackgroundColor="{StaticResource Gray900}" StrokeShape="RoundRectangle 20" Padding="15,8">
+                                    <Label Text="{Binding .}" TextColor="White" FontSize="14" />
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </HorizontalStackLayout>
+                </ScrollView>
+
+                <!-- Sort/View Toggle -->
+                <Grid ColumnDefinitions="*, Auto">
+                    <HorizontalStackLayout Grid.Column="0" Spacing="10">
+                         <Label Text="⇅" TextColor="White" FontSize="18" />
+                         <Label Text="Recents" TextColor="White" FontSize="14" VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                    <Label Grid.Column="1" Text="▤" TextColor="White" FontSize="20" />
+                </Grid>
+
+                <!-- Liked Songs Special Tile -->
+                <Grid ColumnDefinitions="70, *" Margin="0,10">
+                    <Border Grid.Column="0" WidthRequest="70" HeightRequest="70" StrokeShape="RoundRectangle 4">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="#450AF5" Offset="0.1" />
+                                <GradientStop Color="#C4EFD9" Offset="1.0" />
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Label Text="♥" TextColor="White" FontSize="30" HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+                    <VerticalStackLayout Grid.Column="1" Margin="15,0" VerticalOptions="Center">
+                        <Label Text="Liked Songs" TextColor="White" FontAttributes="Bold" FontSize="16" />
+                        <HorizontalStackLayout Spacing="5">
+                             <Label Text="📌" TextColor="{StaticResource Magenta}" FontSize="12" />
+                             <Label Text="Playlist • 124 songs" TextColor="Gray" FontSize="12" />
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+                </Grid>
+
+                <!-- Library List -->
+                <VerticalStackLayout BindableLayout.ItemsSource="{Binding LibraryItems}" Spacing="20">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="vm:LibraryItem">
+                            <Grid ColumnDefinitions="70, *">
+                                <!-- Shape depends on type (Circle for Artist, Square for others) -->
+                                <Border Grid.Column="0" WidthRequest="70" HeightRequest="70" StrokeShape="RoundRectangle 4">
+                                    <Image Source="{Binding ImageUrl}" Aspect="AspectFill" />
+                                </Border>
+                                
+                                <VerticalStackLayout Grid.Column="1" Margin="15,0" VerticalOptions="Center">
+                                    <Label Text="{Binding Title}" TextColor="White" FontAttributes="Bold" FontSize="16" />
+                                    <HorizontalStackLayout Spacing="5">
+                                         <Label Text="📌" IsVisible="{Binding IsPinned}" TextColor="{StaticResource Magenta}" FontSize="12" />
+                                         <Label Text="{Binding Subtitle}" TextColor="Gray" FontSize="12" />
+                                    </HorizontalStackLayout>
+                                </VerticalStackLayout>
+                            </Grid>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+        
+        <!-- Mini Player -->
+        <Border Grid.Row="1" BackgroundColor="{StaticResource Gray900}" StrokeShape="RoundRectangle 0" Padding="10">
+            <Grid ColumnDefinitions="50, *, Auto" VerticalOptions="Center">
+                <Border Grid.Column="0" WidthRequest="50" HeightRequest="50" StrokeShape="RoundRectangle 4">
+                    <Image Source="https://example.com/album2.jpg" Aspect="AspectFill" />
+                </Border>
+                
+                <VerticalStackLayout Grid.Column="1" Margin="15,0" VerticalOptions="Center">
+                    <Label Text="Shade Astray" TextColor="White" FontAttributes="Bold" FontSize="14" />
+                    <Label Text="Invent Animate" TextColor="Gray" FontSize="12" />
+                </VerticalStackLayout>
+                
+                <HorizontalStackLayout Grid.Column="2" Spacing="20" VerticalOptions="Center">
+                    <Label Text="✔" TextColor="{StaticResource Magenta}" FontSize="20" />
+                    <Label Text="▶" TextColor="White" FontSize="24" />
+                </HorizontalStackLayout>
+            </Grid>
+        </Border>
+    </Grid>
+</ContentPage>
