@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [2026-03-04] - Main Navigation & Home Page Implementation
 
 ### Added
+- **TabBar Redesign**: Updated `AppShell.xaml` TabBar properties to match the design mockup exactly. Set `TabBarBackgroundColor` to pure black (`PageBackgroundColor`), `TabBarTitleColor` and `TabBarForegroundColor` to `PrimaryRed` for the active tab, and `TabBarUnselectedColor` to `White` for inactive tabs.
 - **TabBar Navigation**: Replaced basic Shell navigation with a full `TabBar` containing Home, Search, Library, and Events sections.
 - **New Icons**: Added SVG icons for the bottom navigation bar (`home_icon.svg`, `search_icon.svg`, etc.).
 - **Main Pages**: Created `HomePage`, `SearchPage`, `LibraryPage`, and `EventsPage` with their respective ViewModels.

@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using System.Collections.ObjectModel;
+using Microsoft.Maui;
 
 namespace Innowise.Music.ViewModel;
 
@@ -7,17 +8,19 @@ public partial class LibraryPageViewModel : ObservableObject
 {
     public ObservableCollection<string> FilterChips { get; } = new()
     {
-        "Playlists", "Artists", "Albums", "Podcasts & Shows"
+        "Playlists", "Albums", "Songs", "Artists", "Local"
     };
 
     public ObservableCollection<LibraryItem> LibraryItems { get; } = new()
     {
-        new LibraryItem("Your Episodes", "Updated 2 days ago", "https://example.com/episodes.jpg", "Playlist", true),
-        new LibraryItem("Invent Animate", "Artist", "https://example.com/artist1.jpg", "Artist", false),
-        new LibraryItem("Heavener", "Invent Animate", "https://example.com/album1.jpg", "Album", false),
-        new LibraryItem("Rock Mix", "Made for you", "https://example.com/mix1.jpg", "Playlist", false),
-        new LibraryItem("Silent Planet", "Artist", "https://example.com/artist2.jpg", "Artist", false),
-        new LibraryItem("SUPERBLOOM", "Silent Planet", "https://example.com/album3.jpg", "Album", false)
+        new LibraryItem("Local files", "45 songs", "", "📁", "#2A1F1F", false) { TitlePrefix = "↓ " },
+        new LibraryItem("Liked songs", "112 songs", "", "♡", "#D90429", false),
+        new LibraryItem("Return to Fore...", "Album / Chick C...", "https://example.com/chick_album.jpg", "", "", false),
+        new LibraryItem("Ambient Chill", "Playlist / John...", "https://example.com/ambient.jpg", "", "", false),
+        new LibraryItem("What Game S...", "Song / Chick C...", "https://example.com/what_game.jpg", "", "", false),
+        new LibraryItem("Chick Corea", "Artist", "https://example.com/chick_corea.jpg", "", "", true),
+        new LibraryItem("Return to Fore...", "Album / Chick C...", "https://example.com/chick_album.jpg", "", "", false),
+        new LibraryItem("Return to Fore...", "Album / Chick C...", "https://example.com/chick_album.jpg", "", "", false)
     };
 
     public LibraryPageViewModel()
@@ -30,15 +33,24 @@ public class LibraryItem
     public string Title { get; }
     public string Subtitle { get; }
     public string ImageUrl { get; }
-    public string Type { get; }
-    public bool IsPinned { get; }
+    public string Icon { get; }
+    public string IconBackgroundColor { get; }
+    public bool IsArtist { get; }
+    public string TitlePrefix { get; set; } = "";
 
-    public LibraryItem(string title, string subtitle, string imageUrl, string type, bool isPinned)
+    public string DisplayTitle => TitlePrefix + Title;
+
+    public bool HasImage => !string.IsNullOrEmpty(ImageUrl);
+    public bool HasIcon => !string.IsNullOrEmpty(Icon);
+    public CornerRadius ItemCornerRadius => IsArtist ? new CornerRadius(57.5) : new CornerRadius(4);
+
+    public LibraryItem(string title, string subtitle, string imageUrl, string icon, string iconBackgroundColor, bool isArtist)
     {
         Title = title;
         Subtitle = subtitle;
         ImageUrl = imageUrl;
-        Type = type;
-        IsPinned = isPinned;
+        Icon = icon;
+        IconBackgroundColor = string.IsNullOrEmpty(iconBackgroundColor) ? "Transparent" : iconBackgroundColor;
+        IsArtist = isArtist;
     }
 }
