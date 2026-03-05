@@ -366,3 +366,4 @@ FodyWeavers.xsd
 # Secrets files
 .env
 /.env
+/Innowise.Music/Platforms/Android/AndroidManifest.xml
