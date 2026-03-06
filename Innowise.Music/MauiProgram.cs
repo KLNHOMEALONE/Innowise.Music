@@ -65,7 +65,7 @@ namespace Innowise.Music
             builder.Services.AddSingleton<EventsPageViewModel>();
             builder.Services.AddSingleton<EventsPage>();
             builder.Services.AddSingleton<MiniPlayerViewModel>();
-            builder.Services.AddSingleton<MiniPlayerControl>();
+            builder.Services.AddTransient<MiniPlayerControl>();
             builder.Services.AddSingleton<AppShellViewModel>();
             builder.Services.AddSingleton<AppShell>();
 

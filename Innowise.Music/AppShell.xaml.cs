@@ -1,41 +1,46 @@
 ﻿using Innowise.Music.Services;
 using Innowise.Music.View;
 using Innowise.Music.ViewModel;
+using System;
 
 namespace Innowise.Music
 {
     public partial class AppShell : Shell
     {
         private readonly IAuthenticationService _authenticationService;
-        private readonly INavigationService _navigationService;
 
-        public AppShell(AppShellViewModel viewModel, IAuthenticationService authenticationService, INavigationService navigationService)
+        public AppShell(AppShellViewModel viewModel, IAuthenticationService authenticationService)
         {
             InitializeComponent();
             BindingContext = viewModel;
             _authenticationService = authenticationService;
-            _navigationService = navigationService;
             Routing.RegisterRoute(nameof(SignUpPage), typeof(SignUpPage));
             Routing.RegisterRoute(nameof(NewsDetailedPage), typeof(NewsDetailedPage));
+
+            this.Loaded += OnShellLoaded;
         }
 
-        protected override async void OnNavigating(ShellNavigatingEventArgs args)
+        private async void OnShellLoaded(object sender, EventArgs e)
+        {
+            // On start, check if the user is authenticated.
+            // If they are not, navigate to the login page.
+            // Otherwise, let the Shell default to the main TabBar content (HomePage).
+            if (!await _authenticationService.IsAuthenticatedAsync())
+            {
+                await GoToAsync($"///{nameof(LoginPage)}");
+            }
+        }
+
+        protected override void OnNavigating(ShellNavigatingEventArgs args)
         {
             base.OnNavigating(args);
 
             if (args.Source == ShellNavigationSource.ShellSectionChanged)
             {
                 var viewModel = (AppShellViewModel)BindingContext;
-                viewModel.SelectedRoute = args.Target.Location.OriginalString;
-
-                if (await _authenticationService.IsAuthenticatedAsync())
+                if (args.Target.Location.OriginalString != null)
                 {
-                    // User is authenticated
-                }
-                else
-                {
-                    // User is not authenticated, redirect to login page
-                    await _navigationService.NavigateToAsync($"///{nameof(View.LoginPage)}");
+                    viewModel.SelectedRoute = args.Target.Location.OriginalString;
                 }
             }
         }

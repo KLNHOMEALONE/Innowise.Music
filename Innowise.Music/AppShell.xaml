@@ -45,11 +45,6 @@
         </Style>
     </Shell.Resources>
 
-    <ShellContent
-        ContentTemplate="{DataTemplate view:LoginPage}"
-        Route="LoginPage"
-        FlyoutItemIsVisible="False" />
-
     <TabBar Shell.TabBarBackgroundColor="#0A0000"
             Shell.TabBarTitleColor="#D90429"
             Shell.TabBarForegroundColor="#D90429"
@@ -67,5 +62,10 @@
             <ShellContent ContentTemplate="{DataTemplate view:EventsPage}" Route="EventsPage" />
         </Tab>
     </TabBar>
+
+    <ShellContent
+        ContentTemplate="{DataTemplate view:LoginPage}"
+        Route="LoginPage"
+        FlyoutItemIsVisible="False" />
 
 </Shell>
