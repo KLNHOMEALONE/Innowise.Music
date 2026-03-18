@@ -12,6 +12,7 @@ namespace Innowise.Music.Services;
 public interface IAuthenticationService
 {
     Task<bool> LoginAsync(LoginUserDto loginUserDto);
+    Task<bool> LoginGoogleAsync(LoginUserDto loginUserDto);
     Task<bool> RegisterAsync(UserDto userDto);
     Task LogoutAsync();
     Task<string?> GetTokenAsync();

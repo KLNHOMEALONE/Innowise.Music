@@ -51,6 +51,7 @@
                 </FlexLayout>
 
                 <!-- Featured Section -->
+                <!-- get rid of this extra stack layou place it in existing one -->
                 <VerticalStackLayout Spacing="5">
                     <Label Text="New release from" TextColor="White" FontSize="20" FontAttributes="Bold" />
                     <Label Text="Invent Animate" TextColor="White" FontSize="20" FontAttributes="Bold" />
@@ -74,6 +75,7 @@
                 </Border>
 
                 <!-- Artists You Like -->
+                <!-- Проверить Вертикал стак надо ли????-->
                 <VerticalStackLayout Spacing="15">
                     <Label Text="Artists you like" TextColor="White" FontSize="18" FontAttributes="Bold" />
                     <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
@@ -93,6 +95,7 @@
                 </VerticalStackLayout>
 
                 <!-- Featuring Songs You Like -->
+                <!-- Проверить Вертикал стак надо ли????-->
                 <VerticalStackLayout Spacing="15">
                     <Label Text="Featuring songs you like" TextColor="White" FontSize="18" FontAttributes="Bold" />
                     <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
@@ -112,6 +115,8 @@
                 </VerticalStackLayout>
 
                 <!-- Get Back to Listening -->
+                <!-- Проверить Вертикал стак надо ли????-->
+                <!-- Есть ли смысл вынести Border в отдельный стиль и заэплаить на  бордер?!!!! -->
                 <VerticalStackLayout Spacing="15">
                     <Label Text="Get back to listening" TextColor="White" FontSize="18" FontAttributes="Bold" />
                     <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">

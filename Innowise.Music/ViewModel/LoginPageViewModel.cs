@@ -56,7 +56,23 @@ public partial class LoginPageViewModel : ObservableObject
     [RelayCommand]
     private async Task GoogleLogin()
     {
-        // TODO: Implement Google login
-        await Task.CompletedTask;
+        if (string.IsNullOrEmpty(Email) || string.IsNullOrEmpty(Password)) return;
+        var success = await _authenticationService.LoginAsync(new Model.LoginUserDto
+        {
+            Email = Email,
+            Password = Password
+        });
+
+        if (success)
+        {
+            await _navigationService.NavigateToAsync($"///{nameof(View.HomePage)}");
+        }
+        else
+        {
+            // Handle error
+            System.Diagnostics.Debug.WriteLine("Login failed");
+        }
+
+
     }
 }

@@ -15,7 +15,8 @@
                     <Label Text="{Binding TrackTitle}" TextColor="White" FontAttributes="Bold" FontSize="14" />
                     <Label Text="{Binding ArtistName}" TextColor="Gray" FontSize="12" />
                 </VerticalStackLayout>
-                
+
+                <!-- Положит контент внутри грида без Stack Layout -->
                 <HorizontalStackLayout Grid.Column="2" Spacing="20" VerticalOptions="Center">
                     <Border BackgroundColor="#D90429" WidthRequest="20" HeightRequest="20" StrokeShape="RoundRectangle 10" StrokeThickness="0">
                         <Label Text="✔" TextColor="White" FontSize="12" HorizontalOptions="Center" VerticalOptions="Center" />

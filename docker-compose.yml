@@ -17,15 +17,27 @@ services:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
 
-  seq:
-    image: datalust/seq:latest
-    container_name: music_seq
-    environment:
-      ACCEPT_EULA: Y
+  # seq:
+  #   image: datalust/seq:latest
+  #   container_name: music_seq
+  #   environment:
+  #     ACCEPT_EULA: Y
+  #   ports:
+  #     - "5341:80"
+  #     - "5342:5341"
+  #   restart: unless-stopped
+
+  adminer:
+    image: adminer:latest
+    restart: always
     ports:
-      - "5341:80"
-      - "5342:5341"
-    restart: unless-stopped
+      - "8080:8080"
+    environment:
+      # Use the database service name (db) as the server name for Adminer to connect
+      ADMINER_DEFAULT_SERVER: db
+    # Depends on the db service to ensure it starts after the database is available
+    depends_on:
+      - postgres
 
   innowise.musicidentityserver:
     build:
@@ -34,14 +46,12 @@ services:
     container_name: music_identity_server
     depends_on:
       - postgres
-      - seq
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_Kestrel__Certificates__Default__Password=${KESTREL_CERT_PASSWORD}
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/home/app/.aspnet/https/Innowise.MusicIdentityServer.pfx
       - ConnectionStrings__PostgresAppDbConnection=Server=postgres;Port=5432;Database=musicidentity;User Id=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
-      - Serilog__WriteTo__1__Args__serverUrl=http://seq:5341
     ports:
       - "5236:8080" # Mapping to launchSettings.json port
       - "7008:8081" # HTTPS mapping for MAUI app

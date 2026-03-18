@@ -62,6 +62,14 @@ public class AuthenticationController : ControllerBase
     }
 
     [HttpPost]
+    [Route("googlelogin")]
+    public async Task<ActionResult<AuthenticationResponse>> GoogleLogin(LoginUserDto userDto)
+    {
+        _logger.LogInformation($"Google OAuth Login Attempt for {userDto.Email} ");
+        return Problem($"Something Went Wrong in the {nameof(GoogleLogin)}", statusCode: 500);
+    }
+
+    [HttpPost]
     [Route("login")]
     public async Task<ActionResult<AuthenticationResponse>> Login(LoginUserDto userDto)
     {
