@@ -1,13 +1,15 @@
-﻿using Innowise.Music.Services;
+using Innowise.Music.Services;
 using Innowise.Music.View;
 using Innowise.Music.ViewModel;
 using System;
+using System.Threading.Tasks;
 
 namespace Innowise.Music
 {
     public partial class AppShell : Shell
     {
         private readonly IAuthenticationService _authenticationService;
+        private TaskCompletionSource<string>? _authCompletionSource;
 
         public AppShell(AppShellViewModel viewModel, IAuthenticationService authenticationService)
         {
@@ -16,6 +18,7 @@ namespace Innowise.Music
             _authenticationService = authenticationService;
             Routing.RegisterRoute(nameof(SignUpPage), typeof(SignUpPage));
             Routing.RegisterRoute(nameof(NewsDetailedPage), typeof(NewsDetailedPage));
+            Routing.RegisterRoute(nameof(WebPage), typeof(WebPage));
 
             this.Loaded += OnShellLoaded;
         }
@@ -43,6 +46,17 @@ namespace Innowise.Music
                     viewModel.SelectedRoute = args.Target.Location.OriginalString;
                 }
             }
+        }
+
+        public Task<string> GetAuthResultAsync()
+        {
+            _authCompletionSource = new TaskCompletionSource<string>();
+            return _authCompletionSource.Task;
+        }
+
+        public void SetAuthResult(string authResult)
+        {
+            _authCompletionSource?.SetResult(authResult);
         }
     }
 }

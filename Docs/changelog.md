@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-03-18] - Google Authentication Re-implementation
+
+### Added
+- **WebPage**: Created a new `WebPage.xaml` and `WebPage.xaml.cs` to host a `WebView` for the Google authentication flow.
+- **WebPageViewModel**: Created a new `WebPageViewModel` to manage the state of the `WebPage`.
+
+### Changed
+- **GoogleAuthService**: Updated to use the `WebPage` to host the Google authentication flow instead of `WebAuthenticator`.
+- **AppShell**: Updated to handle the authentication result from the `WebPage`.
+
+## [2026-03-18] - Google Authentication Implementation
+
+### Added
+- **Google Authentication Service**: Created `IGoogleAuthService` and `GoogleAuthService` to handle the Google login flow using `WebAuthenticator`.
+- **Dependency Injection**: Registered `IGoogleAuthService` and `GoogleAuthService` in `MauiProgram.cs`.
+- **ViewModel Update**: Updated `LoginPageViewModel` to use the `GoogleAuthService` and added a `GoogleLogin` command.
+- **Identity Server Endpoint**: Added a new `google-login` endpoint to the `AuthenticationController` to handle Google token validation.
+- **Google.Apis.Auth**: Added the `Google.Apis.Auth` nuget package to the `Innowise.MusicIdentityServer` project.
+- **GoogleTokenDto**: Created a new DTO to transfer the Google token from the client to the server.
+
+### Changed
+- **AuthenticationController**: Updated the `google-login` endpoint to validate the Google token and create a new user if one doesn't exist.
+
 ## [2026-03-05] - XAML Resource Resolution Fixes
 
 ### Fixed

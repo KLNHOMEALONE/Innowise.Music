@@ -1,3 +1,5 @@
+using System.Web;
+
 namespace Innowise.Music.Services;
 
 public class NavigationService : INavigationService
@@ -25,5 +27,10 @@ public class NavigationService : INavigationService
     public Task NavigateAndClearStackAsync(string route)
     {
         return Shell.Current.GoToAsync($"//{route}", animate: true);
+    }
+
+    public Task GoToUrlAsync(string route, string authUrl)
+    {
+        return Shell.Current.GoToAsync($"{route}?url={HttpUtility.UrlEncode(authUrl)}");
     }
 }

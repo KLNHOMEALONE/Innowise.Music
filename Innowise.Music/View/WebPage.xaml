@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodel="clr-namespace:Innowise.Music.ViewModel"
+             x:Class="Innowise.Music.View.WebPage"
+             x:DataType="viewmodel:WebPageViewModel"
+             Title="WebPage">
+    <WebView Source="{Binding Url}"
+             Navigating="WebView_Navigating"/>
+</ContentPage>

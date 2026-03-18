@@ -34,10 +34,39 @@ public class AuthenticationService : IAuthenticationService
         return $"{baseUrl}/api/Authentication/{endpoint}";
     }
 
-    public async Task<bool> LoginGoogleAsync(LoginUserDto loginUserDto)
+    public async Task<bool> GoogleLoginAsync(string token)
     {
-        var url = GetApiUrl("googlelogin");
-        return await ProcessLoginAsync(loginUserDto, url);
+        var url = GetApiUrl("google-login");
+        return await ProcessGoogleLoginAsync(token, url);
+    }
+
+    private async Task<bool> ProcessGoogleLoginAsync(string token, string url)
+    {
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync(url, new { Token = token });
+
+            if (response.IsSuccessStatusCode)
+            {
+                var authResponse = await response.Content.ReadFromJsonAsync<AuthenticationResponse>();
+                if (authResponse != null && !string.IsNullOrEmpty(authResponse.Token))
+                {
+                    await SecureStorage.Default.SetAsync(AuthTokenKey, authResponse.Token);
+                    if (!string.IsNullOrEmpty(authResponse.RefreshToken))
+                    {
+                        await SecureStorage.Default.SetAsync(RefreshTokenKey, authResponse.RefreshToken);
+                    }
+                    return true;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log error (Rocket style: "Blasted API is down!")
+            System.Diagnostics.Debug.WriteLine($"AuthenticationService Login Error: {ex.Message}");
+        }
+
+        return false;
     }
 
     public async Task<bool> LoginAsync(LoginUserDto loginUserDto)

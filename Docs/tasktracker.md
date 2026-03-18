@@ -1,5 +1,21 @@
 # Task Tracker - Innowise.Music
 
+## Task: Google Authentication
+- **Status**: Completed
+- **Description**: Implement Google authentication using a WebView and a new endpoint on the Identity Server.
+- **Steps**:
+    - [x] Create `WebPage.xaml` and `WebPage.xaml.cs` to host a `WebView`
+    - [x] Create `WebPageViewModel` to manage the state of the `WebPage`
+    - [x] Register `WebPage` and `WebPageViewModel` in `MauiProgram.cs`
+    - [x] Register route for `WebPage` in `AppShell.xaml.cs`
+    - [x] Update `GoogleAuthService` to use the `WebPage`
+    - [x] Update `AppShell` to handle the authentication result from the `WebPage`
+    - [x] Update `WebPage.xaml.cs` to set the authentication result
+    - [x] Update `GoogleAuthService` to use `Shell.Current.GoToAsync`
+    - [x] Add `Google.Apis.Auth` nuget package to `Innowise.MusicIdentityServer`
+    - [x] Create `GoogleTokenDto`
+    - [x] Update `AuthenticationController` to handle Google login
+
 ## Task: Project Reorganization
 - **Status**: Completed
 - **Description**: Relocate solution file and verify paths for multi-project support.

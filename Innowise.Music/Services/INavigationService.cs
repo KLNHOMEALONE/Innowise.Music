@@ -7,4 +7,5 @@ public interface INavigationService
     Task GoBackAsync();
     Task GoBackAsync(IDictionary<string, object> parameters);
     Task NavigateAndClearStackAsync(string route);
+    Task GoToUrlAsync(string route, string url);
 }

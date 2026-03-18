@@ -36,6 +36,7 @@ namespace Innowise.Music
             
             // Register configuration
             builder.Services.Configure<ApiSettings>(builder.Configuration.GetSection(ApiSettings.SectionName));
+            builder.Services.Configure<GoogleAuthenticationSettings>(builder.Configuration.GetSection(GoogleAuthenticationSettings.SectionName));
             builder.Services.AddSingleton<HttpHelper>();
 
             builder.Services.AddSingleton<HttpClient>(provider =>
@@ -45,6 +46,7 @@ namespace Innowise.Music
             });
 
             builder.Services.AddSingleton<IAuthenticationService, AuthenticationService>();
+            builder.Services.AddSingleton<IGoogleAuthService, GoogleAuthService>();
             builder.Services.AddSingleton<INavigationService, NavigationService>();
             builder.Services.AddSingleton<WebNewsService>();
             builder.Services.AddSingleton<MockNewsService>();
@@ -68,6 +70,8 @@ namespace Innowise.Music
             builder.Services.AddTransient<MiniPlayerControl>();
             builder.Services.AddSingleton<AppShellViewModel>();
             builder.Services.AddSingleton<AppShell>();
+            builder.Services.AddSingleton<WebPage>();
+            builder.Services.AddSingleton<WebPageViewModel>();
 
 #if DEBUG
             builder.Logging.AddDebug();

@@ -8,6 +8,7 @@ public partial class LoginPageViewModel : ObservableObject
 {
     private readonly INavigationService _navigationService;
     private readonly IAuthenticationService _authenticationService;
+    private readonly IGoogleAuthService _googleAuthService;
 
     [ObservableProperty]
     private string _email;
@@ -15,10 +16,11 @@ public partial class LoginPageViewModel : ObservableObject
     [ObservableProperty]
     private string _password;
 
-    public LoginPageViewModel(INavigationService navigationService, IAuthenticationService authenticationService)
+    public LoginPageViewModel(INavigationService navigationService, IAuthenticationService authenticationService, IGoogleAuthService googleAuthService)
     {
         _navigationService = navigationService;
         _authenticationService = authenticationService;
+        _googleAuthService = googleAuthService;
     }
 
     [RelayCommand]
@@ -56,13 +58,15 @@ public partial class LoginPageViewModel : ObservableObject
     [RelayCommand]
     private async Task GoogleLogin()
     {
-        if (string.IsNullOrEmpty(Email) || string.IsNullOrEmpty(Password)) return;
-        var success = await _authenticationService.LoginAsync(new Model.LoginUserDto
+        var token = await _googleAuthService.AcquireTokenAsync();
+        if (string.IsNullOrEmpty(token))
         {
-            Email = Email,
-            Password = Password
-        });
+            // Handle error
+            System.Diagnostics.Debug.WriteLine("Google login failed");
+            return;
+        }
 
+        var success = await _authenticationService.GoogleLoginAsync(token);
         if (success)
         {
             await _navigationService.NavigateToAsync($"///{nameof(View.HomePage)}");
@@ -70,9 +74,7 @@ public partial class LoginPageViewModel : ObservableObject
         else
         {
             // Handle error
-            System.Diagnostics.Debug.WriteLine("Login failed");
+            System.Diagnostics.Debug.WriteLine("Google login failed");
         }
-
-
     }
 }

@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Innowise.MusicIdentityServer.Data;
 using Innowise.MusicIdentityServer.Models.User;
 using Innowise.MusicIdentityServer.Static;
@@ -10,6 +10,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Google.Apis.Auth;
 
 namespace Innowise.MusicIdentityServer.Controllers;
 
@@ -62,11 +63,59 @@ public class AuthenticationController : ControllerBase
     }
 
     [HttpPost]
-    [Route("googlelogin")]
-    public async Task<ActionResult<AuthenticationResponse>> GoogleLogin(LoginUserDto userDto)
+    [Route("google-login")]
+    public async Task<ActionResult<AuthenticationResponse>> GoogleLogin([FromBody] GoogleTokenDto googleToken)
     {
-        _logger.LogInformation($"Google OAuth Login Attempt for {userDto.Email} ");
-        return Problem($"Something Went Wrong in the {nameof(GoogleLogin)}", statusCode: 500);
+        _logger.LogInformation($"Google OAuth Login Attempt");
+        try
+        {
+            var clientId = _configuration["GoogleAuthentication:Google:ClientId"];
+            var settings = new GoogleJsonWebSignature.ValidationSettings()
+            {
+                Audience = new List<string>() { clientId }
+            };
+            var payload = await GoogleJsonWebSignature.ValidateAsync(googleToken.Token, settings);
+
+            var user = await _userManager.FindByEmailAsync(payload.Email);
+            if (user == null)
+            {
+                user = new ApiUser
+                {
+                    Email = payload.Email,
+                    UserName = payload.Email,
+                    FirstName = payload.GivenName,
+                    LastName = payload.FamilyName
+                };
+                var result = await _userManager.CreateAsync(user);
+                if (!result.Succeeded)
+                {
+                    return BadRequest(result.Errors);
+                }
+                await _userManager.AddToRoleAsync(user, "User");
+            }
+
+            string tokenString = await GenerateToken(user);
+            string refreshToken = GenerateRefreshToken();
+
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+            await _userManager.UpdateAsync(user);
+
+            var response = new AuthenticationResponse
+            {
+                Email = user.Email,
+                Token = tokenString,
+                RefreshToken = refreshToken,
+                UserId = user.Id,
+            };
+
+            return response;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Something Went Wrong in the {nameof(GoogleLogin)}");
+            return Problem($"Something Went Wrong in the {nameof(GoogleLogin)}", statusCode: 500);
+        }
     }
 
     [HttpPost]
