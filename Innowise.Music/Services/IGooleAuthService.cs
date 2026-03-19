@@ -9,5 +9,7 @@ namespace Innowise.Music.Services
     public interface IGoogleAuthService
     {
         Task<string> AcquireTokenAsync();
+        Task SignOut();
+
     }
 }

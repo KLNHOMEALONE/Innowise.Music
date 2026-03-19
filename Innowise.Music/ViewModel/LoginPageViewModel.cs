@@ -58,6 +58,7 @@ public partial class LoginPageViewModel : ObservableObject
     [RelayCommand]
     private async Task GoogleLogin()
     {
+        //await _googleAuthService.SignOut();
         var token = await _googleAuthService.AcquireTokenAsync();
         if (string.IsNullOrEmpty(token))
         {
