@@ -6,7 +6,6 @@ using Innowise.Music.ViewModel;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Reflection;
-using Microsoft.Maui.Maps;
 
 namespace Innowise.Music
 {
@@ -26,7 +25,6 @@ namespace Innowise.Music
             
             builder
                 .UseMauiApp<App>()
-                .UseMauiMaps()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("Lexend-Regular.ttf", "LexendRegular");

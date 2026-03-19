@@ -124,7 +124,7 @@ namespace Innowise.Music.Services
             });
             var userInfo = await _oauth2Service.Userinfo.Get().ExecuteAsync();
             _email = userInfo.Email;
-            return string.Empty;
+            return accesToken;
         }
 
         private async Task RefreshToken()
@@ -178,7 +178,7 @@ namespace Innowise.Music.Services
         {
             var authUrl = "https://accounts.google.com/o/oauth2/v2/auth";
             var clientId = _androidClientId;
-            var redirectUri = $"{_androidRedirectScheme}://";  // requires a period: https://developers.google.com/identity/protocols/oauth2/native-app#android
+            var redirectUri = $"{_androidRedirectScheme}:/oauth2redirect";  // requires a period: https://developers.google.com/identity/protocols/oauth2/native-app#android
             var codeVerifier = GenerateCodeVerifier();
             var codeChallenge = GenerateCodeChallenge(codeVerifier);
             var parameters = GenerateAuthParameters(redirectUri, clientId, codeChallenge);

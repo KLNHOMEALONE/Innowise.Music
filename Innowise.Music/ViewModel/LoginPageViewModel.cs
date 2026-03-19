@@ -66,16 +66,16 @@ public partial class LoginPageViewModel : ObservableObject
             System.Diagnostics.Debug.WriteLine("Google login failed");
             return;
         }
-
-        var success = await _authenticationService.GoogleLoginAsync(token);
-        if (success)
-        {
-            await _navigationService.NavigateToAsync($"///{nameof(View.HomePage)}");
-        }
-        else
-        {
-            // Handle error
-            System.Diagnostics.Debug.WriteLine("Google login failed");
-        }
+        await _navigationService.NavigateToAsync($"///{nameof(View.HomePage)}");
+        //var success = await _authenticationService.GoogleLoginAsync(token);
+        //if (success)
+        //{
+        //    await _navigationService.NavigateToAsync($"///{nameof(View.HomePage)}");
+        //}
+        //else
+        //{
+        //    // Handle error
+        //    System.Diagnostics.Debug.WriteLine("Google login failed");
+        //}
     }
 }
