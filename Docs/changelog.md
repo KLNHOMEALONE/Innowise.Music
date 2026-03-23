@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-03-23] - Fixed Android Google Authentication Loop
+
+### Fixed
+
+- Investigated and resolved an infinite loop during Google authentication on the Android platform. The root cause was determined to be a corrupted or stale state within the Android emulator, not a code defect.
+- The debugging process involved multiple attempts to align the `redirect_uri` in `GoogleAuthService.cs` with the `[IntentFilter]` in `WebAuthenticationCallbackActivity.cs`.
+- An attempt to use a hierarchical URI (`com.klnhomealone.innomusic://oauth2redirect`) with a `DataHost` filter resolved the loop but resulted in `400 invalid_request` and `access_blocked` policy errors from Google's OAuth service.
+- Further investigation into Google Cloud Console settings (SHA-1 keys, test users) did not resolve the policy errors.
+- Code was reverted to its original state.
+- The final solution was to reset the Android emulator to factory settings, which cleared the corrupted state and allowed the original code to function correctly.
+
 ## [2026-03-18] - Google Authentication Re-implementation
 
 ### Added
