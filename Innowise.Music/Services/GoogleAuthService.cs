@@ -200,7 +200,7 @@ namespace Innowise.Music.Services
                     {
                         Url = new Uri(fullAuthUrl),
                         CallbackUrl = new Uri(redirectUri),
-                        /*PrefersEphemeralWebBrowserSession = true*/
+                        PrefersEphemeralWebBrowserSession = true
                     }).ConfigureAwait(false);
 
 

@@ -8,7 +8,9 @@ public class MapperConfig : Profile
 {
     public MapperConfig()
     {
-        CreateMap<ApiUser, UserDto>().ReverseMap();
+        CreateMap<UserDto, ApiUser>()
+            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email));
+        CreateMap<ApiUser, UserDto>();
     }
     
 }

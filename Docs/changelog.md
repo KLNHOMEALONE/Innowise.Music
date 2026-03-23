@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-03-23] - Fixed 500 Error on Login
+
+### Fixed
+
+- Resolved a 500 Internal Server Error that occurred on the login page.
+- The root cause was the Google authentication middleware crashing the application on startup due to a missing `ClientId` in the configuration.
+- The fix involved temporarily disabling the Google authentication middleware in `Program.cs` to allow the application to start and the login endpoint to function.
+
 ## [2026-03-23] - Fixed Android Google Authentication Loop
 
 ### Fixed

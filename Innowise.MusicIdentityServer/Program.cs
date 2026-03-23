@@ -55,13 +55,13 @@ builder.Services.AddAuthentication(options => {
     };
 });
 
-var google = builder.Configuration.GetSection("GoogleAuthentication");
-builder.Services.AddAuthentication().AddGoogle(options =>
-{
-    options.ClientId = builder.Configuration["GoogleAuthentication:ClientId"]!;
-    options.ClientSecret = builder.Configuration["GoogleAuthentication:ClientSecret"]!;
-    options.CallbackPath = "/signin-google";
-});
+//var google = builder.Configuration.GetSection("GoogleAuthentication");
+//builder.Services.AddAuthentication().AddGoogle(options =>
+//{
+//    options.ClientId = builder.Configuration["GoogleAuthentication:ClientId"]!;
+//    options.ClientSecret = builder.Configuration["GoogleAuthentication:ClientSecret"]!;
+//    options.CallbackPath = "/signin-google";
+//});
 
 var app = builder.Build();
 

@@ -1,5 +1,16 @@
 # Task Tracker - Innowise.Music
 
+## Task: Fix Login 500 Error
+- **Status**: Completed
+- **Description**: The login process was failing with a 500 Internal Server Error. The root cause was the Google authentication middleware crashing the application on startup due to a missing `ClientId` in the configuration.
+- **Steps**:
+    - [x] Investigated the `Login` method in the `AuthenticationController`.
+    - [x] Analyzed the server logs to identify the `System.ArgumentNullException: Value cannot be null. (Parameter 'ClientId')` error.
+    - [x] Identified that the Google authentication middleware was being loaded on startup, even when not explicitly used.
+    - [x] Temporarily disabled the Google authentication middleware in `Program.cs` to prevent the application from crashing.
+    - [x] Confirmed with the user that the login process is now working as expected.
+- **Dependencies**: None
+
 ## Task: Debug Google Authentication Infinite Loop on Android
 - **Status**: Completed
 - **Description**: User reported that the Google login flow on Android would result in an infinite loop, where the browser would not correctly return control to the application after authentication. The investigation pointed to a mismatch between the URI format Google expects and the format the Android Intent Filter could parse. However, all code-based solutions led to other configuration or policy errors from Google. The final resolution was discovered to be an environmental issue.
@@ -186,7 +197,7 @@
 - **Description**: Replaced all instances of `StaticResource PrimaryRed` with its direct hex value `#D90429` across affected XAML files to resolve resource resolution issues.
 - **Steps**:
     - [x] Changed `BackgroundColor` in `LibraryPage.xaml` from `StaticResource PrimaryRed` to `#D90429`.
-    - [x] Changed `TextColor` and `BackgroundColor` in `SignUpPage.xaml` from `StaticResource PrimaryRed` to `#D90429`.
+    - [x] Changed `TextColor` and `BackgroundColor` in `SignUpPage.xaml` from `Static-resource PrimaryRed` to `#D90429`.
     - [x] Changed `TextColor` and `BackgroundColor` in `LoginPage.xaml` from `StaticResource PrimaryRed` to `#D90429`.
     - [x] Changed `Color` and `BackgroundColor` in `EventsPage.xaml` from `StaticResource PrimaryRed` to `#D90429`.
     - [x] Changed `Dark` theme `Shell.TabBarForegroundColor` and `Shell.TabBarTitleColor` in `Resources/Styles/Styles.xaml` from `StaticResource PrimaryRed` to `#D90429`.
