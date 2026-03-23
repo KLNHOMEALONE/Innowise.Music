@@ -25,11 +25,10 @@ namespace Innowise.Music.Services
 {
     public class GoogleAuthService : IGoogleAuthService
     {
-        readonly string _windowsClientId = "546277763528-jcql4f5q44mkuj3g0ol74c8innrv86vk.apps.googleusercontent.com";      // UWP client
-        readonly string _androidClientId = "546277763528-0ek9cs54d81j3gv0gr1d9t0bomlvt9c2.apps.googleusercontent.com";  // Android client
         readonly string _androidRedirectScheme = AppInfo.Current.PackageName;
 
         private readonly HttpClient _httpClient;
+        private readonly GoogleAuthenticationSettings _googleAuthSettings;
 
         Oauth2Service? _oauth2Service;
         DriveService? _driveService;
@@ -38,9 +37,6 @@ namespace Innowise.Music.Services
 
         public bool IsSignedIn => _credential != null;
         public string? Email => _email;
-
-
-        private readonly GoogleAuthenticationSettings _googleAuthSettings;
 
         public GoogleAuthService(HttpClient httpClient, IOptions<GoogleAuthenticationSettings> googleAuthSettings)
         {
@@ -81,55 +77,65 @@ namespace Innowise.Music.Services
             _driveService = null;
         }
 
+        private static readonly SemaphoreSlim _semaphore = new(1, 1);
+
         public async Task<string> AcquireTokenAsync()
         {
-            var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            var expiresIn = Preferences.Get("access_token_epires_in", 0L);
-            var isExpired = now - 10 > expiresIn;   // 10 second buffer
-            var hasRefreshToken = await SecureStorage.GetAsync("refresh_token") is not null;
+            await _semaphore.WaitAsync();
+            try
+            {
+                var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                var expiresIn = Preferences.Get("access_token_epires_in", 0L);
+                var isExpired = expiresIn == 0L || now - 10 > expiresIn;
+                var hasRefreshToken = await SecureStorage.GetAsync("refresh_token") is not null;
 
-            if (isExpired && hasRefreshToken)
-            {
-                Debug.WriteLine("Using refresh token");
-                await RefreshToken();
-            }
-            else if (isExpired)     // No refresh token
-            {
-                Debug.WriteLine("Starting auth code flow");
-                if (DeviceInfo.Current.Platform == DevicePlatform.WinUI)
+                if (isExpired && hasRefreshToken)
                 {
-                    await DoAuthCodeFlowWindows();
+                    Debug.WriteLine("Using refresh token");
+                    await RefreshToken();
                 }
-                else if (DeviceInfo.Current.Platform == DevicePlatform.Android)
+                else if (isExpired) // No refresh token
                 {
-                    await DoAuthCodeFlowAndroid();
+                    Debug.WriteLine("Starting auth code flow");
+                    if (DeviceInfo.Current.Platform == DevicePlatform.WinUI)
+                    {
+                        await DoAuthCodeFlowWindows();
+                    }
+                    else if (DeviceInfo.Current.Platform == DevicePlatform.Android)
+                    {
+                        await DoAuthCodeFlowAndroid();
+                    }
+                    else
+                    {
+                        throw new NotImplementedException($"Auth flow for platform {DeviceInfo.Current.Platform} not implemented.");
+                    }
                 }
-                else
-                {
-                    throw new NotImplementedException($"Auth flow for platform {DeviceInfo.Current.Platform} not implemented.");
-                }
-            }
 
-            var accesToken = await SecureStorage.GetAsync("access_token");
-            _credential = GoogleCredential.FromAccessToken(accesToken);
-            _oauth2Service = new Oauth2Service(new BaseClientService.Initializer
+                var accesToken = await SecureStorage.GetAsync("access_token");
+                _credential = GoogleCredential.FromAccessToken(accesToken);
+                _oauth2Service = new Oauth2Service(new BaseClientService.Initializer
+                {
+                    HttpClientInitializer = _credential,
+                    ApplicationName = AppInfo.Current.Name
+                });
+                _driveService = new DriveService(new BaseClientService.Initializer
+                {
+                    HttpClientInitializer = _credential,
+                    ApplicationName = AppInfo.Current.Name
+                });
+                var userInfo = await _oauth2Service.Userinfo.Get().ExecuteAsync();
+                _email = userInfo.Email;
+                return accesToken;
+            }
+            finally
             {
-                HttpClientInitializer = _credential,
-                ApplicationName = AppInfo.Current.Name
-            });
-            _driveService = new DriveService(new BaseClientService.Initializer
-            {
-                HttpClientInitializer = _credential,
-                ApplicationName = AppInfo.Current.Name
-            });
-            var userInfo = await _oauth2Service.Userinfo.Get().ExecuteAsync();
-            _email = userInfo.Email;
-            return accesToken;
+                _semaphore.Release();
+            }
         }
 
         private async Task RefreshToken()
         {
-            var clientId = DeviceInfo.Current.Platform == DevicePlatform.WinUI ? _windowsClientId : _androidClientId;
+            var clientId = DeviceInfo.Current.Platform == DevicePlatform.WinUI ? _googleAuthSettings.Google.WindowsClientId : _googleAuthSettings.Google.AndroidClientId;
             var tokenEndpoint = "https://oauth2.googleapis.com/token";
             var refreshToken = await SecureStorage.GetAsync("refresh_token");
             var tokenRequest = new HttpRequestMessage(HttpMethod.Post, tokenEndpoint)
@@ -159,7 +165,7 @@ namespace Innowise.Music.Services
         private async Task DoAuthCodeFlowWindows()
         {
             var authUrl = "https://accounts.google.com/o/oauth2/v2/auth";
-            var clientId = _windowsClientId;
+            var clientId = _googleAuthSettings.Google.WindowsClientId;
             var localPort = 12345;
             var redirectUri = $"http://localhost:{localPort}";
             var codeVerifier = GenerateCodeVerifier();
@@ -177,17 +183,48 @@ namespace Innowise.Music.Services
         private async Task DoAuthCodeFlowAndroid()
         {
             var authUrl = "https://accounts.google.com/o/oauth2/v2/auth";
-            var clientId = _androidClientId;
+            
+            var clientId = _googleAuthSettings.Google.AndroidClientId;
             var redirectUri = $"{_androidRedirectScheme}:/oauth2redirect";  // requires a period: https://developers.google.com/identity/protocols/oauth2/native-app#android
             var codeVerifier = GenerateCodeVerifier();
             var codeChallenge = GenerateCodeChallenge(codeVerifier);
             var parameters = GenerateAuthParameters(redirectUri, clientId, codeChallenge);
             var queryString = string.Join("&", parameters.Select(param => $"{param.Key}={param.Value}"));
             var fullAuthUrl = $"{authUrl}?{queryString}";
-#pragma warning disable CA1416
-            var authCodeResponse = await WebAuthenticator.AuthenticateAsync(new Uri(fullAuthUrl), new Uri(redirectUri));
-#pragma warning restore CA1416
-            var authorizationCode = authCodeResponse.Properties["code"];
+            WebAuthenticatorResult authResult = null;
+            string authorizationCode = null;
+            try
+            {
+                authResult = await WebAuthenticator.Default.AuthenticateAsync(
+                    new WebAuthenticatorOptions
+                    {
+                        Url = new Uri(fullAuthUrl),
+                        CallbackUrl = new Uri(redirectUri),
+                        /*PrefersEphemeralWebBrowserSession = true*/
+                    }).ConfigureAwait(false);
+
+
+                if (authResult?.Properties != null && authResult.Properties.ContainsKey("code"))
+                {
+                    authorizationCode = authResult.Properties["code"];
+                    Debug.WriteLine("Successfully received authorization code.");
+                }
+                else
+                {
+                    Debug.WriteLine("Authentication result came back empty or did not contain an authorization code.");
+                    throw new Exception("Failed to retrieve authorization code from authentication result.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"An exception occurred during WebAuthenticator flow: {ex}");
+                throw; // Re-throw the exception to see it in the debugger if it's catchable
+            }
+
+            if (string.IsNullOrEmpty(authorizationCode))
+            {
+                throw new Exception("Authorization code was null or empty after authentication flow.");
+            }
 
             await GetInitialToken(authorizationCode, redirectUri, clientId, codeVerifier);
         }
@@ -216,7 +253,7 @@ namespace Innowise.Music.Services
         {
             return new Dictionary<string, string>
             {
-                { "scope", string.Join(' ', [Oauth2Service.Scope.UserinfoProfile, Oauth2Service.Scope.UserinfoEmail]) },
+                { "scope", string.Join(' ', ["openid", Oauth2Service.Scope.UserinfoProfile, Oauth2Service.Scope.UserinfoEmail]) },
                 { "access_type", "offline" },
                 { "include_granted_scopes", "true" },
                 { "response_type", "code" },
@@ -250,11 +287,15 @@ namespace Innowise.Music.Services
             Debug.WriteLine($"Access token: {responseBody}");
             var jsonToken = JsonObject.Parse(responseBody);
             var accessToken = jsonToken!["access_token"]!.ToString();
-            var refreshToken = jsonToken!["refresh_token"]!.ToString();
             var accessTokenExpiresIn = DateTimeOffset.UtcNow.ToUnixTimeSeconds() + int.Parse(jsonToken!["expires_in"]!.ToString());
             await SecureStorage.SetAsync("access_token", accessToken);
-            await SecureStorage.SetAsync("refresh_token", refreshToken);
             Preferences.Set("access_token_epires_in", accessTokenExpiresIn);
+
+            if (jsonToken["refresh_token"] is not null)
+            {
+                var refreshToken = jsonToken["refresh_token"]!.GetValue<string>();
+                await SecureStorage.SetAsync("refresh_token", refreshToken);
+            }
         }
 
         private static async Task<string> StartLocalHttpServerAsync(int port)
@@ -282,47 +323,6 @@ namespace Innowise.Music.Services
         }
 
 
-
-        //public async Task<string?> AcquireTokenAsync()
-        //{
-        //    try
-        //    {
-        //        if (_googleAuthSettings.Google == null || string.IsNullOrEmpty(_googleAuthSettings.Google.ClientId))
-        //        {
-        //            return null;
-        //        }
-
-        //        var clientId = _googleAuthSettings.Google.ClientId;
-        //        var redirectUri = "myapp://oauth2redirect";
-        //        var scope = "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile";
-        //        var authUrl = $"https://accounts.google.com/o/oauth2/v2/auth?client_id={clientId}&redirect_uri={redirectUri}&response_type=code&scope={scope}";
-
-        //        await Shell.Current.GoToAsync($"{nameof(WebPage)}?url={HttpUtility.UrlEncode(authUrl)}");
-
-        //        if (Shell.Current is not AppShell appShell)
-        //        {
-        //            return null;
-        //        }
-
-        //        var authResult = await appShell.GetAuthResultAsync();
-
-        //        if (string.IsNullOrEmpty(authResult))
-        //        {
-        //            return null;
-        //        }
-
-        //        var uri = new Uri(authResult);
-        //        var query = HttpUtility.ParseQueryString(uri.Query);
-        //        var token = query.Get("code");
-
-        //        return token;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine($"Authentication failed: {ex.Message}");
-        //        return null;
-        //    }
-        //}
 
     }
 }
