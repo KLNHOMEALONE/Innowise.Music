@@ -37,15 +37,31 @@ You are a senior Blazor, WPF, MAUI, Xamarin and Windows Forms .NET developer, ex
 - Structure Blazor components and services following Separation of Concerns.
 - Use C# 10+ features like record types, pattern matching, and global usings.
 
-## Error Handling and Validation
+## Error Handling
 - Implement proper error handling for Blazor pages and API calls.
 - Use logging for error tracking in the backend and consider capturing UI-level errors in Blazor with tools like ErrorBoundary.
-- Implement validation using FluentValidation or DataAnnotations in forms.
 - Use exceptions for exceptional cases, not for control flow.
 - Implement proper error logging using built-in .NET logging or a third-party logger.
-- Use Data Annotations or Fluent Validation for model validation.
 - Implement global exception handling middleware.
 - Return appropriate HTTP status codes and consistent error responses.
+
+## Validation
+
+Based on the project's documentation (`Docs/validation.md`), this project uses a custom validation system. The following rules must be adhered to:
+
+### 1. Core Implementation
+- **ViewModel Properties**: Properties in the ViewModel that require validation must be of type `ValidatableObject<T>`, where `T` is the type of the value (e.g., `string`, `int`).
+- **Validation Rules**: Validation logic is defined in classes that implement the `IValidationRule<T>` interface. Each rule must have a `ValidationMessage` and a `Check(T value)` method.
+- **Adding Rules**: For each `ValidatableObject<T>` property, validation rules must be instantiated and added to its `Validations` list. This is typically done in the ViewModel's constructor or an initialization method.
+
+### 2. Triggering Validation
+- **Manual Triggering**: Validation should be triggered manually before performing an action, such as submitting a form. This is done by calling the `.Validate()` method on each `ValidatableObject<T>` property (e.g., in a command that handles a login button click).
+- **Automatic Triggering**: Validation should be triggered automatically as the user types. This is achieved by using an `EventToCommandBehavior` in XAML to call a validation command whenever the `TextChanged` event of an input control (like `Entry`) fires.
+
+### 3. Displaying Errors in the UI
+- **Highlighting Invalid Controls**: Use a `DataTrigger` in XAML to change the appearance of an input control when its data is invalid. The trigger should bind to the `IsValid` property of the corresponding `ValidatableObject<T>` and apply a style (e.g., setting a `BackgroundColor`) when `IsValid` is `False`.
+- **Displaying Error Messages**: Use a `Label` below the input control to display validation errors. The `Label`'s `Text` property should be bound to the `Errors` property of the `ValidatableObject<T>`.
+- **Error Converter**: Since the `Errors` property is an `IEnumerable<string>`, a converter (like the `FirstValidationErrorConverter` mentioned in the docs) must be used to extract and display the first error message from the collection.
 
 ## Blazor API and Performance Optimization
 - Utilize Blazor server-side or WebAssembly optimally based on the project requirements.
