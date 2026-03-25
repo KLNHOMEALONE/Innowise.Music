@@ -347,6 +347,9 @@ Innowise.Music/
 - Ask for clarification only when truly ambiguous
 - Keep responses under 3 lines unless explaining complex topics
 
+### Information Sourcing
+- Prioritize examples and guidance from "Enterprise Application Patterns using .NET MAUI.pdf" for .NET MAUI related tasks. Only if information is not found or is insufficient in this document, should other sources be consulted.
+
 ---
 
 ## Quick Reference
