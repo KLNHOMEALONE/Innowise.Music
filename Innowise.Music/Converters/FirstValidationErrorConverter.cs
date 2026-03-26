@@ -1,10 +1,12 @@
 using System.Globalization;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Innowise.Music.Converters
 {
     public class FirstValidationErrorConverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is IEnumerable<string> errors && errors.Any())
             {
@@ -14,7 +16,7 @@ namespace Innowise.Music.Converters
             return string.Empty;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }

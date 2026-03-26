@@ -31,45 +31,45 @@ public partial class SignUpPageViewModel : ObservableObject
         _navigationService = navigationService;
         _authenticationService = authenticationService;
 
-        _email = new ValidatableObject<string>();
-        _password = new ValidatableObject<string>();
-        _repeatPassword = new ValidatableObject<string>();
-        _firstName = new ValidatableObject<string>();
-        _lastName = new ValidatableObject<string>();
+        Email = new ValidatableObject<string>();
+        Password = new ValidatableObject<string>();
+        RepeatPassword = new ValidatableObject<string>();
+        FirstName = new ValidatableObject<string>();
+        LastName = new ValidatableObject<string>();
 
         AddValidationRules();
     }
 
     private void AddValidationRules()
     {
-        _email.Validations.Add(new IsNotNullOrEmptyRule<string> { ValidationMessage = "Email cannot be empty." });
-        _email.Validations.Add(new EmailRule<string> { ValidationMessage = "Invalid email format." });
-        _password.Validations.Add(new IsNotNullOrEmptyRule<string> { ValidationMessage = "Password cannot be empty." });
-        _repeatPassword.Validations.Add(new IsNotNullOrEmptyRule<string> { ValidationMessage = "Repeat password cannot be empty." });
-        _repeatPassword.Validations.Add(new CompareRule<string>(() => Password.Value) { ValidationMessage = "Passwords do not match." });
-        _firstName.Validations.Add(new IsNotNullOrEmptyRule<string> { ValidationMessage = "First name cannot be empty." });
-        _lastName.Validations.Add(new IsNotNullOrEmptyRule<string> { ValidationMessage = "Last name cannot be empty." });
+        Email.Validations.Add(new IsNotNullOrEmptyRule<string> { ValidationMessage = "Email cannot be empty." });
+        Email.Validations.Add(new EmailRule<string> { ValidationMessage = "Invalid email format." });
+        Password.Validations.Add(new IsNotNullOrEmptyRule<string> { ValidationMessage = "Password cannot be empty." });
+        RepeatPassword.Validations.Add(new IsNotNullOrEmptyRule<string> { ValidationMessage = "Repeat password cannot be empty." });
+        RepeatPassword.Validations.Add(new CompareRule<string>(() => Password.Value) { ValidationMessage = "Passwords do not match." });
+        FirstName.Validations.Add(new IsNotNullOrEmptyRule<string> { ValidationMessage = "First name cannot be empty." });
+        LastName.Validations.Add(new IsNotNullOrEmptyRule<string> { ValidationMessage = "Last name cannot be empty." });
     }
 
     private bool Validate()
     {
-        return _email.Validate() && _password.Validate() && _repeatPassword.Validate() && _firstName.Validate() && _lastName.Validate();
+        return Email.Validate() && Password.Validate() && RepeatPassword.Validate() && FirstName.Validate() && LastName.Validate();
     }
 
     [RelayCommand]
-    private void ValidateEmail() => _email.Validate();
+    private void ValidateEmail() => Email.Validate();
 
     [RelayCommand]
-    private void ValidatePassword() => _password.Validate();
+    private void ValidatePassword() => Password.Validate();
 
     [RelayCommand]
-    private void ValidateRepeatPassword() => _repeatPassword.Validate();
+    private void ValidateRepeatPassword() => RepeatPassword.Validate();
 
     [RelayCommand]
-    private void ValidateFirstName() => _firstName.Validate();
+    private void ValidateFirstName() => FirstName.Validate();
 
     [RelayCommand]
-    private void ValidateLastName() => _lastName.Validate();
+    private void ValidateLastName() => LastName.Validate();
 
     [RelayCommand]
     private async Task SignUp()

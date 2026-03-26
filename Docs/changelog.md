@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-03-26] - Implemented Input Validation & UI Enhancements
+
+### Added
+
+- **Input Validation System**: Implemented the project's custom input validation system across Login and Sign-up pages.
+    - Properties in ViewModels (`LoginPageViewModel`, `SignUpPageViewModel`) refactored to `ValidatableObject<T>`.
+    - Custom validation rules (`EmailRule`, `IsNotNullOrEmptyRule`, `CompareRule`) applied to relevant fields.
+- **`FirstValidationErrorConverter`**: New converter added to display the first validation error message.
+- **Automatic Validation**: Integrated `CommunityToolkit.Maui` to enable automatic, as-you-type validation feedback.
+    - Added `TextChangedCommand` to `InputEntryControl`.
+    - Implemented `EventToCommandBehavior` in `InputEntryControl.xaml` to trigger validation commands in ViewModels.
+
+### Changed
+
+- **`InputEntryControl` UI**: Modified `InputEntryControl.xaml` to include a `Label` for error messages and dynamic `Border` styling based on validation status.
+    - Layout changed from `VerticalStackLayout` to `Grid` within `InputEntryControl.xaml` to resolve Android UI rendering issues.
+- **`LoginPageViewModel`**: Updated to use `ValidatableObject<string>` for Email and Password, and added validation commands.
+- **`SignUpPageViewModel`**: Updated to use `ValidatableObject<string>` for Email, Password, Repeat Password, First Name, and Last Name, and added validation commands including a `CompareRule` for password matching.
+- **`LoginPage.xaml`**: Bindings updated to reflect `ValidatableObject<T>` properties and to utilize `FirstValidationErrorConverter` and automatic validation commands.
+- **`SignUpPage.xaml`**: Bindings updated to reflect `ValidatableObject<T>` properties, to include `FirstName` and `LastName` input controls, and to utilize `FirstValidationErrorConverter` and automatic validation commands.
+- **Validation Rule Consistency**: Renamed `IsNullOrEmptyRule.cs` to `IsNotNullOrEmptyRule.cs` to match the class name (`IsNotNullOrEmptyRule`).
+
+### Fixed
+
+- **Android UI Issue**: Resolved a UI rendering issue on Android by changing the internal layout of `InputEntryControl.xaml` from `VerticalStackLayout` to `Grid`.
+- **`MVVMTK0034` Warnings**: Fixed warnings in `LoginPageViewModel` and `SignUpPageViewModel` by referencing generated properties instead of private fields for `[ObservableProperty]` attributes.
+- **`CommunityToolkit.Maui` Compatibility**: Successfully integrated `CommunityToolkit.Maui` by using a compatible version for the .NET 9 framework.
+
 ## [2026-03-23] - Fixed 500 Error on Login
 
 ### Fixed

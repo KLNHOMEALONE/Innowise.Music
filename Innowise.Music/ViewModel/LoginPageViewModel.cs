@@ -24,21 +24,21 @@ public partial class LoginPageViewModel : ObservableObject
         _authenticationService = authenticationService;
         _googleAuthService = googleAuthService;
 
-        _email = new ValidatableObject<string>();
-        _password = new ValidatableObject<string>();
+        Email = new ValidatableObject<string>();
+        Password = new ValidatableObject<string>();
 
         AddValidationRules();
     }
 
     private void AddValidationRules()
     {
-        _email.Validations.Add(new EmailRule<string> { ValidationMessage = "Invalid email format." });
-        _password.Validations.Add(new IsNotNullOrEmptyRule<string> { ValidationMessage = "Password cannot be empty." });
+        Email.Validations.Add(new EmailRule<string> { ValidationMessage = "Invalid email format." });
+        Password.Validations.Add(new IsNotNullOrEmptyRule<string> { ValidationMessage = "Password cannot be empty." });
     }
 
     private bool Validate()
     {
-        return _email.Validate() && _password.Validate();
+        return Email.Validate() && Password.Validate();
     }
 
     [RelayCommand]

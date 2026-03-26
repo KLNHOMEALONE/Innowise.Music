@@ -1,5 +1,26 @@
 # Task Tracker - Innowise.Music
 
+## Task: Implement Input Validation System
+- **Status**: Completed
+- **Description**: Implemented a comprehensive input validation system for the Login and Sign-up pages, including UI feedback and automatic validation on text change.
+- **Steps**:
+    - [x] Enhanced `InputEntryControl` with error message display and dynamic border styling.
+    - [x] Created `FirstValidationErrorConverter` to extract the first error message from validation results.
+    - [x] Updated `LoginPageViewModel` to use `ValidatableObject<string>` for Email and Password, and added validation rules (`EmailRule`, `IsNotNullOrEmptyRule`).
+    - [x] Updated `LoginPage.xaml` to bind to `ValidatableObject<string>` properties and display validation feedback.
+    - [x] Created `CompareRule` for password confirmation.
+    - [x] Updated `SignUpPageViewModel` to use `ValidatableObject<string>` for Email, Password, Repeat Password, First Name, and Last Name, and added validation rules (`EmailRule`, `IsNotNullOrEmptyRule`, `CompareRule`).
+    - [x] Updated `SignUpPage.xaml` to bind to `ValidatableObject<string>` properties, include `FirstName` and `LastName` input controls, and display validation feedback.
+    - [x] Renamed `IsNullOrEmptyRule.cs` to `IsNotNullOrEmptyRule.cs` for consistency.
+    - [x] Added `CommunityToolkit.Maui` NuGet package.
+    - [x] Initialized `CommunityToolkit.Maui` in `MauiProgram.cs`.
+    - [x] Added `TextChangedCommand` to `InputEntryControl`'s code-behind.
+    - [x] Integrated `EventToCommandBehavior` in `InputEntryControl.xaml` to trigger ViewModel validation commands on text changes.
+    - [x] Added individual validation commands to `LoginPageViewModel` and `SignUpPageViewModel`.
+    - [x] Resolved `MVVMTK0034` warnings in ViewModels.
+    - [x] Fixed Android UI rendering issue in `InputEntryControl.xaml` by changing `VerticalStackLayout` to `Grid`.
+- **Dependencies**: `CommunityToolkit.Mvvm`, `CommunityToolkit.Maui`
+
 ## Task: Fix Login 500 Error
 - **Status**: Completed
 - **Description**: The login process was failing with a 500 Internal Server Error. The root cause was the Google authentication middleware crashing the application on startup due to a missing `ClientId` in the configuration.
@@ -165,7 +186,7 @@
 - **Steps**:
     - [x] Create tasktracker.md
     - [x] Create changelog.md
-    - [ ] Update project.md with architecture
+    - [x] Update project.md with architecture (Validation system added)
     - [ ] Add API documentation
 
 ## Task: Architectural Improvements (Navigation)

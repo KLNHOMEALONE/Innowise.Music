@@ -4,7 +4,7 @@
 Innowise.Music is a cross-platform audio streaming application built with .NET 9 MAUI. The application follows the MVVM pattern and targets iOS, Android, macOS, and Windows platforms.
 
 ## Technology Stack
-- **Framework**: .NET 9 MAUI
+- **Framework**: .NET 9 MAUI, CommunityToolkit.Maui
 - **Backend Architecture**: ASP.NET Core Identity Server, Docker Compose
 - **Architecture**: MVVM with CommunityToolkit.Mvvm
 - **Database**: PostgreSQL
@@ -42,6 +42,24 @@ Innowise.Music/ (Root)
 ```
 
 ## Component Architecture
+
+### Input Validation Architecture
+The application incorporates a robust input validation system, adhering to the following principles:
+
+- **`ValidatableObject<T>`**: ViewModels utilize `ValidatableObject<T>` for properties requiring validation. This class manages the value, validation status (`IsValid`), and a collection of error messages (`Errors`).
+- **`IValidationRule<T>`**: Validation logic is encapsulated in classes implementing the `IValidationRule<T>` interface. This promotes reusability and separation of concerns.
+- **Custom Rules**: Specific validation requirements are met through custom implementations of `IValidationRule<T>`, such as:
+    - `EmailRule<string>`: Validates email address format.
+    - `IsNotNullOrEmptyRule<string>`: Ensures a string value is not null, empty, or whitespace.
+    - `CompareRule<T>`: Compares a value against a dynamically provided reference, used for password confirmation.
+- **Error Display**: Validation feedback is presented to the user through:
+    - **`InputEntryControl`**: A custom control that visually indicates validation status (e.g., changing border color for invalid input) and displays the first error message using an internal `Label`.
+    - **`FirstValidationErrorConverter`**: A converter that extracts the first error from a collection of error messages for display.
+- **Automatic Validation**: Validation is triggered automatically as the user types, providing immediate feedback. This is achieved using the `CommunityToolkit.Maui` library:
+    - **`EventToCommandBehavior`**: Used within `InputEntryControl.xaml` to bind the `TextChanged` event of the underlying `Entry` to a validation command in the ViewModel.
+    - **Validation Commands**: ViewModels expose `[RelayCommand]` methods (e.g., `ValidateEmailCommand`) that call the `.Validate()` method on the corresponding `ValidatableObject<T>`.
+
+This architecture ensures a consistent and user-friendly validation experience across the application.
 
 ### Dependency Injection Graph
 
