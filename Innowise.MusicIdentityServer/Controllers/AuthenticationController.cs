@@ -1,4 +1,7 @@
 using AutoMapper;
+using Google.Apis.Auth;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Services;
 using Innowise.MusicIdentityServer.Data;
 using Innowise.MusicIdentityServer.Models.User;
 using Innowise.MusicIdentityServer.Static;
@@ -10,7 +13,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using Google.Apis.Auth;
+using Google.Apis.Oauth2.v2;
 
 namespace Innowise.MusicIdentityServer.Controllers;
 
@@ -64,27 +67,21 @@ public class AuthenticationController : ControllerBase
 
     [HttpPost]
     [Route("google-login")]
-    public async Task<ActionResult<AuthenticationResponse>> GoogleLogin([FromBody] GoogleTokenDto googleToken)
+    public async Task<ActionResult<AuthenticationResponse>> GoogleLogin([FromBody] UserInfoDto userInfoDto)
     {
         _logger.LogInformation($"Google OAuth Login Attempt");
         try
         {
-            var clientId = _configuration["GoogleAuthentication:Google:ClientId"];
-            var settings = new GoogleJsonWebSignature.ValidationSettings()
-            {
-                Audience = new List<string>() { clientId }
-            };
-            var payload = await GoogleJsonWebSignature.ValidateAsync(googleToken.Token, settings);
 
-            var user = await _userManager.FindByEmailAsync(payload.Email);
+            var user = await _userManager.FindByEmailAsync(userInfoDto.UserInfo.Email);
             if (user == null)
             {
                 user = new ApiUser
                 {
-                    Email = payload.Email,
-                    UserName = payload.Email,
-                    FirstName = payload.GivenName,
-                    LastName = payload.FamilyName
+                    Email = userInfoDto.UserInfo.Email,
+                    UserName = userInfoDto.UserInfo.Email,
+                    FirstName = userInfoDto.UserInfo.GivenName,
+                    LastName = userInfoDto.UserInfo.FamilyName
                 };
                 var result = await _userManager.CreateAsync(user);
                 if (!result.Succeeded)
@@ -115,6 +112,22 @@ public class AuthenticationController : ControllerBase
         {
             _logger.LogError(ex, $"Something Went Wrong in the {nameof(GoogleLogin)}");
             return Problem($"Something Went Wrong in the {nameof(GoogleLogin)}", statusCode: 500);
+        }
+    }
+
+    private string? GetClientId(string platform)
+    {
+        if (platform == "ANDROID")
+        {
+            return _configuration["GoogleAuthentication:Google:AndroidClientId"];
+        }
+        else if (platform == "WindowsClientId")
+        {
+            return _configuration["GoogleAuthentication:Google:WindowsClientId"];
+        }
+        else
+        {
+            return "UNKNOWN";
         }
     }
 

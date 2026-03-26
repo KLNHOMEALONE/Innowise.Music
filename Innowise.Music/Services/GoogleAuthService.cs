@@ -20,6 +20,7 @@ using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using System.Web;
+using Innowise.Music.Model;
 
 namespace Innowise.Music.Services
 {
@@ -79,7 +80,7 @@ namespace Innowise.Music.Services
 
         private static readonly SemaphoreSlim _semaphore = new(1, 1);
 
-        public async Task<string> AcquireTokenAsync()
+        public async Task<UserInfoDto> AcquireTokenAsync()
         {
             await _semaphore.WaitAsync();
             try
@@ -118,14 +119,9 @@ namespace Innowise.Music.Services
                     HttpClientInitializer = _credential,
                     ApplicationName = AppInfo.Current.Name
                 });
-                _driveService = new DriveService(new BaseClientService.Initializer
-                {
-                    HttpClientInitializer = _credential,
-                    ApplicationName = AppInfo.Current.Name
-                });
                 var userInfo = await _oauth2Service.Userinfo.Get().ExecuteAsync();
                 _email = userInfo.Email;
-                return accesToken;
+                return new UserInfoDto() { Token = accesToken, UserInfo = userInfo };
             }
             finally
             {

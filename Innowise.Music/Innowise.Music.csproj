@@ -94,7 +94,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Model\" />
 	  <Folder Include="DesignImages\" />
 	  <Folder Include="ViewModel\" />
 	  <Folder Include="View\" />

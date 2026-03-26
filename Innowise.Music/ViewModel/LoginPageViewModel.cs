@@ -82,15 +82,15 @@ public partial class LoginPageViewModel : ObservableObject
     private async Task GoogleLogin()
     {
         //await _googleAuthService.SignOut();
-        var token = await _googleAuthService.AcquireTokenAsync();
-        if (string.IsNullOrEmpty(token))
+        var userInfoDto = await _googleAuthService.AcquireTokenAsync();
+        if (string.IsNullOrEmpty(userInfoDto.Token))
         {
             // Handle error
             System.Diagnostics.Debug.WriteLine("Google login failed");
             return;
         }
         //await _navigationService.NavigateToAsync($"///{nameof(View.HomePage)}");
-        var success = await _authenticationService.GoogleLoginAsync(token);
+        var success = await _authenticationService.GoogleLoginAsync(userInfoDto);
         if (success)
         {
             await _navigationService.NavigateToAsync($"///{nameof(View.HomePage)}");

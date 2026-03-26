@@ -34,17 +34,17 @@ public class AuthenticationService : IAuthenticationService
         return $"{baseUrl}/api/Authentication/{endpoint}";
     }
 
-    public async Task<bool> GoogleLoginAsync(string token)
+    public async Task<bool> GoogleLoginAsync(UserInfoDto userInfo)
     {
         var url = GetApiUrl("google-login");
-        return await ProcessGoogleLoginAsync(token, url);
+        return await ProcessGoogleLoginAsync(userInfo, url);
     }
 
-    private async Task<bool> ProcessGoogleLoginAsync(string token, string url)
+    private async Task<bool> ProcessGoogleLoginAsync(UserInfoDto userInfo, string url)
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync(url, new { Token = token });
+            var response = await _httpClient.PostAsJsonAsync(url, userInfo);
 
             if (response.IsSuccessStatusCode)
             {
@@ -67,6 +67,26 @@ public class AuthenticationService : IAuthenticationService
         }
 
         return false;
+    }
+
+    private string GetCurrentPlatform()
+    {
+        if (DeviceInfo.Platform == DevicePlatform.Android)
+        {
+            return "ANDROID";
+        }
+        else if(DeviceInfo.Platform == DevicePlatform.iOS)
+        {
+            return "IOS";
+        }
+        else if(DeviceInfo.Platform == DevicePlatform.WinUI)
+        {
+            return "WINUI";
+        }
+        else
+        {
+            return "UNKNOWN";
+        }
     }
 
     public async Task<bool> LoginAsync(LoginUserDto loginUserDto)

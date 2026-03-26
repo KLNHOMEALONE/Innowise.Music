@@ -4,11 +4,14 @@
  * @dependencies: -
  * @created: 2026-03-18
  */
+
+using Innowise.Music.Model;
+
 namespace Innowise.Music.Services
 {
     public interface IGoogleAuthService
     {
-        Task<string> AcquireTokenAsync();
+        Task<UserInfoDto> AcquireTokenAsync();
         Task SignOut();
 
     }
