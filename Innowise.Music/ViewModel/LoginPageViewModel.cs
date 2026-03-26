@@ -1,6 +1,8 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Innowise.Music.Services;
+using Innowise.Music.Validations;
+using Innowise.Music.Validations.Rules;
 
 namespace Innowise.Music.ViewModel;
 
@@ -11,31 +13,52 @@ public partial class LoginPageViewModel : ObservableObject
     private readonly IGoogleAuthService _googleAuthService;
 
     [ObservableProperty]
-    private string _email;
+    private ValidatableObject<string> _email;
 
     [ObservableProperty]
-    private string _password;
+    private ValidatableObject<string> _password;
 
     public LoginPageViewModel(INavigationService navigationService, IAuthenticationService authenticationService, IGoogleAuthService googleAuthService)
     {
         _navigationService = navigationService;
         _authenticationService = authenticationService;
         _googleAuthService = googleAuthService;
+
+        _email = new ValidatableObject<string>();
+        _password = new ValidatableObject<string>();
+
+        AddValidationRules();
     }
+
+    private void AddValidationRules()
+    {
+        _email.Validations.Add(new EmailRule<string> { ValidationMessage = "Invalid email format." });
+        _password.Validations.Add(new IsNotNullOrEmptyRule<string> { ValidationMessage = "Password cannot be empty." });
+    }
+
+    private bool Validate()
+    {
+        return _email.Validate() && _password.Validate();
+    }
+
+    [RelayCommand]
+    private void ValidateEmail() => _email.Validate();
+
+    [RelayCommand]
+    private void ValidatePassword() => _password.Validate();
 
     [RelayCommand]
     private async Task Login()
     {
-        if (string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(Password))
+        if (!Validate())
         {
-            // Rocket: "You gotta fill in the blanks, kid!"
             return;
         }
 
         var success = await _authenticationService.LoginAsync(new Model.LoginUserDto
         {
-            Email = Email,
-            Password = Password
+            Email = Email.Value,
+            Password = Password.Value
         });
 
         if (success)

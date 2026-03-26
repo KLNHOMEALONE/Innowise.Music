@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui;
 using Innowise.Music.Configuration;
 using Innowise.Music.Controls;
 using Innowise.Music.Services;
@@ -25,6 +26,7 @@ namespace Innowise.Music
             
             builder
                 .UseMauiApp<App>()
+                .UseMauiCommunityToolkit()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("Lexend-Regular.ttf", "LexendRegular");

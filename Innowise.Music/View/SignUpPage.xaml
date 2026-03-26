@@ -5,13 +5,19 @@
              BackgroundColor="{StaticResource PageBackgroundColor}"
              xmlns:viewmodel="clr-namespace:Innowise.Music.ViewModel"
              xmlns:controls="clr-namespace:Innowise.Music.Controls"
+             xmlns:converters="clr-namespace:Innowise.Music.Converters"
              x:DataType="viewmodel:SignUpPageViewModel"
              Shell.NavBarIsVisible="False">
+    <ContentPage.Resources>
+        <converters:FirstValidationErrorConverter x:Key="FirstValidationErrorConverter" />
+    </ContentPage.Resources>
     <Grid Background="{StaticResource BackgroundGradient}">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -35,30 +41,59 @@
                 </FormattedString>
             </Label.FormattedText>
         </Label>
-
-        <!-- Email Entry -->
+        
+        <!-- FirstName Entry -->
         <controls:InputEntryControl Grid.Row="3"
                                     Margin="30,0"
+                                    Placeholder="First Name"
+                                    Text="{Binding FirstName.Value}"
+                                    IsValid="{Binding FirstName.IsValid}"
+                                    ErrorText="{Binding FirstName.Errors, Converter={StaticResource FirstValidationErrorConverter}}"
+                                    TextChangedCommand="{Binding ValidateFirstNameCommand}"
+                                    Keyboard="Text" />
+
+        <!-- LastName Entry -->
+        <controls:InputEntryControl Grid.Row="4"
+                                    Margin="30,20,30,15"
+                                    Placeholder="Last Name"
+                                    Text="{Binding LastName.Value}"
+                                    IsValid="{Binding LastName.IsValid}"
+                                    ErrorText="{Binding LastName.Errors, Converter={StaticResource FirstValidationErrorConverter}}"
+                                    TextChangedCommand="{Binding ValidateLastNameCommand}"
+                                    Keyboard="Text" />
+
+        <!-- Email Entry -->
+        <controls:InputEntryControl Grid.Row="5"
+                                    Margin="30,20,30,15"
                                     Placeholder="E-Mail"
-                                    Text="{Binding Email}"
+                                    Text="{Binding Email.Value}"
+                                    IsValid="{Binding Email.IsValid}"
+                                    ErrorText="{Binding Email.Errors, Converter={StaticResource FirstValidationErrorConverter}}"
+                                    TextChangedCommand="{Binding ValidateEmailCommand}"
                                     Keyboard="Email" />
 
         <!-- Password Entry -->
-        <controls:InputEntryControl Grid.Row="4"
+        <controls:InputEntryControl Grid.Row="6"
                                     Margin="30,20,30,15"
                                     Placeholder="Password"
-                                    Text="{Binding Password}"
+                                    Text="{Binding Password.Value}"
+                                    IsValid="{Binding Password.IsValid}"
+                                    ErrorText="{Binding Password.Errors, Converter={StaticResource FirstValidationErrorConverter}}"
+                                    TextChangedCommand="{Binding ValidatePasswordCommand}"
                                     IsPassword="True" />
 
         <!-- Repeat Password Entry -->
-        <controls:InputEntryControl Grid.Row="5"
+        <controls:InputEntryControl Grid.Row="7"
                                     Margin="30,15,30,20"
                                     Placeholder="Repeat password"
-                                    Text="{Binding RepeatPassword}"
+                                    Text="{Binding RepeatPassword.Value}"
+                                    IsValid="{Binding RepeatPassword.IsValid}"
+                                    ErrorText="{Binding RepeatPassword.Errors, Converter={StaticResource FirstValidationErrorConverter}}"
+                                    TextChangedCommand="{Binding ValidateRepeatPasswordCommand}"
                                     IsPassword="True" />
 
         <!-- Sign Up Button -->
-        <Border Grid.Row="6"
+        <Border Grid.Row="8"
                 StrokeThickness="0"
                 Margin="30,20,30,15"
                 BackgroundColor="#D90429"
@@ -85,7 +120,7 @@
         </Border>
 
         <!-- Google Button -->
-        <Border Grid.Row="7"
+        <Border Grid.Row="9"
                 Stroke="{StaticResource GoogleButtonBorderColor}"
                 StrokeThickness="1"
                 Margin="30,15"
@@ -113,7 +148,7 @@
         </Border>
 
         <!-- Log In Link -->
-        <Label Grid.Row="8"
+        <Label Grid.Row="10"
                Text="Log in"
                Style="{StaticResource SignUpLabelStyle}"
                Margin="0,30,0,0">

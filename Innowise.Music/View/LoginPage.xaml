@@ -5,8 +5,12 @@
              BackgroundColor="{StaticResource PageBackgroundColor}"
              xmlns:viewmodel="clr-namespace:Innowise.Music.ViewModel"
              xmlns:controls="clr-namespace:Innowise.Music.Controls"
+             xmlns:converters="clr-namespace:Innowise.Music.Converters"
              x:DataType="viewmodel:LoginPageViewModel"
              Shell.NavBarIsVisible="False">
+    <ContentPage.Resources>
+        <converters:FirstValidationErrorConverter x:Key="FirstValidationErrorConverter" />
+    </ContentPage.Resources>
     <Grid Background="{StaticResource BackgroundGradient}">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
@@ -39,14 +43,20 @@
         <controls:InputEntryControl Grid.Row="3"
                                     Margin="30,0"
                                     Placeholder="E-Mail"
-                                    Text="{Binding Email}"
+                                    Text="{Binding Email.Value}"
+                                    IsValid="{Binding Email.IsValid}"
+                                    ErrorText="{Binding Email.Errors, Converter={StaticResource FirstValidationErrorConverter}}"
+                                    TextChangedCommand="{Binding ValidateEmailCommand}"
                                     Keyboard="Email" />
 
         <!-- Password Entry -->
         <controls:InputEntryControl Grid.Row="4"
                                     Margin="30,40,30,15"
                                     Placeholder="Password"
-                                    Text="{Binding Password}"
+                                    Text="{Binding Password.Value}"
+                                    IsValid="{Binding Password.IsValid}"
+                                    ErrorText="{Binding Password.Errors, Converter={StaticResource FirstValidationErrorConverter}}"
+                                    TextChangedCommand="{Binding ValidatePasswordCommand}"
                                     IsPassword="True" />
 
         <!-- Login Button -->

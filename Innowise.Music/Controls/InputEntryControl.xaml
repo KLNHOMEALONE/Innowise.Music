@@ -1,21 +1,65 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:Class="Innowise.Music.Controls.InputEntryControl"
              x:Name="this">
-    <Border StrokeThickness="0"
-            BackgroundColor="{StaticResource InputBackgroundColor}">
-        <Border.StrokeShape>
-            <RoundRectangle CornerRadius="5" />
-        </Border.StrokeShape>
-        <Entry Placeholder="{Binding Placeholder, Source={x:Reference this}}"
-               Text="{Binding Text, Source={x:Reference this}}"
-               IsPassword="{Binding IsPassword, Source={x:Reference this}}"
-               Keyboard="{Binding Keyboard, Source={x:Reference this}}"
-               TextColor="{StaticResource InputTextColor}"
-               PlaceholderColor="{StaticResource InputPlaceholderColor}"
-               HeightRequest="50"
-               FontSize="16"
-               BackgroundColor="Transparent" />
-    </Border>
+        <Border x:Name="border"
+                StrokeThickness="1"
+                BackgroundColor="{StaticResource InputBackgroundColor}">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="5" />
+            </Border.StrokeShape>
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Stroke" Value="{StaticResource InputBackgroundColor}" />
+                    <Style.Triggers>
+                        <DataTrigger TargetType="Border"
+                                     Binding="{Binding Source={x:Reference this}, Path=IsValid}"
+                                     Value="False">
+                            <Setter Property="Stroke" Value="{StaticResource PrimaryRed}" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Entry Grid.Row="0"   Placeholder="{Binding Placeholder, Source={x:Reference this}}"
+                       Text="{Binding Text, Source={x:Reference this}}"
+                       IsPassword="{Binding IsPassword, Source={x:Reference this}}"
+                       Keyboard="{Binding Keyboard, Source={x:Reference this}}"
+                       TextColor="{StaticResource InputTextColor}"
+                       PlaceholderColor="{StaticResource InputPlaceholderColor}"
+                       HeightRequest="50"
+                       FontSize="16"
+                       BackgroundColor="Transparent">
+                    <Entry.Behaviors>
+                        <toolkit:EventToCommandBehavior EventName="TextChanged"
+                                                        Command="{Binding Source={x:Reference this}, Path=TextChangedCommand}" />
+                    </Entry.Behaviors>
+                </Entry>
+            <Label Grid.Row="1" Text="{Binding ErrorText, Source={x:Reference this}}"
+                   TextColor="{StaticResource PrimaryRed}"
+                   FontSize="12"
+                   IsVisible="False"
+                   Margin="5,0,0,0">
+                    <Label.Style>
+                        <Style TargetType="Label">
+                            <Style.Triggers>
+                                <DataTrigger TargetType="Label"
+                                             Binding="{Binding Source={x:Reference this}, Path=IsValid}"
+                                             Value="False">
+                                    <Setter Property="IsVisible" Value="True" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Label.Style>
+                </Label>
+        </Grid>
+
+</Border>
+
 </ContentView>

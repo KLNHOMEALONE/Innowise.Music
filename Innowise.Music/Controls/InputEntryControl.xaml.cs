@@ -1,3 +1,5 @@
+using System.Windows.Input;
+
 namespace Innowise.Music.Controls;
 
 public partial class InputEntryControl : ContentView
@@ -36,6 +38,33 @@ public partial class InputEntryControl : ContentView
     {
         get => (Keyboard)GetValue(KeyboardProperty);
         set => SetValue(KeyboardProperty, value);
+    }
+
+    public static readonly BindableProperty IsValidProperty =
+        BindableProperty.Create(nameof(IsValid), typeof(bool), typeof(InputEntryControl), true, defaultBindingMode: BindingMode.TwoWay);
+
+    public bool IsValid
+    {
+        get => (bool)GetValue(IsValidProperty);
+        set => SetValue(IsValidProperty, value);
+    }
+
+    public static readonly BindableProperty ErrorTextProperty =
+        BindableProperty.Create(nameof(ErrorText), typeof(string), typeof(InputEntryControl), string.Empty, defaultBindingMode: BindingMode.TwoWay);
+
+    public string ErrorText
+    {
+        get => (string)GetValue(ErrorTextProperty);
+        set => SetValue(ErrorTextProperty, value);
+    }
+
+    public static readonly BindableProperty TextChangedCommandProperty =
+        BindableProperty.Create(nameof(TextChangedCommand), typeof(ICommand), typeof(InputEntryControl));
+
+    public ICommand TextChangedCommand
+    {
+        get => (ICommand)GetValue(TextChangedCommandProperty);
+        set => SetValue(TextChangedCommandProperty, value);
     }
 
     public InputEntryControl()
