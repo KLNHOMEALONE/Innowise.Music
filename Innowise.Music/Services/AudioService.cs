@@ -41,18 +41,35 @@ namespace Innowise.Music.Services
             if (_mediaElement == null)
                 return Task.CompletedTask;
 
-            _mediaElement.Source = MediaSource.FromUri(mediaUrl);
-            _mediaElement.Play();
+            if (_mediaElement.Source != null && _mediaElement.Source is UriMediaSource uriMediaSource && uriMediaSource.Uri.ToString() == mediaUrl)
+            {
+                if (_mediaElement.CurrentState == MediaElementState.Paused)
+                {
+                    _mediaElement.Play();
+                }
+            }
+            else
+            {
+                _mediaElement.ShouldAutoPlay = true;
+                _mediaElement.Source = MediaSource.FromUri(mediaUrl);
+            }
+
             return Task.CompletedTask;
         }
-
         public Task Pause()
         {
-            //if (_mediaElement?.CanPause ?? false)
-            //{
-            //    _mediaElement.Pause();
-            //}
-            _mediaElement.Pause();
+            if (_mediaElement?.CurrentState == MediaElementState.Playing)
+            {
+                _mediaElement.Pause();
+            }
+            return Task.CompletedTask;
+        }
+        public Task Stop()
+        {
+            if (_mediaElement != null && _mediaElement.CurrentState != MediaElementState.Stopped)
+            {
+                 _mediaElement.Stop();
+            }
             return Task.CompletedTask;
         }
     }

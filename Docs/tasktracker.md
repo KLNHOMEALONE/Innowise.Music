@@ -1,5 +1,17 @@
 # Task Tracker - Innowise.Music
 
+## Task: Fix Audio Player
+- **Status**: Completed
+- **Description**: The mini audio player was not playing selected tracks, and the progress bar was not updating. The root cause was a missing `MediaElement` in the `MiniPlayerControl` and a lack of initialization in the `AudioService`.
+- **Steps**:
+  - [x] Investigated `AudioService` and identified incorrect playback logic.
+  - [x] Refactored `AudioService` to use `ShouldAutoPlay` and proper state handling.
+  - [x] Investigated `MiniPlayerViewModel` and improved its state synchronization with the audio service.
+  - [x] Discovered the missing `MediaElement` in `MiniPlayerControl.xaml`.
+  - [x] Added the `MediaElement` to the XAML and implemented the `AudioService.Initialize` call in the code-behind.
+  - [x] Verified the fix with the user.
+- **Dependencies**: None
+
 ## Task: Implement Input Validation System
 - **Status**: Completed
 - **Description**: Implemented a comprehensive input validation system for the Login and Sign-up pages, including UI feedback and automatic validation on text change.

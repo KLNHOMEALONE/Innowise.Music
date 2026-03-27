@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:vm="clr-namespace:Innowise.Music.ViewModel"
              x:Class="Innowise.Music.Controls.MiniPlayerControl"
              x:DataType="vm:MiniPlayerViewModel">
     <Border IsVisible="{Binding IsVisible}" BackgroundColor="{StaticResource InputBackgroundColor}" StrokeThickness="0" StrokeShape="RoundRectangle 8" Margin="8,0,8,8" Padding="10">
         <Grid>
+            <toolkit:MediaElement x:Name="mediaElement" IsVisible="False" />
+            
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />

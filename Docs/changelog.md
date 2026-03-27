@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-03-27] - Fix audio playback and progress display in MiniPlayer
+
+### Fixed
+- The selected song would not play and the progress bar was not updating.
+- The `AudioService` was not being initialized with a `MediaElement`, as the `MediaElement` was missing from `MiniPlayerControl.xaml`.
+- `AudioService` `Play` method was not robust and could cause a `NullReferenceException`.
+- `AudioService` `Pause` method was using a non-existent `CanPause` property.
+- `MiniPlayerViewModel` did not correctly update its properties when the `AudioService` state changed, leading to an unresponsive progress bar.
+
+### Added
+- A `Stop()` method to the `IAudioService` and `AudioService` for completeness.
+- The missing `MediaElement` to `MiniPlayerControl.xaml`.
+- Initialization logic in `MiniPlayerControl.xaml.cs` to connect the `AudioService` to the `MediaElement`.
+- `Position` and `Duration` properties to `MiniPlayerViewModel` for better UI binding.
+
+### Changed
+- Refactored `AudioService` to correctly handle playback using `ShouldAutoPlay` and proper state checks.
+- Refactored `MiniPlayerViewModel` to ensure all player-related properties update in sync with the `AudioService`.
+
 ## [2026-03-26] - Implemented Input Validation & UI Enhancements
 
 ### Added

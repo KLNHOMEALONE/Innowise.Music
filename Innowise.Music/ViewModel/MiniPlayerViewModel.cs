@@ -20,6 +20,12 @@ public partial class MiniPlayerViewModel : ObservableObject
 
     [ObservableProperty]
     private double _progress;
+    
+    [ObservableProperty]
+    private TimeSpan _position;
+
+    [ObservableProperty]
+    private TimeSpan _duration;
 
     public bool IsVisible => CurrentTrack != null;
 
@@ -33,9 +39,18 @@ public partial class MiniPlayerViewModel : ObservableObject
     private void OnAudioServiceStateChanged()
     {
         IsPlaying = _audioService.IsPlaying;
+        Duration = _audioService.Duration;
+        Position = _audioService.Position;
+        UpdateProgress();
     }
 
     private void OnAudioServicePositionChanged()
+    {
+        Position = _audioService.Position;
+        UpdateProgress();
+    }
+
+    private void UpdateProgress()
     {
         if (_audioService.Duration > TimeSpan.Zero)
         {

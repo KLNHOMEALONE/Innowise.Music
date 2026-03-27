@@ -16,5 +16,6 @@ namespace Innowise.Music.Services
         void Initialize(MediaElement player);
         Task Play(string mediaUrl);
         Task Pause();
+        Task Stop();
     }
 }
