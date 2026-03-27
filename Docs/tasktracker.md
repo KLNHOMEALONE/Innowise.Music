@@ -128,15 +128,17 @@
     - [x] Configure HTTPS port mapping (7008)
     - [x] Verify build and context paths
 
-## Task: Audio Streaming Core
-- **Status**: Not started
-- **Description**: Implement audio playback functionality
-- **Steps**:
-    - [ ] Set up MediaElement or audio plugin
-    - [ ] Create audio player service
-    - [ ] Implement play/pause controls
-    - [ ] Add track progress tracking
-    - [ ] Create background playback service
+## Task: Implement Audio Streaming Core
+- **Status**: Completed
+- **Description**: Implemented core audio playback functionality using `MediaElement` from `CommunityToolkit.Maui`. Integrated with `MiniPlayerControl` for continuous playback across the application.
+- **Notes**:
+    - Used `CommunityToolkit.Maui.MediaElement` version `3.0.0` for .NET 9 compatibility.
+    - Integrated `MediaElement` into `AppShell.xaml` for continuous background playback.
+    - Implemented `IAudioService` and `AudioService` for centralized playback control.
+    - Refactored `MiniPlayerViewModel` to expose playback state and control commands.
+    - Updated `MiniPlayerControl.xaml` to display track information, playback controls, and progress bar dynamically.
+    - Resolved XAML binding issues within `DataTemplate` for command invocation from `HomeItem` by introducing a `Parent` reference in `HomeItem` back to `HomePageViewModel`.
+    - Refactored `MiniPlayerControl.xaml.cs` to correctly instantiate `MiniPlayerViewModel` using `Handler.MauiContext.Services.GetService<MiniPlayerViewModel>()` in the `Loaded` event, resolving XAML compilation errors.
 
 ## Task: Music Library
 - **Status**: Not started

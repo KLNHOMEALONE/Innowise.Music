@@ -27,6 +27,7 @@ namespace Innowise.Music
             builder
                 .UseMauiApp<App>()
                 .UseMauiCommunityToolkit()
+                .UseMauiCommunityToolkitMediaElement()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("Lexend-Regular.ttf", "LexendRegular");
@@ -47,6 +48,7 @@ namespace Innowise.Music
 
             builder.Services.AddSingleton<IAuthenticationService, AuthenticationService>();
             builder.Services.AddSingleton<IGoogleAuthService, GoogleAuthService>();
+            builder.Services.AddSingleton<IAudioService, AudioService>();
             builder.Services.AddSingleton<INavigationService, NavigationService>();
             builder.Services.AddSingleton<WebNewsService>();
             builder.Services.AddSingleton<MockNewsService>();

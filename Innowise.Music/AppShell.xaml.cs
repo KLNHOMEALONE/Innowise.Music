@@ -9,13 +9,18 @@ namespace Innowise.Music
     public partial class AppShell : Shell
     {
         private readonly IAuthenticationService _authenticationService;
+        private readonly IAudioService _audioService;
         private TaskCompletionSource<string>? _authCompletionSource;
 
-        public AppShell(AppShellViewModel viewModel, IAuthenticationService authenticationService)
+        public AppShell(AppShellViewModel viewModel, IAuthenticationService authenticationService, IAudioService audioService)
         {
             InitializeComponent();
             BindingContext = viewModel;
             _authenticationService = authenticationService;
+            _audioService = audioService;
+            
+            _audioService.Initialize(mediaElement);
+
             Routing.RegisterRoute(nameof(SignUpPage), typeof(SignUpPage));
             Routing.RegisterRoute(nameof(NewsDetailedPage), typeof(NewsDetailedPage));
             Routing.RegisterRoute(nameof(WebPage), typeof(WebPage));

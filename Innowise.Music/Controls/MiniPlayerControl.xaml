@@ -4,28 +4,41 @@
              xmlns:vm="clr-namespace:Innowise.Music.ViewModel"
              x:Class="Innowise.Music.Controls.MiniPlayerControl"
              x:DataType="vm:MiniPlayerViewModel">
-    <Border BackgroundColor="{StaticResource InputBackgroundColor}" StrokeThickness="0" StrokeShape="RoundRectangle 8" Margin="8,0,8,8" Padding="10">
+    <Border IsVisible="{Binding IsVisible}" BackgroundColor="{StaticResource InputBackgroundColor}" StrokeThickness="0" StrokeShape="RoundRectangle 8" Margin="8,0,8,8" Padding="10">
         <Grid>
-            <Grid ColumnDefinitions="45, *, Auto">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            
+            <Grid Grid.Row="0" ColumnDefinitions="45, *, Auto">
                 <Border Grid.Column="0" WidthRequest="45" HeightRequest="45" StrokeShape="RoundRectangle 4" StrokeThickness="0">
-                    <Image Source="{Binding ImageUrl}" Aspect="AspectFill" />
+                    <Image Source="{Binding CurrentTrack.ImageUrl}" Aspect="AspectFill" />
                 </Border>
                 
                 <VerticalStackLayout Grid.Column="1" Margin="10,0" VerticalOptions="Center">
-                    <Label Text="{Binding TrackTitle}" TextColor="White" FontAttributes="Bold" FontSize="14" />
-                    <Label Text="{Binding ArtistName}" TextColor="Gray" FontSize="12" />
+                    <Label Text="{Binding CurrentTrack.Title}" TextColor="White" FontAttributes="Bold" FontSize="14" />
+                    <Label Text="{Binding CurrentTrack.ArtistName}" TextColor="Gray" FontSize="12" />
                 </VerticalStackLayout>
 
-                <!-- Положит контент внутри грида без Stack Layout -->
                 <HorizontalStackLayout Grid.Column="2" Spacing="20" VerticalOptions="Center">
                     <Border BackgroundColor="#D90429" WidthRequest="20" HeightRequest="20" StrokeShape="RoundRectangle 10" StrokeThickness="0">
                         <Label Text="✔" TextColor="White" FontSize="12" HorizontalOptions="Center" VerticalOptions="Center" />
                     </Border>
-                    <Label Text="▶" TextColor="White" FontSize="24" />
+                    <ImageButton Command="{Binding TogglePlayPauseCommand}" WidthRequest="24" HeightRequest="24">
+                        <ImageButton.Triggers>
+                            <DataTrigger TargetType="ImageButton" Binding="{Binding IsPlaying}" Value="True">
+                                <Setter Property="Source" Value="pause_icon.svg" />
+                            </DataTrigger>
+                            <DataTrigger TargetType="ImageButton" Binding="{Binding IsPlaying}" Value="False">
+                                <Setter Property="Source" Value="play_icon.svg" />
+                            </DataTrigger>
+                        </ImageButton.Triggers>
+                    </ImageButton>
                 </HorizontalStackLayout>
             </Grid>
-            <!-- Progress bar line -->
-            <BoxView VerticalOptions="End" HorizontalOptions="Fill" HeightRequest="2" Color="White" Margin="-10,0,-10,-10" TranslationY="10" />
+
+            <ProgressBar Grid.Row="1" Progress="{Binding Progress}" ProgressColor="{StaticResource PrimaryRed}" BackgroundColor="Gray" HeightRequest="2" Margin="-10,10,-10,-8" />
         </Grid>
     </Border>
 </ContentView>

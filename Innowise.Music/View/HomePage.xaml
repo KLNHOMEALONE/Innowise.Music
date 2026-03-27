@@ -5,6 +5,7 @@
              xmlns:controls="clr-namespace:Innowise.Music.Controls"
              x:Class="Innowise.Music.View.HomePage"
              x:DataType="vm:HomePageViewModel"
+             x:Name="homePage"
              BackgroundColor="{StaticResource Gray950}"
              Shell.NavBarIsVisible="False"
              Title="Home">
@@ -99,10 +100,15 @@
                 <VerticalStackLayout Spacing="15">
                     <Label Text="Featuring songs you like" TextColor="White" FontSize="18" FontAttributes="Bold" />
                     <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
-                        <HorizontalStackLayout BindableLayout.ItemsSource="{Binding FeaturedSongs}" Spacing="15">
+                        <HorizontalStackLayout x:Name="featuredSongsLayout" BindableLayout.ItemsSource="{Binding FeaturedSongs}" Spacing="15">
                             <BindableLayout.ItemTemplate>
                                 <DataTemplate x:DataType="vm:HomeItem">
                                     <VerticalStackLayout Spacing="8" WidthRequest="120">
+                                        <VerticalStackLayout.GestureRecognizers>
+                                            <TapGestureRecognizer 
+                                                Command="{Binding Parent.PlayFeaturedSongCommand}"
+                                                CommandParameter="{Binding .}" />
+                                        </VerticalStackLayout.GestureRecognizers>
                                         <Border WidthRequest="120" HeightRequest="120" StrokeShape="RoundRectangle 4" StrokeThickness="0">
                                             <Image Source="{Binding ImageUrl}" Aspect="AspectFill" />
                                         </Border>
@@ -120,10 +126,15 @@
                 <VerticalStackLayout Spacing="15">
                     <Label Text="Get back to listening" TextColor="White" FontSize="18" FontAttributes="Bold" />
                     <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
-                        <HorizontalStackLayout BindableLayout.ItemsSource="{Binding RecentItems}" Spacing="15">
+                        <HorizontalStackLayout x:Name="recentItemsLayout" BindableLayout.ItemsSource="{Binding RecentItems}" Spacing="15">
                             <BindableLayout.ItemTemplate>
                                 <DataTemplate x:DataType="vm:HomeItem">
                                     <VerticalStackLayout Spacing="8" WidthRequest="120">
+                                        <VerticalStackLayout.GestureRecognizers>
+                                            <TapGestureRecognizer 
+                                                Command="{Binding Parent.PlayFeaturedSongCommand}"
+                                                CommandParameter="{Binding .}" />
+                                        </VerticalStackLayout.GestureRecognizers>
                                         <Border WidthRequest="120" HeightRequest="120" StrokeShape="RoundRectangle 4" StrokeThickness="0">
                                             <Image Source="{Binding ImageUrl}" Aspect="AspectFill" />
                                         </Border>
