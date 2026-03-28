@@ -1,5 +1,6 @@
 using Innowise.MusicIdentityServer.Configurations;
 using Innowise.MusicIdentityServer.Data;
+using Innowise.MusicIdentityServer.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +21,9 @@ builder.Services.AddIdentityCore<ApiUser>()
     .AddEntityFrameworkStores<MusicIdentityDbContext>();
 
 builder.Services.AddAutoMapper(cfg => { }, typeof(Program));
+
+// Register Music Service
+builder.Services.AddScoped<IMusicService, MusicService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

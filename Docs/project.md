@@ -158,16 +158,37 @@ graph TD
 
 **Dependencies**: `WebNewsService`, `HttpHelper`, `IAuthService`
 
-### 3. Services Layer
-**Files**: `INewsService.cs`, `WebNewsService.cs`, `MockNewsService.cs`, `IHttpHelper.cs`, `HttpClientHelper.cs`, `IAuthService.cs`, `AuthService.cs`
+### 3. Music Streaming Module (Phase 1)
+**Files**: `Artist.cs`, `Album.cs`, `Track.cs`, `Genre.cs`, `IMusicService.cs`, `MusicService.cs`, `MusicController.cs`
+
+**Responsibilities**:
+- Music catalog management (Artists, Albums, Tracks, Genres)
+- Full-text search across tracks, artists, and albums
+- Audio streaming with range request support
+- Play count tracking and popularity metrics
+
+**Dependencies**: `DbContext`, `PostgreSQL`, `Entity Framework Core`
+
+**API Endpoints**:
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/music/tracks?query={q}` | Search tracks with pagination |
+| GET | `/api/music/tracks/{id}` | Get track details with metadata |
+| GET | `/api/music/tracks/{id}/stream` | Stream audio with range support |
+| GET | `/api/music/artists/{id}/top-tracks` | Get artist's popular tracks |
+| GET | `/api/music/albums/{id}/tracks` | Get album track listing |
+
+### 4. Services Layer
+**Files**: `INewsService.cs`, `WebNewsService.cs`, `MockNewsService.cs`, `IHttpHelper.cs`, `HttpClientHelper.cs`, `IAuthService.cs`, `AuthService.cs`, `IMusicService.cs`, `MusicService.cs`
 
 **Responsibilities**:
 - HTTP client configuration
 - News API communication
 - Mock data for development
 - User authentication and token management
+- Music catalog data access and streaming
 
-**Dependencies**: `HttpClient`, `SecureStorage`
+**Dependencies**: `HttpClient`, `SecureStorage`, `DbContext`
 
 ## Data Flow
 
@@ -241,6 +262,11 @@ sequenceDiagram
 - ✅ JWT Authentication Implementation
 - ✅ Secure Token Storage
 - ✅ Authenticated API Requests
+- ✅ Music database schema (Artists, Albums, Tracks, Genres)
+- ✅ Full-text search with PostgreSQL pg_trgm
+- ✅ Music streaming API (5 essential endpoints)
+- ✅ Audio streaming with range request support
+- ✅ Music service layer with EF Core
 
 ## API Endpoints
 
@@ -250,6 +276,15 @@ sequenceDiagram
 | POST | `/api/Authentication/login` | User login |
 | POST | `/api/Authentication/register` | User registration |
 | GET | `/getnews` | Retrieve all news items |
+
+### Music Streaming Service
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/music/tracks?query={q}` | Search tracks with pagination |
+| GET | `/api/music/tracks/{id}` | Get track details with metadata |
+| GET | `/api/music/tracks/{id}/stream` | Stream audio with range support |
+| GET | `/api/music/artists/{id}/top-tracks` | Get artist's popular tracks |
+| GET | `/api/music/albums/{id}/tracks` | Get album track listing |
 
 **Base URL (HTTPS)**:
 - Android Emulator: `https://10.0.2.2:7008`

@@ -1,3 +1,4 @@
+using Innowise.MusicIdentityServer.Models.Music;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +8,12 @@ namespace Innowise.MusicIdentityServer.Data;
 
 public partial class MusicIdentityDbContext : IdentityDbContext<ApiUser>
 {
+    // Music tables DbSets
+    public DbSet<Artist> Artists { get; set; }
+    public DbSet<Album> Albums { get; set; }
+    public DbSet<Track> Tracks { get; set; }
+    public DbSet<Genre> Genres { get; set; }
+
     public MusicIdentityDbContext()
     {
         
@@ -86,7 +93,59 @@ public partial class MusicIdentityDbContext : IdentityDbContext<ApiUser>
             }
         );
 
+        // Configure Music entities
+        ConfigureMusicEntities(modelBuilder);
+
         OnModelCreatingPartial(modelBuilder);
+    }
+
+    private void ConfigureMusicEntities(ModelBuilder modelBuilder)
+    {
+        // Artist configuration
+        modelBuilder.Entity<Artist>(entity =>
+        {
+            entity.HasIndex(e => e.Name).HasMethod("GIN")
+                .HasOperators("gin_trgm_ops");
+        });
+
+        // Album configuration
+        modelBuilder.Entity<Album>(entity =>
+        {
+            entity.HasIndex(e => e.Title).HasMethod("GIN")
+                .HasOperators("gin_trgm_ops");
+            
+            entity.HasIndex(e => e.ArtistId);
+        });
+
+        // Track configuration
+        modelBuilder.Entity<Track>(entity =>
+        {
+            entity.HasIndex(e => e.Title).HasMethod("GIN")
+                .HasOperators("gin_trgm_ops");
+            
+            entity.HasIndex(e => e.ArtistId);
+            entity.HasIndex(e => e.AlbumId);
+            entity.HasIndex(e => e.PlayCount).IsDescending(true);
+        });
+
+        // Genre configuration
+        modelBuilder.Entity<Genre>(entity =>
+        {
+            entity.HasIndex(e => e.Name).IsUnique();
+        });
+
+        // Track-Genre many-to-many relationship
+        modelBuilder.Entity<Track>()
+            .HasMany(t => t.Genres)
+            .WithMany(g => g.Tracks)
+            .UsingEntity<Dictionary<string, object>>(
+                "TrackGenres",
+                j => j.HasOne<Genre>().WithMany().HasForeignKey("GenreId").OnDelete(DeleteBehavior.Cascade),
+                j => j.HasOne<Track>().WithMany().HasForeignKey("TrackId").OnDelete(DeleteBehavior.Cascade),
+                j =>
+                {
+                    j.HasKey("TrackId", "GenreId");
+                });
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
