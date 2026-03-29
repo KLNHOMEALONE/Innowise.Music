@@ -301,19 +301,46 @@
         - [ ] Implement shared playlists
 - **Dependencies**: Phase 1 completion, User authentication system, Listening history data
 
-## Task: Content Management System
-- **Status**: Not started
-- **Description**: Admin interface for uploading and managing music content, artists, and albums.
+## Task: Admin Dashboard Implementation
+- **Status**: In progress
+- **Description**: Blazor Web admin dashboard for managing music content (artists, albums, tracks, genres). See detailed plan in `Docs/admin-dashboard-plan.md`.
 - **Steps**:
-    - [ ] Create admin authentication and authorization
-    - [ ] Build artist management interface (CRUD)
-    - [ ] Build album management interface (CRUD)
-    - [ ] Implement audio file upload with progress tracking
-    - [ ] Add metadata editing for tracks
-    - [ ] Create bulk import tools
-    - [ ] Add image upload for album covers and artist photos
-    - [ ] Implement content validation and quality checks
-- **Dependencies**: Phase 1 completion, Admin user roles
+    - [ ] **Phase 1: Backend API Enhancements**
+        - [ ] Extend IMusicService with CRUD operations for all entities
+        - [ ] Implement CRUD methods in MusicService
+        - [ ] Create AdminMusicController with admin endpoints
+        - [ ] Add role-based authorization to admin endpoints
+    - [ ] **Phase 2: Blazor Admin Project Creation**
+        - [ ] Create Innowise.Music.Admin project
+        - [ ] Set up project structure (Components, Services, Models)
+        - [ ] Configure dependency injection
+        - [ ] Add project to solution file
+    - [ ] **Phase 3: Authentication & Authorization**
+        - [ ] Implement AuthService for JWT handling
+        - [ ] Create login page with role validation
+        - [ ] Implement token refresh logic
+    - [ ] **Phase 4: CRUD Operations**
+        - [ ] Genre management (list, create, edit, delete)
+        - [ ] Artist management with image support
+        - [ ] Album management with relationships
+        - [ ] Track management with metadata
+    - [ ] **Phase 5: File Upload**
+        - [ ] Create FileUpload component
+        - [ ] Implement streaming upload for audio files
+        - [ ] Add progress tracking
+        - [ ] Validate file types and sizes
+    - [ ] **Phase 6: UI/UX Polish**
+        - [ ] Create main layout with navigation
+        - [ ] Add shared components (dialogs, spinners)
+        - [ ] Implement responsive styling
+    - [ ] **Phase 7: Docker Integration**
+        - [ ] Create Dockerfile for admin app
+        - [ ] Update docker-compose.yml
+    - [ ] **Phase 8: Testing & Documentation**
+        - [ ] Write unit tests for services
+        - [ ] Test file upload functionality
+        - [ ] Update project documentation
+- **Dependencies**: Innowise.MusicIdentityServer (existing), PostgreSQL database
 
 ## Task: Performance & Scalability
 - **Status**: Not started

@@ -10,12 +10,35 @@ public interface IMusicService
     // Track operations
     Task<Track?> GetTrackAsync(Guid id);
     Task<Stream?> GetTrackAudioAsync(Guid trackId);
-    
-    // Artist operations
-    Task<Artist?> GetArtistAsync(Guid id);
     Task<IEnumerable<Track>> GetArtistTopTracksAsync(Guid artistId, int count);
-    
-    // Album operations
-    Task<Album?> GetAlbumAsync(Guid id);
     Task<IEnumerable<Track>> GetAlbumTracksAsync(Guid albumId);
+    
+    // Artist CRUD operations
+    Task<IEnumerable<Artist>> GetAllArtistsAsync(int page, int pageSize);
+    Task<Artist?> GetArtistAsync(Guid id);
+    Task<Artist?> CreateArtistAsync(Artist artist);
+    Task<Artist?> UpdateArtistAsync(Guid id, Artist artist);
+    Task<bool> DeleteArtistAsync(Guid id);
+    
+    // Album CRUD operations
+    Task<IEnumerable<Album>> GetAllAlbumsAsync(int page, int pageSize);
+    Task<Album?> GetAlbumAsync(Guid id);
+    Task<Album?> CreateAlbumAsync(Album album);
+    Task<Album?> UpdateAlbumAsync(Guid id, Album album);
+    Task<bool> DeleteAlbumAsync(Guid id);
+    Task<IEnumerable<Album>> GetAlbumsByArtistAsync(Guid artistId);
+    
+    // Track CRUD operations
+    Task<IEnumerable<Track>> GetAllTracksAsync(int page, int pageSize);
+    Task<Track?> CreateTrackAsync(Track track);
+    Task<Track?> UpdateTrackAsync(Guid id, Track track);
+    Task<bool> DeleteTrackAsync(Guid id);
+    Task<bool> UploadTrackAudioAsync(Guid trackId, byte[] audioData, string fileName);
+    
+    // Genre CRUD operations
+    Task<IEnumerable<Genre>> GetAllGenresAsync();
+    Task<Genre?> GetGenreAsync(Guid id);
+    Task<Genre?> CreateGenreAsync(Genre genre);
+    Task<Genre?> UpdateGenreAsync(Guid id, Genre genre);
+    Task<bool> DeleteGenreAsync(Guid id);
 }

@@ -1,0 +1,109 @@
+@page "/artists/new"
+@page "/artists/{id:guid}/edit"
+@inject IAdminMusicService MusicService
+@inject NavigationManager Navigation
+@inject IAuthService AuthService
+
+<div class="page-header">
+    <h1>@(IsEditMode ? "Edit Artist" : "Add New Artist")</h1>
+    <a href="artists" class="btn-secondary">Back to List</a>
+</div>
+
+<div class="content-card">
+    <form @onsubmit="HandleSubmit" class="form">
+        <div class="form-group">
+            <label for="name">Name <span class="required">*</span></label>
+            <input type="text" id="name" @bind="artist.Name" class="form-control" required />
+            @if (!string.IsNullOrEmpty(nameError))
+            {
+                <span class="error-text">@nameError</span>
+            }
+        </div>
+
+        <div class="form-group">
+            <label for="imageUrl">Image URL</label>
+            <input type="url" id="imageUrl" @bind="artist.ImageUrl" class="form-control" placeholder="https://..." />
+        </div>
+
+        <div class="form-group">
+            <label for="biography">Biography</label>
+            <textarea id="biography" @bind="artist.Biography" class="form-control" rows="5" placeholder="Tell us about the artist..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>
+                <input type="checkbox" @bind="artist.Verified" />
+                Verified Artist
+            </label>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-primary" disabled="@isSubmitting">
+                @(isSubmitting ? "Saving..." : "Save")
+            </button>
+            <a href="artists" class="btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+@code {
+    [Parameter]
+    public Guid? id { get; set; }
+
+    private Artist artist = new();
+    private bool isSubmitting;
+    private string nameError = string.Empty;
+
+    private bool IsEditMode => id.HasValue;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (IsEditMode && id.HasValue)
+        {
+            var fetchedArtist = await MusicService.GetArtistAsync(id.Value);
+            if (fetchedArtist != null)
+            {
+                artist = fetchedArtist;
+            }
+            else
+            {
+                Navigation.NavigateTo("/artists");
+            }
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        nameError = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(artist.Name))
+        {
+            nameError = "Name is required";
+            return;
+        }
+
+        isSubmitting = true;
+
+        try
+        {
+            if (IsEditMode)
+            {
+                await MusicService.UpdateArtistAsync(id!.Value, artist);
+            }
+            else
+            {
+                await MusicService.CreateArtistAsync(artist);
+            }
+            Navigation.NavigateTo("/artists");
+        }
+        catch (Exception ex)
+        {
+            // Could show error message to user
+            Console.WriteLine($"Error saving artist: {ex.Message}");
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+}

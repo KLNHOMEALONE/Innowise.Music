@@ -57,5 +57,20 @@ services:
       - "7008:8081" # HTTPS mapping for MAUI app
     restart: unless-stopped
 
+  innowise.music.admin:
+    build:
+      context: .
+      dockerfile: Innowise.Music.Admin/Dockerfile
+    container_name: music_admin_dashboard
+    depends_on:
+      - innowise.musicidentityserver
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ApiSettings__BaseUrl=http://music_identity_server:8080/api
+    ports:
+      - "5237:8080" # Admin dashboard port
+    restart: unless-stopped
+
 volumes:
   postgres_data:

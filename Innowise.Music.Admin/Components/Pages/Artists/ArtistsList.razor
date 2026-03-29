@@ -1,0 +1,159 @@
+@page "/artists"
+@inject IAdminMusicService MusicService
+@inject NavigationManager Navigation
+@inject IAuthService AuthService
+
+<PageTitle>Artists - Admin Dashboard</PageTitle>
+
+<div class="page-header">
+    <h1>Artists Management</h1>
+    <a href="artists/new" class="btn-primary">+ Add Artist</a>
+</div>
+
+@if (isLoading)
+{
+    <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading artists...</p>
+    </div>
+}
+else if (errorMessage != null)
+{
+    <div class="error-state">
+        <p>⚠️ @errorMessage</p>
+        <button class="btn-primary" @onclick="LoadArtists">Retry</button>
+    </div>
+}
+else if (artists == null || !artists.Any())
+{
+    <div class="empty-state">
+        <p>No artists found</p>
+        <a href="artists/new" class="btn-primary">Add First Artist</a>
+    </div>
+}
+else
+{
+    <div class="content-card">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Biography</th>
+                    <th>Albums</th>
+                    <th>Monthly Listeners</th>
+                    <th>Verified</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var artist in artists)
+                {
+                    <tr>
+                        <td>
+                            <div class="artist-name">
+                                @if (!string.IsNullOrEmpty(artist.ImageUrl))
+                                {
+                                    <img src="@artist.ImageUrl" alt="@artist.Name" class="artist-avatar" />
+                                }
+                                <span>@artist.Name</span>
+                            </div>
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(artist.Biography))
+                            {
+                                @(artist.Biography.Length > 50 ? artist.Biography.Substring(0, 50) + "..." : artist.Biography)
+                            }
+                            else
+                            {
+                                <span class="text-muted">No biography</span>
+                            }
+                        </td>
+                        <td>@artist.Albums.Count</td>
+                        <td>@artist.MonthlyListeners.ToString("N0")</td>
+                        <td>@(artist.Verified ? "✓" : "—")</td>
+                        <td>
+                            <div class="actions">
+                                <a href="artists/@artist.Id/edit" class="btn-action">Edit</a>
+                                <button class="btn-action btn-danger" @onclick="() => ConfirmDelete(artist)">Delete</button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@if (showDeleteDialog && deleteArtist != null)
+{
+    <div class="modal-overlay" @onclick="CloseDeleteDialog">
+        <div class="modal-content" @onclick:stopPropagation>
+            <h3>Delete Artist</h3>
+            <p>Are you sure you want to delete <strong>@deleteArtist.Name</strong>? This action cannot be undone.</p>
+            <div class="modal-actions">
+                <button class="btn-secondary" @onclick="CloseDeleteDialog">Cancel</button>
+                <button class="btn-primary" style="background-color: var(--error-color);" @onclick="DeleteArtist">Delete</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<Artist> artists = new();
+    private bool isLoading;
+    private string? errorMessage;
+    private bool showDeleteDialog;
+    private Artist? deleteArtist;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadArtists();
+    }
+
+    private async Task LoadArtists()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            artists = (await MusicService.GetArtistsAsync()).ToList();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to load artists: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void ConfirmDelete(Artist artist)
+    {
+        deleteArtist = artist;
+        showDeleteDialog = true;
+    }
+
+    private void CloseDeleteDialog()
+    {
+        showDeleteDialog = false;
+        deleteArtist = null;
+    }
+
+    private async Task DeleteArtist()
+    {
+        if (deleteArtist == null) return;
+
+        try
+        {
+            await MusicService.DeleteArtistAsync(deleteArtist.Id);
+            artists.Remove(deleteArtist);
+            CloseDeleteDialog();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to delete artist: {ex.Message}";
+        }
+    }
+}

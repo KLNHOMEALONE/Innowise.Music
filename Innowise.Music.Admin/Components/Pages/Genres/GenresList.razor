@@ -1,0 +1,133 @@
+@page "/genres"
+@inject IAdminMusicService MusicService
+@inject NavigationManager Navigation
+
+<div class="page-header">
+    <h1>Genres Management</h1>
+    <a href="genres/new" class="btn-primary">+ Add Genre</a>
+</div>
+
+<div class="content-card">
+    @if (isLoading)
+    {
+        <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Loading genres...</p>
+        </div>
+    }
+    else if (genres == null)
+    {
+        <div class="error-state">
+            <p>Error loading genres. Please try again.</p>
+        </div>
+    }
+    else if (!genres.Any())
+    {
+        <div class="empty-state">
+            <p>No genres found. Add your first genre to get started.</p>
+        </div>
+    }
+    else
+    {
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Color</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var genre in genres)
+                {
+                    <tr>
+                        <td>@genre.Name</td>
+                        <td>@(string.IsNullOrEmpty(genre.Description) ? "-" : genre.Description)</td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(genre.Color))
+                            {
+                                <span class="color-badge" style="background-color: @genre.Color">@genre.Color</span>
+                            }
+                            else
+                            {
+                                <span>-</span>
+                            }
+                        </td>
+                        <td class="actions">
+                            <a href="genres/@genre.Id/edit" class="btn-action">Edit</a>
+                            <button class="btn-action btn-danger" @onclick="() => ConfirmDelete(genre)">Delete</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+@if (showDeleteConfirm)
+{
+    <div class="modal-overlay" @onclick="CloseDeleteConfirm">
+        <div class="modal-content" @onclick:stopPropagation>
+            <h3>Confirm Delete</h3>
+            <p>Are you sure you want to delete the genre "<strong>@selectedGenre?.Name</strong>"?</p>
+            <div class="modal-actions">
+                <button class="btn-secondary" @onclick="CloseDeleteConfirm">Cancel</button>
+                <button class="btn-danger" @onclick="DeleteGenre">Delete</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<Genre> genres = new();
+    private bool isLoading = true;
+    private bool showDeleteConfirm;
+    private Genre? selectedGenre;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadGenres();
+    }
+
+    private async Task LoadGenres()
+    {
+        isLoading = true;
+        try
+        {
+            genres = await MusicService.GetAllGenresAsync();
+        }
+        catch
+        {
+            genres = null!;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void ConfirmDelete(Genre genre)
+    {
+        selectedGenre = genre;
+        showDeleteConfirm = true;
+    }
+
+    private void CloseDeleteConfirm()
+    {
+        showDeleteConfirm = false;
+        selectedGenre = null;
+    }
+
+    private async Task DeleteGenre()
+    {
+        if (selectedGenre == null) return;
+
+        var success = await MusicService.DeleteGenreAsync(selectedGenre.Id);
+        if (success)
+        {
+            CloseDeleteConfirm();
+            await LoadGenres();
+        }
+    }
+}

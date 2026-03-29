@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [YYYY-MM-DD] - Admin Dashboard Planning
+
+### Added
+
+- **Admin Dashboard Plan**: Created comprehensive implementation plan in `Docs/admin-dashboard-plan.md`
+  - Detailed 8-phase implementation strategy
+  - Backend API enhancements for CRUD operations
+  - Blazor Web App project structure
+  - Authentication and authorization flow
+  - File upload specifications
+  - Docker integration plan
+  - Timeline estimates (28-38 hours total)
+
+### Documentation
+
+- Updated `Docs/tasktracker.md` with Admin Dashboard task breakdown
+- Created detailed technical specifications for all admin endpoints
+- Documented project structure and component hierarchy
+
+---
+
 ## [2026-03-28] - Music Streaming Backend Implementation (Phase 1)
 
 ### Added

@@ -1,0 +1,177 @@
+@page "/tracks/new"
+@page "/tracks/{id:guid}/edit"
+@inject IAdminMusicService MusicService
+@inject NavigationManager Navigation
+@inject IAuthService AuthService
+
+<div class="page-header">
+    <h1>@(IsEditMode ? "Edit Track" : "Add New Track")</h1>
+    <a href="tracks" class="btn-secondary">Back to List</a>
+</div>
+
+<div class="content-card">
+    <form @onsubmit="HandleSubmit" class="form">
+        <div class="form-group">
+            <label for="title">Title <span class="required">*</span></label>
+            <input type="text" id="title" @bind="track.Title" class="form-control" required />
+            @if (!string.IsNullOrEmpty(titleError))
+            {
+                <span class="error-text">@titleError</span>
+            }
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="artistId">Artist <span class="required">*</span></label>
+                <select id="artistId" @bind="track.ArtistId" class="form-control" required>
+                    <option value="">-- Select Artist --</option>
+                    @foreach (var artist in artists)
+                    {
+                        <option value="@artist.Id">@artist.Name</option>
+                    }
+                </select>
+                @if (!string.IsNullOrEmpty(artistError))
+                {
+                    <span class="error-text">@artistError</span>
+                }
+            </div>
+            <div class="form-group">
+                <label for="albumId">Album</label>
+                <select id="albumId" @bind="track.AlbumId" class="form-control">
+                    <option value="">-- Select Album (Optional) --</option>
+                    @foreach (var album in albums)
+                    {
+                        <option value="@album.Id">@album.Title</option>
+                    }
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="trackNumber">Track Number</label>
+                <input type="number" id="trackNumber" @bind="track.TrackNumber" class="form-control" min="1" />
+            </div>
+            <div class="form-group">
+                <label for="duration">Duration (seconds)</label>
+                <input type="number" id="duration" @bind="track.Duration" class="form-control" min="1" />
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="audioFormat">Audio Format</label>
+                <select id="audioFormat" @bind="track.AudioFormat" class="form-control">
+                    <option value="MP3">MP3</option>
+                    <option value="WAV">WAV</option>
+                    <option value="FLAC">FLAC</option>
+                    <option value="AAC">AAC</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" @bind="track.Explicit" />
+                    Explicit Content
+                </label>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-primary" disabled="@isSubmitting">
+                @(isSubmitting ? "Saving..." : "Save")
+            </button>
+            <a href="tracks" class="btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+@code {
+    [Parameter]
+    public Guid? id { get; set; }
+
+    private Track track = new();
+    private List<Artist> artists = new();
+    private List<Album> albums = new();
+    private bool isSubmitting;
+    private string titleError = string.Empty;
+    private string artistError = string.Empty;
+
+    private bool IsEditMode => id.HasValue;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Load dropdown data
+        try
+        {
+            var artistsTask = MusicService.GetArtistsAsync();
+            var albumsTask = MusicService.GetAlbumsAsync();
+            await Task.WhenAll(artistsTask, albumsTask);
+            
+            artists = artistsTask.Result.ToList();
+            albums = albumsTask.Result.ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading dropdown data: {ex.Message}");
+        }
+
+        if (IsEditMode && id.HasValue)
+        {
+            var fetchedTrack = await MusicService.GetTrackAsync(id.Value);
+            if (fetchedTrack != null)
+            {
+                track = fetchedTrack;
+            }
+            else
+            {
+                Navigation.NavigateTo("/tracks");
+            }
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        titleError = string.Empty;
+        artistError = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(track.Title))
+        {
+            titleError = "Title is required";
+            return;
+        }
+
+        if (track.ArtistId == Guid.Empty)
+        {
+            artistError = "Artist is required";
+            return;
+        }
+
+        if (track.Duration <= 0)
+        {
+            track.Duration = 180; // Default 3 minutes
+        }
+
+        isSubmitting = true;
+
+        try
+        {
+            if (IsEditMode)
+            {
+                await MusicService.UpdateTrackAsync(id!.Value, track);
+            }
+            else
+            {
+                await MusicService.CreateTrackAsync(track);
+            }
+            Navigation.NavigateTo("/tracks");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving track: {ex.Message}");
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+}

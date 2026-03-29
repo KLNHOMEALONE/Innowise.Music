@@ -1,0 +1,82 @@
+@*
+ * @file: ConfirmDialog.razor
+ * @description: Reusable confirmation dialog component for delete and other destructive actions
+ * @dependencies: None
+ * @created: 2026-03-29
+ *@
+
+@if (IsVisible)
+{
+    <div class="modal-overlay" @onclick="HandleCancel">
+        <div class="modal-content" @onclick:stopPropagation>
+            <div class="confirm-icon">
+                @if (IsDestructive)
+                {
+                    <span>⚠️</span>
+                }
+                else
+                {
+                    <span>ℹ️</span>
+                }
+            </div>
+            <h3>@Title</h3>
+            <p>@Message</p>
+            <div class="modal-actions">
+                <button class="btn-secondary" @onclick="HandleCancel">@CancelText</button>
+                <button class="btn-primary @(IsDestructive ? "btn-danger" : "")" @onclick="HandleConfirm">@ConfirmText</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public bool IsVisible { get; set; }
+
+    [Parameter]
+    public string Title { get; set; } = "Confirm Action";
+
+    [Parameter]
+    public string Message { get; set; } = "Are you sure you want to proceed?";
+
+    [Parameter]
+    public string ConfirmText { get; set; } = "Confirm";
+
+    [Parameter]
+    public string CancelText { get; set; } = "Cancel";
+
+    [Parameter]
+    public bool IsDestructive { get; set; } = true;
+
+    [Parameter]
+    public EventCallback OnConfirm { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private async Task HandleConfirm()
+    {
+        await OnConfirm.InvokeAsync();
+    }
+
+    private async Task HandleCancel()
+    {
+        await OnCancel.InvokeAsync();
+    }
+}
+
+<style>
+    .confirm-icon {
+        text-align: center;
+        font-size: 3rem;
+        margin-bottom: 16px;
+    }
+
+    .btn-danger {
+        background-color: var(--error-color) !important;
+    }
+
+    .btn-danger:hover {
+        background-color: #c0392b !important;
+    }
+</style>

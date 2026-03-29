@@ -1,0 +1,149 @@
+@page "/albums/new"
+@page "/albums/{id:guid}/edit"
+@inject IAdminMusicService MusicService
+@inject NavigationManager Navigation
+@inject IAuthService AuthService
+
+<div class="page-header">
+    <h1>@(IsEditMode ? "Edit Album" : "Add New Album")</h1>
+    <a href="albums" class="btn-secondary">Back to List</a>
+</div>
+
+<div class="content-card">
+    <form @onsubmit="HandleSubmit" class="form">
+        <div class="form-group">
+            <label for="title">Title <span class="required">*</span></label>
+            <input type="text" id="title" @bind="album.Title" class="form-control" required />
+            @if (!string.IsNullOrEmpty(titleError))
+            {
+                <span class="error-text">@titleError</span>
+            }
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="artistId">Artist <span class="required">*</span></label>
+                <select id="artistId" @bind="album.ArtistId" class="form-control" required>
+                    <option value="">-- Select Artist --</option>
+                    @foreach (var artist in artists)
+                    {
+                        <option value="@artist.Id">@artist.Name</option>
+                    }
+                </select>
+                @if (!string.IsNullOrEmpty(artistError))
+                {
+                    <span class="error-text">@artistError</span>
+                }
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="releaseDate">Release Date</label>
+                <input type="date" id="releaseDate" @bind="album.ReleaseDate" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label for="imageUrl">Cover Image URL</label>
+                <input type="url" id="imageUrl" @bind="album.CoverImageUrl" class="form-control" placeholder="https://..." />
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="genre">Genre</label>
+                <input type="text" id="genre" @bind="album.Genre" class="form-control" placeholder="e.g., Rock, Pop" />
+            </div>
+            <div class="form-group">
+                <label for="label">Label</label>
+                <input type="text" id="label" @bind="album.Label" class="form-control" placeholder="Record label" />
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-primary" disabled="@isSubmitting">
+                @(isSubmitting ? "Saving..." : "Save")
+            </button>
+            <a href="albums" class="btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+@code {
+    [Parameter]
+    public Guid? id { get; set; }
+
+    private Album album = new();
+    private List<Artist> artists = new();
+    private bool isSubmitting;
+    private string titleError = string.Empty;
+    private string artistError = string.Empty;
+
+    private bool IsEditMode => id.HasValue;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Load artists for dropdown
+        try
+        {
+            artists = (await MusicService.GetArtistsAsync()).ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading artists: {ex.Message}");
+        }
+
+        if (IsEditMode && id.HasValue)
+        {
+            var fetchedAlbum = await MusicService.GetAlbumAsync(id.Value);
+            if (fetchedAlbum != null)
+            {
+                album = fetchedAlbum;
+            }
+            else
+            {
+                Navigation.NavigateTo("/albums");
+            }
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        titleError = string.Empty;
+        artistError = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(album.Title))
+        {
+            titleError = "Title is required";
+            return;
+        }
+
+        if (album.ArtistId == Guid.Empty)
+        {
+            artistError = "Artist is required";
+            return;
+        }
+
+        isSubmitting = true;
+
+        try
+        {
+            if (IsEditMode)
+            {
+                await MusicService.UpdateAlbumAsync(id!.Value, album);
+            }
+            else
+            {
+                await MusicService.CreateAlbumAsync(album);
+            }
+            Navigation.NavigateTo("/albums");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving album: {ex.Message}");
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+}
