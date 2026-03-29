@@ -1,7 +1,7 @@
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using Innowise.MusicIdentityServer.Models.Music;
+using Innowise.Music.Admin.Models;
 
 namespace Innowise.Music.Admin.Services;
 

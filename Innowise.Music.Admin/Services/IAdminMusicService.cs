@@ -1,4 +1,4 @@
-using Innowise.MusicIdentityServer.Models.Music;
+using Innowise.Music.Admin.Models;
 
 namespace Innowise.Music.Admin.Services;
 
@@ -35,15 +35,4 @@ public interface IAdminMusicService
     Task<bool> DeleteTrackAsync(Guid id);
     Task<bool> UploadTrackAudioAsync(Guid trackId, Stream stream, string fileName);
     Task<List<Track>> GetTracksAsync();
-}
-
-public class PagedResponse<T>
-{
-    public List<T> Items { get; set; } = new();
-    public int TotalCount { get; set; }
-    public int Page { get; set; }
-    public int PageSize { get; set; }
-    public int TotalPages => (int)Math.Ceiling(TotalCount / (double)PageSize);
-    public bool HasPrevious => Page > 1;
-    public bool HasNext => Page < TotalPages;
 }

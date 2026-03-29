@@ -57,7 +57,7 @@
                             <td>@(string.IsNullOrEmpty(track.AlbumName) ? "—" : track.AlbumName)</td>
                             <td>@FormatDuration(track.Duration)</td>
                             <td>
-                                @if (track.HasAudio)
+                                @if (!string.IsNullOrEmpty(track.AudioFormat))
                                 {
                                     <span class="status-badge status-success">✓ @track.AudioFormat</span>
                                 }
@@ -70,10 +70,7 @@
                             <td>
                                 <div class="actions">
                                     <a href="/tracks/@track.Id/edit" class="btn-action">Edit</a>
-                                    @if (!track.HasAudio)
-                                    {
-                                        <a href="/tracks/@track.Id/upload" class="btn-action">Upload</a>
-                                    }
+                                    <a href="/tracks/@track.Id/upload" class="btn-action">Upload</a>
                                     <button class="btn-action btn-danger" @onclick="() => ConfirmDelete(track)">Delete</button>
                                 </div>
                             </td>
@@ -129,7 +126,6 @@
                 AlbumName = t.Album?.Title,
                 Duration = t.Duration,
                 TrackNumber = t.TrackNumber,
-                HasAudio = t.AudioData != null && t.AudioData.Length > 0,
                 AudioFormat = t.AudioFormat,
                 Explicit = t.Explicit
             }).ToList();
@@ -193,7 +189,6 @@
         public string? AlbumName { get; set; }
         public int Duration { get; set; }
         public int? TrackNumber { get; set; }
-        public bool HasAudio { get; set; }
         public string AudioFormat { get; set; } = string.Empty;
         public bool Explicit { get; set; }
     }

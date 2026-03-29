@@ -13,9 +13,7 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.3.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Innowise.MusicIdentityServer\Innowise.MusicIdentityServer.csproj" />
-  </ItemGroup>
+
 
   <!-- Exclude IdentityServer appsettings from Admin publish to avoid conflicts -->
   <Target Name="ExcludeIdentityServerAppSettings" BeforeTargets="ComputeFilesToPublish">

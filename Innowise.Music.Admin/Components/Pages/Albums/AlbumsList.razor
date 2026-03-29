@@ -125,8 +125,7 @@
                 ReleaseDate = a.ReleaseDate,
                 GenreId = null,
                 GenreName = a.Genre,
-                TrackCount = a.Tracks?.Count ?? 0,
-                Tracks = a.Tracks
+                TrackCount = a.TotalTracks
             }).ToList();
         }
         catch (Exception ex)
@@ -179,6 +178,6 @@
         public Guid? GenreId { get; set; }
         public string? GenreName { get; set; }
         public int TrackCount { get; set; }
-        public ICollection<Track>? Tracks { get; set; }
+
     }
 }
