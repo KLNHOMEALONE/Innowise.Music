@@ -1,4 +1,7 @@
 @using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
 
 <Router AppAssembly="@typeof(App).Assembly">
     <Found Context="FoundRouteData">
@@ -12,3 +15,42 @@
         </LayoutView>
     </NotFound>
 </Router>
+
+@code {
+    protected override void OnInitialized()
+    {
+        // Subscribe to authentication state changes
+        AuthService.OnAuthenticationStateChanged += OnAuthenticationStateChanged;
+    }
+
+    private void OnAuthenticationStateChanged()
+    {
+        // When authentication state changes (e.g., logout), redirect to login if not authenticated
+        var currentUrl = Navigation.ToAbsoluteUri(Navigation.Uri).AbsolutePath;
+        if (!AuthService.IsAuthenticatedAsync().Result && !currentUrl.Equals("/login", StringComparison.OrdinalIgnoreCase))
+        {
+            Navigation.NavigateTo("/login", forceLoad: true);
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var isAuthenticated = await AuthService.IsAuthenticatedAsync();
+            var currentUrl = Navigation.ToAbsoluteUri(Navigation.Uri).AbsolutePath;
+            
+            // If user is not authenticated and not already on login page, redirect to login
+            if (!isAuthenticated && !currentUrl.Equals("/login", StringComparison.OrdinalIgnoreCase))
+            {
+                Navigation.NavigateTo("/login", forceLoad: true);
+            }
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    public void Dispose()
+    {
+        AuthService.OnAuthenticationStateChanged -= OnAuthenticationStateChanged;
+    }
+}

@@ -82,25 +82,63 @@ graph TB
 
 ## Authentication & Authorization Flow
 
+### Workflow Overview
+
+When starting the Admin Dashboard, the following workflow is enforced:
+
+1. **Initial Load**: User navigates to the admin dashboard URL
+2. **Authentication Check**: [`Routes.razor`](../Innowise.Music.Admin/Components/Routes.razor:1) checks if user is authenticated via [`IAuthService.IsAuthenticatedAsync()`](../Innowise.Music.Admin/Services/IAuthService.cs:7)
+3. **Redirect to Login**: If not authenticated, user is redirected to `/login` page
+4. **Login Process**: User enters credentials on [`Login.razor`](../Innowise.Music.Admin/Components/Pages/Login.razor:1)
+5. **Admin Verification**: After successful login, [`IsAdminAsync()`](../Innowise.Music.Admin/Services/IAuthService.cs:8) checks if user has "Administrator" role
+6. **Dashboard Access**: Only admin users are navigated to the dashboard (`/` or `/dashboard`)
+7. **Access Denied**: Non-admin users see an error message and remain on login page
+
 ```mermaid
 sequenceDiagram
     participant Admin
-    participant BlazorApp
+    participant Routes
+    participant Login
+    participant AuthService
     participant IdentityServer
     participant Database
     
-    Admin->>BlazorApp: Navigate to /admin
-    BlazorApp->>Admin: Show Login Page
-    Admin->>BlazorApp: Enter credentials
-    BlazorApp->>IdentityServer: POST /api/Authentication/login
+    Admin->>Routes: Navigate to /
+    Routes->>AuthService: IsAuthenticatedAsync()
+    AuthService-->>Routes: false
+    Routes->>Login: Navigate to /login
+    Login->>Admin: Show Login Form
+    Admin->>Login: Enter credentials
+    Login->>AuthService: LoginAsync(email, password)
+    AuthService->>IdentityServer: POST /api/authentication/login
     IdentityServer->>Database: Validate credentials
     Database-->>IdentityServer: User data
-    IdentityServer->>Database: Check user role
-    Database-->>IdentityServer: Role = Admin
-    IdentityServer-->>BlazorApp: JWT Token + User Info
-    BlazorApp->>BlazorApp: Store token & check role
-    BlazorApp->>Admin: Redirect to Dashboard
+    IdentityServer-->>AuthService: JWT Token
+    AuthService->>AuthService: SaveToken() + ParseToken()
+    AuthService-->>Login: true
+    Login->>AuthService: IsAdminAsync()
+    AuthService->>AuthService: Check ClaimsPrincipal.IsInRole("Administrator")
+    AuthService-->>Login: isAdmin
+    alt User is Admin
+        Login->>Routes: Navigate to / (forceLoad)
+        Routes->>AuthService: IsAuthenticatedAsync()
+        AuthService-->>Routes: true
+        Routes->>Dashboard: Render Dashboard
+    else User is Not Admin
+        Login->>AuthService: LogoutAsync()
+        Login->>Admin: Show "Access Denied" error
+    end
 ```
+
+### Key Components
+
+| Component | File | Purpose |
+|-----------|------|---------|
+| Routes | [`Routes.razor`](../Innowise.Music.Admin/Components/Routes.razor:1) | Initial auth check, redirects to login if not authenticated |
+| Login Page | [`Login.razor`](../Innowise.Music.Admin/Components/Pages/Login.razor:1) | Handles credential input and login logic |
+| Auth Service | [`AuthService.cs`](../Innowise.Music.Admin/Services/AuthService.cs:10) | Manages JWT token, authentication state, and admin role check |
+| Authorize View | [`AuthorizeView.razor`](../Innowise.Music.Admin/Components/Shared/AuthorizeView.razor:1) | Protects dashboard pages, shows access denied for non-admins |
+| Dashboard | [`Dashboard.razor`](../Innowise.Music.Admin/Components/Pages/Dashboard.razor:1) | Main admin page, wrapped in AuthorizeView |
 
 ## Project Structure
 
