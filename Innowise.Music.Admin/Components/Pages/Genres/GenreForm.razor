@@ -3,51 +3,54 @@
 @inject IAdminMusicService MusicService
 @inject NavigationManager Navigation
 @inject IAuthService AuthService
+@layout MainLayout
 
-<div class="page-header">
-    <h1>@(IsEditMode ? "Edit Genre" : "Add New Genre")</h1>
-    <a href="genres" class="btn-secondary">Back to List</a>
-</div>
+<AuthorizeView>
+    <div class="page-header">
+        <h1>@(IsEditMode ? "Edit Genre" : "Add New Genre")</h1>
+        <a href="/genres" class="btn-secondary">Back to List</a>
+    </div>
 
-<div class="content-card">
-    <form @onsubmit="HandleSubmit" class="form">
-        <div class="form-group">
-            <label for="name">Name <span class="required">*</span></label>
-            <input type="text" id="name" @bind="genre.Name" class="form-control" required />
-            @if (!string.IsNullOrEmpty(nameError))
-            {
-                <span class="error-text">@nameError</span>
-            }
-        </div>
-
-        <div class="form-group">
-            <label for="description">Description</label>
-            <textarea id="description" @bind="genre.Description" class="form-control" rows="3"></textarea>
-        </div>
-
-        <div class="form-row">
+    <div class="content-card">
+        <form @onsubmit="HandleSubmit" class="form">
             <div class="form-group">
-                <label for="color">Color (Hex)</label>
-                <div class="color-input-group">
-                    <input type="text" id="color" @bind="genre.Color" class="form-control" placeholder="#000000" maxlength="7" />
-                    <input type="color" value="@colorPreview" @oninput="OnColorChange" class="color-picker" />
+                <label for="name">Name <span class="required">*</span></label>
+                <input type="text" id="name" @bind="genre.Name" class="form-control" required />
+                @if (!string.IsNullOrEmpty(nameError))
+                {
+                    <span class="error-text">@nameError</span>
+                }
+            </div>
+
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" @bind="genre.Description" class="form-control" rows="3"></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="color">Color (Hex)</label>
+                    <div class="color-input-group">
+                        <input type="text" id="color" @bind="genre.Color" class="form-control" placeholder="#000000" maxlength="7" />
+                        <input type="color" value="@colorPreview" @oninput="OnColorChange" class="color-picker" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="imageUrl">Image URL</label>
+                    <input type="url" id="imageUrl" @bind="genre.ImageUrl" class="form-control" placeholder="https://..." />
                 </div>
             </div>
 
-            <div class="form-group">
-                <label for="imageUrl">Image URL</label>
-                <input type="url" id="imageUrl" @bind="genre.ImageUrl" class="form-control" placeholder="https://..." />
+            <div class="form-actions">
+                <button type="submit" class="btn-primary" disabled="@isSubmitting">
+                    @(isSubmitting ? "Saving..." : "Save")
+                </button>
+                <a href="/genres" class="btn-secondary">Cancel</a>
             </div>
-        </div>
-
-        <div class="form-actions">
-            <button type="submit" class="btn-primary" disabled="@isSubmitting">
-                @(isSubmitting ? "Saving..." : "Save")
-            </button>
-            <a href="genres" class="btn-secondary">Cancel</a>
-        </div>
-    </form>
-</div>
+        </form>
+    </div>
+</AuthorizeView>
 
 @code {
     [Parameter]
@@ -68,10 +71,7 @@
             if (fetchedGenre != null)
             {
                 genre = fetchedGenre;
-                if (!string.IsNullOrEmpty(genre.Color))
-                {
-                    colorPreview = genre.Color;
-                }
+                colorPreview = !string.IsNullOrEmpty(genre.Color) ? genre.Color : "#000000";
             }
             else
             {
@@ -84,7 +84,7 @@
     {
         if (e.Value != null)
         {
-            colorPreview = e.Value.ToString()!;
+            colorPreview = e.Value.ToString();
             genre.Color = colorPreview;
         }
     }
@@ -113,9 +113,9 @@
             }
             Navigation.NavigateTo("/genres");
         }
-        catch
+        catch (Exception ex)
         {
-            // Handle error
+            Console.WriteLine($"Error saving genre: {ex.Message}");
         }
         finally
         {

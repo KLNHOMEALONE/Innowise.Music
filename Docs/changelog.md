@@ -2,6 +2,119 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-03-29] - Complete Authentication Workflow Implementation
+
+### Fixed
+- **Complete authentication workflow now working correctly**:
+  1. User navigates to admin dashboard URL
+  2. `Routes.razor` checks authentication status via `IAuthService.IsAuthenticatedAsync()`
+  3. If not authenticated → redirect to `/login` with `forceLoad: true`
+  4. User enters credentials on `Login.razor`
+  5. `AuthService.LoginAsync()` validates with Identity Server
+  6. `AuthService.IsAdminAsync()` checks for "Administrator" role
+  7. If admin → navigate to dashboard (`/`)
+  8. If not admin → show "Access Denied" error
+  9. User clicks Logout button → `AuthService.LogoutAsync()` clears session → redirect to `/login`
+
+### Added
+- **Authentication state change listener in Routes.razor**: Added event subscription to `AuthService.OnAuthenticationStateChanged` to handle logout redirects
+- **Proper logout flow**: When user logs out, the authentication state changes and triggers automatic redirect to login page
+
+### Changed
+- Updated `Routes.razor` to subscribe to authentication state changes and redirect to login when user logs out
+- Removed unused `IJSRuntime` injection from `MainLayout.razor`
+
+---
+
+## [2026-03-29] - Fixed Logout Redirect Issue
+
+### Fixed
+- **Logout button now properly redirects to login page**: Changed from JavaScript interop (`JSRuntime.InvokeVoidAsync("location.replace", "/login")`) to `NavigationManager.NavigateTo("/login", forceLoad: true)` in `MainLayout.razor`
+- The previous JS interop approach was not working reliably in Blazor Server context
+- Using `forceLoad: true` ensures a full page reload, which clears the Blazor circuit and forces re-authentication
+- Removed unused `IJSRuntime` injection from `MainLayout.razor`
+
+### Summary of Authentication Workflow
+The complete authentication flow is now working correctly:
+1. User navigates to admin dashboard URL
+2. `Routes.razor` checks authentication status via `IAuthService.IsAuthenticatedAsync()`
+3. If not authenticated → redirect to `/login` with `forceLoad: true`
+4. User enters credentials on `Login.razor`
+5. `AuthService.LoginAsync()` validates with Identity Server
+6. `AuthService.IsAdminAsync()` checks for "Administrator" role
+7. If admin → navigate to dashboard (`/`)
+8. If not admin → show "Access Denied" error
+9. **User clicks Logout button** → `AuthService.LogoutAsync()` clears session → redirect to `/login` with `forceLoad: true`
+
+---
+
+## [2026-03-29] - Verify and Fix Admin Dashboard Login Workflow
+
+### Verified
+- Confirmed the complete authentication flow from app startup to dashboard access
+- Verified that only admin users can access the dashboard after successful login
+
+### Fixed
+- Added authentication check in `Routes.razor` to redirect unauthenticated users to `/login` page on initial app load
+- The `Routes.razor` component now checks `IAuthService.IsAuthenticatedAsync()` on first render
+- If user is not authenticated and not already on the login page, they are redirected to `/login` with `forceLoad: true`
+
+### Workflow Summary
+1. User navigates to admin dashboard URL
+2. `Routes.razor` checks authentication status
+3. If not authenticated → redirect to `/login`
+4. User enters credentials on `Login.razor`
+5. `AuthService.LoginAsync()` validates with Identity Server
+6. `AuthService.IsAdminAsync()` checks for "Administrator" role
+7. If admin → navigate to dashboard (`/`)
+8. If not admin → show "Access Denied" error
+
+---
+
+## [2026-03-29] - Fix Login Redirection to Dashboard
+
+### Fixed
+- Fixed login redirection issue: Added `forceLoad: true` to navigation in `AuthorizeView.razor`
+- The `AuthorizeView` component was redirecting unauthenticated users to `/login` without `forceLoad: true`, which could cause navigation issues in Blazor Server
+- Updated line 15 in `AuthorizeView.razor` to use `Navigation.NavigateTo("/login", forceLoad: true)`
+
+---
+
+## [2026-03-29] - Docker Containers Rebuild & Deployment
+
+### Fixed
+- Fixed admin dashboard startup error: Added missing `AddRazorPages()` service to `Program.cs`
+- Resolved `InvalidOperationException` caused by `MapFallbackToPage("/_Host")` requiring Razor Pages services
+- Created proper Razor Pages host file at `Pages/_Host.cshtml` (not `.razor`) for fallback routing
+
+### Added
+- `Pages/_Host.cshtml` - Razor Pages host file serving as the entry point for Blazor Server app
+
+### Changed
+- Rebuilt all Docker containers with latest code changes
+- Successfully deployed: PostgreSQL, Adminer, Identity Server, Admin Dashboard
+
+---
+
+## [2026-03-29] - Admin Dashboard Authentication & Authorization
+
+### Added
+- Created `AuthorizeView` component for role-based access control in Blazor
+- Added loading and access denied states with CSS styles
+- Implemented admin-only access check on login
+
+### Changed
+- Updated all admin pages (Dashboard, Artists, Albums, Tracks, Genres) to require authentication
+- Updated `MainLayout.razor` to integrate with `IAuthService` and display user info
+- Updated `Login.razor` to verify admin role before granting access
+- Added `@layout MainLayout` directive to all protected pages
+
+### Fixed
+- Fixed malformed AuthorizeView tags by properly closing all HTML elements
+- Ensured consistent layout and navigation across all admin pages
+
+---
+
 ## [YYYY-MM-DD] - Admin Dashboard Planning
 
 ### Added

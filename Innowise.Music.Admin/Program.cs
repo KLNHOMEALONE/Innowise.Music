@@ -4,6 +4,7 @@ using Innowise.Music.Admin.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddRazorPages();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
@@ -45,5 +46,9 @@ app.UseSession();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+
+// Map fallback route to handle client-side routing
+app.MapFallbackToPage("/_Host");
 
 app.Run();

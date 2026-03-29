@@ -2,95 +2,98 @@
 @inject IAdminMusicService MusicService
 @inject NavigationManager Navigation
 @inject IAuthService AuthService
+@layout MainLayout
 
 <PageTitle>Albums - Admin Dashboard</PageTitle>
 
-<div class="page-header">
-    <h1>Albums Management</h1>
-    <a href="albums/new" class="btn-primary">+ Add Album</a>
-</div>
+<AuthorizeView>
+    <div class="page-header">
+        <h1>Albums Management</h1>
+        <a href="/albums/new" class="btn-primary">+ Add Album</a>
+    </div>
 
-@if (isLoading)
-{
-    <div class="loading-state">
-        <div class="spinner"></div>
-        <p>Loading albums...</p>
-    </div>
-}
-else if (errorMessage != null)
-{
-    <div class="error-state">
-        <p>⚠️ @errorMessage</p>
-        <button class="btn-primary" @onclick="LoadAlbums">Retry</button>
-    </div>
-}
-else if (albums == null || !albums.Any())
-{
-    <div class="empty-state">
-        <p>No albums found</p>
-        <a href="albums/new" class="btn-primary">Add First Album</a>
-    </div>
-}
-else
-{
-    <div class="content-card">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Cover</th>
-                    <th>Title</th>
-                    <th>Artist</th>
-                    <th>Release Date</th>
-                    <th>Tracks</th>
-                    <th>Genre</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var album in albums)
-                {
+    @if (isLoading)
+    {
+        <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Loading albums...</p>
+        </div>
+    }
+    else if (errorMessage != null)
+    {
+        <div class="error-state">
+            <p>⚠️ @errorMessage</p>
+            <button class="btn-primary" @onclick="LoadAlbums">Retry</button>
+        </div>
+    }
+    else if (albums == null || !albums.Any())
+    {
+        <div class="empty-state">
+            <p>No albums found</p>
+            <a href="/albums/new" class="btn-primary">Add First Album</a>
+        </div>
+    }
+    else
+    {
+        <div class="content-card">
+            <table class="data-table">
+                <thead>
                     <tr>
-                        <td>
-                            @if (!string.IsNullOrEmpty(album.ImageUrl))
-                            {
-                                <img src="@album.ImageUrl" alt="@album.Title" class="album-cover" />
-                            }
-                            else
-                            {
-                                <div class="album-cover-placeholder">🎵</div>
-                            }
-                        </td>
-                        <td><strong>@album.Title</strong></td>
-                        <td>@album.ArtistName</td>
-                        <td>@(album.ReleaseDate?.ToString("MMM dd, yyyy") ?? "TBD")</td>
-                        <td>@album.TrackCount</td>
-                        <td>@(album.GenreName ?? "—")</td>
-                        <td>
-                            <div class="actions">
-                                <a href="albums/@album.Id/edit" class="btn-action">Edit</a>
-                                <button class="btn-action btn-danger" @onclick="() => ConfirmDelete(album)">Delete</button>
-                            </div>
-                        </td>
+                        <th>Cover</th>
+                        <th>Title</th>
+                        <th>Artist</th>
+                        <th>Release Date</th>
+                        <th>Tracks</th>
+                        <th>Genre</th>
+                        <th>Actions</th>
                     </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-}
+                </thead>
+                <tbody>
+                    @foreach (var album in albums)
+                    {
+                        <tr>
+                            <td>
+                                @if (!string.IsNullOrEmpty(album.ImageUrl))
+                                {
+                                    <img src="@album.ImageUrl" alt="@album.Title" class="album-cover" />
+                                }
+                                else
+                                {
+                                    <div class="album-cover-placeholder">🎵</div>
+                                }
+                            </td>
+                            <td><strong>@album.Title</strong></td>
+                            <td>@album.ArtistName</td>
+                            <td>@(album.ReleaseDate?.ToString("MMM dd, yyyy") ?? "TBD")</td>
+                            <td>@album.TrackCount</td>
+                            <td>@(album.GenreName ?? "—")</td>
+                            <td>
+                                <div class="actions">
+                                    <a href="/albums/@album.Id/edit" class="btn-action">Edit</a>
+                                    <button class="btn-action btn-danger" @onclick="() => ConfirmDelete(album)">Delete</button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
 
-@if (showDeleteDialog && deleteAlbum != null)
-{
-    <div class="modal-overlay" @onclick="CloseDeleteDialog">
-        <div class="modal-content" @onclick:stopPropagation>
-            <h3>Delete Album</h3>
-            <p>Are you sure you want to delete <strong>@deleteAlbum.Title</strong>? This will also delete all associated tracks.</p>
-            <div class="modal-actions">
-                <button class="btn-secondary" @onclick="CloseDeleteDialog">Cancel</button>
-                <button class="btn-primary" style="background-color: var(--error-color);" @onclick="DeleteAlbum">Delete</button>
+    @if (showDeleteDialog && deleteAlbum != null)
+    {
+        <div class="modal-overlay" @onclick="CloseDeleteDialog">
+            <div class="modal-content" @onclick:stopPropagation>
+                <h3>Delete Album</h3>
+                <p>Are you sure you want to delete <strong>@deleteAlbum.Title</strong>? This will also delete all associated tracks.</p>
+                <div class="modal-actions">
+                    <button class="btn-secondary" @onclick="CloseDeleteDialog">Cancel</button>
+                    <button class="btn-primary" style="background-color: var(--error-color);" @onclick="DeleteAlbum">Delete</button>
+                </div>
             </div>
         </div>
-    </div>
-}
+    }
+</AuthorizeView>
 
 @code {
     private List<AlbumViewModel> albums = new();

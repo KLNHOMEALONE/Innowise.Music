@@ -1,0 +1,83 @@
+@using System.Security.Claims
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+
+@if (_isLoading)
+{
+    <div class="loading-container">
+        <div class="spinner"></div>
+        <p>Loading...</p>
+    </div>
+}
+else if (!_isAuthenticated)
+{
+    // Will redirect to login in OnAfterRenderAsync
+}
+else if (!_isAdmin)
+{
+    // Show access denied if not admin
+    <div class="access-denied">
+        <h1>Access Denied</h1>
+        <p>You do not have administrator privileges to access this page.</p>
+        <button class="btn-primary" @onclick="Logout">Logout</button>
+    </div>
+}
+else
+{
+    // Show content if authenticated and admin
+    @ChildContent
+}
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private bool _isLoading = true;
+    private bool _isAuthenticated;
+    private bool _isAdmin;
+    private bool _shouldRedirectToLogin;
+    private bool _redirectExecuted;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CheckAuthorization();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && _shouldRedirectToLogin && !_redirectExecuted)
+        {
+            _redirectExecuted = true;
+            Navigation.NavigateTo("/login", forceLoad: true);
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task CheckAuthorization()
+    {
+        _isLoading = true;
+        StateHasChanged();
+
+        _isAuthenticated = await AuthService.IsAuthenticatedAsync();
+        
+        if (_isAuthenticated)
+        {
+            _isAdmin = await AuthService.IsAdminAsync();
+            _shouldRedirectToLogin = false;
+        }
+        else
+        {
+            _isAdmin = false;
+            _shouldRedirectToLogin = true;
+        }
+
+        _isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task Logout()
+    {
+        await AuthService.LogoutAsync();
+        Navigation.NavigateTo("/login", forceLoad: true);
+    }
+}

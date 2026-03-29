@@ -1,117 +1,121 @@
 @page "/tracks/{id:guid}/upload"
 @inject IAdminMusicService MusicService
 @inject NavigationManager Navigation
+@inject IAuthService AuthService
+@layout MainLayout
 
 <PageTitle>Upload Audio - Admin Dashboard</PageTitle>
 
-<div class="page-header">
-    <h1>Upload Audio for "@track?.Title"</h1>
-    <a href="tracks" class="btn-secondary">Back to Tracks</a>
-</div>
+<AuthorizeView>
+    <div class="page-header">
+        <h1>Upload Audio for "@track?.Title"</h1>
+        <a href="/tracks" class="btn-secondary">Back to Tracks</a>
+    </div>
 
-@if (isLoading)
-{
-    <div class="loading-state">
-        <div class="spinner"></div>
-        <p>Loading track information...</p>
-    </div>
-}
-else if (errorMessage != null)
-{
-    <div class="error-state">
-        <p>⚠️ @errorMessage</p>
-        <button class="btn-primary" @onclick="LoadTrack">Retry</button>
-    </div>
-}
-else if (track != null)
-{
-    <div class="content-card">
-        <div class="track-info">
-            <h3>Track Details</h3>
-            <div class="info-grid">
-                <div class="info-item">
-                    <span class="info-label">Title:</span>
-                    <span class="info-value">@track.Title</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Artist:</span>
-                    <span class="info-value">@track.Artist?.Name</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Album:</span>
-                    <span class="info-value">@(track.Album?.Title ?? "—")</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Duration:</span>
-                    <span class="info-value">@track.Duration.ToString(@"m\:ss")</span>
-                </div>
-            </div>
+    @if (isLoading)
+    {
+        <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Loading track information...</p>
         </div>
-
-        <div class="upload-section">
-            <h3>Upload Audio File</h3>
-            
-            <div class="upload-requirements">
-                <h4>Requirements:</h4>
-                <ul>
-                    <li>Supported formats: MP3, WAV, FLAC, AAC</li>
-                    <li>Maximum file size: 50MB</li>
-                    <li>Recommended bitrate: 320 kbps or higher</li>
-                </ul>
+    }
+    else if (errorMessage != null)
+    {
+        <div class="error-state">
+            <p>⚠️ @errorMessage</p>
+            <button class="btn-primary" @onclick="LoadTrack">Retry</button>
+        </div>
+    }
+    else if (track != null)
+    {
+        <div class="content-card">
+            <div class="track-info">
+                <h3>Track Details</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Title:</span>
+                        <span class="info-value">@track.Title</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Artist:</span>
+                        <span class="info-value">@track.Artist?.Name</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Album:</span>
+                        <span class="info-value">@(track.Album?.Title ?? "—")</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Duration:</span>
+                        <span class="info-value">@track.Duration.ToString(@"m\:ss")</span>
+                    </div>
+                </div>
             </div>
 
-            <div class="upload-area">
-                <InputFile
-                    OnChange="HandleFileSelect"
-                    accept=".mp3,.wav,.flac,.aac,audio/mpeg,audio/wav,audio/flac,audio/aac"
-                    class="file-input" />
+            <div class="upload-section">
+                <h3>Upload Audio File</h3>
                 
-                @if (selectedFile != null)
+                <div class="upload-requirements">
+                    <h4>Requirements:</h4>
+                    <ul>
+                        <li>Supported formats: MP3, WAV, FLAC, AAC</li>
+                        <li>Maximum file size: 50MB</li>
+                        <li>Recommended bitrate: 320 kbps or higher</li>
+                    </ul>
+                </div>
+
+                <div class="upload-area">
+                    <InputFile
+                        OnChange="HandleFileSelect"
+                        accept=".mp3,.wav,.flac,.aac,audio/mpeg,audio/wav,audio/flac,audio/aac"
+                        class="file-input" />
+                    
+                    @if (selectedFile != null)
+                    {
+                        <div class="file-info">
+                            <span class="file-name">@selectedFile.Name</span>
+                            <span class="file-size">(@FormatFileSize(selectedFile.Size))</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="upload-hint">Click to select file</p>
+                    }
+                </div>
+
+                @if (uploadProgress > 0)
                 {
-                    <div class="file-info">
-                        <span class="file-name">@selectedFile.Name</span>
-                        <span class="file-size">(@FormatFileSize(selectedFile.Size))</span>
+                    <div class="progress-section">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: @uploadProgress%"></div>
+                        </div>
+                        <span class="progress-text">@uploadProgress% complete</span>
                     </div>
                 }
-                else
+
+                @if (!string.IsNullOrEmpty(uploadError))
                 {
-                    <p class="upload-hint">Click to select file</p>
-                }
-            </div>
-
-            @if (uploadProgress > 0)
-            {
-                <div class="progress-section">
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: @uploadProgress%"></div>
+                    <div class="error-message">
+                        ⚠️ @uploadError
                     </div>
-                    <span class="progress-text">@uploadProgress% complete</span>
-                </div>
-            }
+                }
 
-            @if (!string.IsNullOrEmpty(uploadError))
-            {
-                <div class="error-message">
-                    ⚠️ @uploadError
-                </div>
-            }
+                @if (uploadSuccess)
+                {
+                    <div class="success-message">
+                        ✓ Audio file uploaded successfully!
+                    </div>
+                }
 
-            @if (uploadSuccess)
-            {
-                <div class="success-message">
-                    ✓ Audio file uploaded successfully!
+                <div class="form-actions">
+                    <button type="button" class="btn-primary" @onclick="UploadFile" disabled="@(selectedFile == null || isUploading)">
+                        @(isUploading ? "Uploading..." : "Upload Audio")
+                    </button>
+                    <a href="/tracks" class="btn-secondary">Cancel</a>
                 </div>
-            }
-
-            <div class="form-actions">
-                <button type="button" class="btn-primary" @onclick="UploadFile" disabled="@(selectedFile == null || isUploading)">
-                    @(isUploading ? "Uploading..." : "Upload Audio")
-                </button>
-                <a href="tracks" class="btn-secondary">Cancel</a>
             </div>
         </div>
-    </div>
-}
+    }
+</AuthorizeView>
 
 @code {
     [Parameter]

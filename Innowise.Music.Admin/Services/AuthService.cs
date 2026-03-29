@@ -2,6 +2,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Innowise.Music.Admin.Services;
 
@@ -9,15 +11,17 @@ public class AuthService : IAuthService
 {
     private readonly HttpClient _httpClient;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly ILogger<AuthService> _logger;
     private string? _token;
     private ClaimsPrincipal? _claimsPrincipal;
 
     public event Action? OnAuthenticationStateChanged;
 
-    public AuthService(HttpClient httpClient, IHttpContextAccessor httpContextAccessor)
+    public AuthService(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, ILogger<AuthService> logger)
     {
         _httpClient = httpClient;
         _httpContextAccessor = httpContextAccessor;
+        _logger = logger;
         LoadToken();
     }
 
@@ -25,15 +29,34 @@ public class AuthService : IAuthService
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync("authentication/login", new
+            _logger.LogInformation("AuthService.LoginAsync called with email={Email}", email);
+            _logger.LogInformation("HTTP Client BaseAddress: {BaseAddress}", _httpClient.BaseAddress);
+
+            // Use PascalCase property names to match LoginUserDto on the backend
+            var payload = new
             {
-                email,
-                password
-            });
+                Email = email,
+                Password = password
+            };
+            
+            _logger.LogInformation("Login payload: Email={Email}, Password length={PasswordLength}", payload.Email, payload.Password?.Length);
+
+            var response = await _httpClient.PostAsJsonAsync("authentication/login", payload, 
+                new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = null // Preserve PascalCase
+                });
+
+            // Log response for debugging
+            _logger.LogInformation("Login response status: {StatusCode}", response.StatusCode);
+            _logger.LogInformation("Login response reason: {ReasonPhrase}", response.ReasonPhrase);
 
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync();
+                _logger.LogInformation("Login response content length: {Length}", content.Length);
+                _logger.LogInformation("Login response content: {Content}", content);
+
                 var authResponse = JsonSerializer.Deserialize<AuthResponse>(content, new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
@@ -41,18 +64,36 @@ public class AuthService : IAuthService
 
                 if (authResponse?.Token != null)
                 {
+                    _logger.LogInformation("Token received, length: {Length}", authResponse.Token.Length);
                     _token = authResponse.Token;
                     SaveToken(_token);
                     ParseToken();
                     OnAuthenticationStateChanged?.Invoke();
+                    _logger.LogInformation("Login successful, token saved and parsed.");
                     return true;
+                }
+                else
+                {
+                    _logger.LogWarning("Login response missing token. authResponse is null or token is null.");
+                }
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning("Login failed. Status: {StatusCode}, Content: {Content}", response.StatusCode, errorContent);
+                
+                // Try to get more details from response headers
+                foreach (var header in response.Headers)
+                {
+                    _logger.LogWarning("Response header: {Key} = {Value}", header.Key, string.Join(", ", header.Value));
                 }
             }
 
             return false;
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "Login exception");
             return false;
         }
     }
@@ -99,10 +140,20 @@ public class AuthService : IAuthService
             return;
         }
 
-        var handler = new JwtSecurityTokenHandler();
-        var token = handler.ReadJwtToken(_token);
-        var identity = new ClaimsIdentity(token.Claims, "JWT");
-        _claimsPrincipal = new ClaimsPrincipal(identity);
+        try
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var token = handler.ReadJwtToken(_token);
+            var identity = new ClaimsIdentity(token.Claims, "JWT");
+            _claimsPrincipal = new ClaimsPrincipal(identity);
+        }
+        catch (SecurityTokenException)
+        {
+            // Token is invalid or expired, clear it
+            _token = null;
+            _claimsPrincipal = null;
+            ClearToken();
+        }
     }
 
     private void SaveToken(string token)

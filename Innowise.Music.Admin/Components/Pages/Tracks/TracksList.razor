@@ -2,99 +2,102 @@
 @inject IAdminMusicService MusicService
 @inject NavigationManager Navigation
 @inject IAuthService AuthService
+@layout MainLayout
 
 <PageTitle>Tracks - Admin Dashboard</PageTitle>
 
-<div class="page-header">
-    <h1>Tracks Management</h1>
-    <a href="tracks/new" class="btn-primary">+ Add Track</a>
-</div>
+<AuthorizeView>
+    <div class="page-header">
+        <h1>Tracks Management</h1>
+        <a href="/tracks/new" class="btn-primary">+ Add Track</a>
+    </div>
 
-@if (isLoading)
-{
-    <div class="loading-state">
-        <div class="spinner"></div>
-        <p>Loading tracks...</p>
-    </div>
-}
-else if (errorMessage != null)
-{
-    <div class="error-state">
-        <p>⚠️ @errorMessage</p>
-        <button class="btn-primary" @onclick="LoadTracks">Retry</button>
-    </div>
-}
-else if (tracks == null || !tracks.Any())
-{
-    <div class="empty-state">
-        <p>No tracks found</p>
-        <a href="tracks/new" class="btn-primary">Add First Track</a>
-    </div>
-}
-else
-{
-    <div class="content-card">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Title</th>
-                    <th>Artist</th>
-                    <th>Album</th>
-                    <th>Duration</th>
-                    <th>Genre</th>
-                    <th>Audio</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var track in tracks)
-                {
+    @if (isLoading)
+    {
+        <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Loading tracks...</p>
+        </div>
+    }
+    else if (errorMessage != null)
+    {
+        <div class="error-state">
+            <p>⚠️ @errorMessage</p>
+            <button class="btn-primary" @onclick="LoadTracks">Retry</button>
+        </div>
+    }
+    else if (tracks == null || !tracks.Any())
+    {
+        <div class="empty-state">
+            <p>No tracks found</p>
+            <a href="/tracks/new" class="btn-primary">Add First Track</a>
+        </div>
+    }
+    else
+    {
+        <div class="content-card">
+            <table class="data-table">
+                <thead>
                     <tr>
-                        <td><strong>@track.Title</strong></td>
-                        <td>@track.ArtistName</td>
-                        <td>@(string.IsNullOrEmpty(track.AlbumName) ? "—" : track.AlbumName)</td>
-                        <td>@FormatDuration(track.Duration)</td>
-                        <td>
-                            @if (track.HasAudio)
-                            {
-                                <span class="status-badge status-success">✓ @track.AudioFormat</span>
-                            }
-                            else
-                            {
-                                <span class="status-badge status-warning">No audio</span>
-                            }
-                        </td>
-                        <td>@(track.Explicit ? "E" : "—")</td>
-                        <td>
-                            <div class="actions">
-                                <a href="tracks/@track.Id/edit" class="btn-action">Edit</a>
-                                @if (!track.HasAudio)
-                                {
-                                    <a href="tracks/@track.Id/upload" class="btn-action">Upload</a>
-                                }
-                                <button class="btn-action btn-danger" @onclick="() => ConfirmDelete(track)">Delete</button>
-                            </div>
-                        </td>
+                        <th>Title</th>
+                        <th>Artist</th>
+                        <th>Album</th>
+                        <th>Duration</th>
+                        <th>Genre</th>
+                        <th>Audio</th>
+                        <th>Actions</th>
                     </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-}
+                </thead>
+                <tbody>
+                    @foreach (var track in tracks)
+                    {
+                        <tr>
+                            <td><strong>@track.Title</strong></td>
+                            <td>@track.ArtistName</td>
+                            <td>@(string.IsNullOrEmpty(track.AlbumName) ? "—" : track.AlbumName)</td>
+                            <td>@FormatDuration(track.Duration)</td>
+                            <td>
+                                @if (track.HasAudio)
+                                {
+                                    <span class="status-badge status-success">✓ @track.AudioFormat</span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge status-warning">No audio</span>
+                                }
+                            </td>
+                            <td>@(track.Explicit ? "E" : "—")</td>
+                            <td>
+                                <div class="actions">
+                                    <a href="/tracks/@track.Id/edit" class="btn-action">Edit</a>
+                                    @if (!track.HasAudio)
+                                    {
+                                        <a href="/tracks/@track.Id/upload" class="btn-action">Upload</a>
+                                    }
+                                    <button class="btn-action btn-danger" @onclick="() => ConfirmDelete(track)">Delete</button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
 
-@if (showDeleteDialog && deleteTrack != null)
-{
-    <div class="modal-overlay" @onclick="CloseDeleteDialog">
-        <div class="modal-content" @onclick:stopPropagation>
-            <h3>Delete Track</h3>
-            <p>Are you sure you want to delete <strong>@deleteTrack.Title</strong>? This action cannot be undone.</p>
-            <div class="modal-actions">
-                <button class="btn-secondary" @onclick="CloseDeleteDialog">Cancel</button>
-                <button class="btn-primary" style="background-color: var(--error-color);" @onclick="DeleteTrack">Delete</button>
+    @if (showDeleteDialog && deleteTrack != null)
+    {
+        <div class="modal-overlay" @onclick="CloseDeleteDialog">
+            <div class="modal-content" @onclick:stopPropagation>
+                <h3>Delete Track</h3>
+                <p>Are you sure you want to delete <strong>@deleteTrack.Title</strong>? This action cannot be undone.</p>
+                <div class="modal-actions">
+                    <button class="btn-secondary" @onclick="CloseDeleteDialog">Cancel</button>
+                    <button class="btn-primary" style="background-color: var(--error-color);" @onclick="DeleteTrack">Delete</button>
+                </div>
             </div>
         </div>
-    </div>
-}
+    }
+</AuthorizeView>
 
 @code {
     private List<TrackViewModel> tracks = new();

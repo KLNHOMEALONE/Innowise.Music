@@ -2,6 +2,7 @@
 @layout LoginLayout
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
+@inject Microsoft.Extensions.Logging.ILogger<Login> Logger
 
 <div class="login-container">
     <div class="login-card">
@@ -48,6 +49,8 @@
 
     private async Task HandleLogin()
     {
+        Logger.LogInformation("HandleLogin called with email={Email}, password length={PasswordLength}", email, password?.Length);
+
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
         {
             errorMessage = "Please enter email and password";
@@ -56,28 +59,39 @@
 
         isLoggingIn = true;
         errorMessage = string.Empty;
+        StateHasChanged();
 
+        Logger.LogInformation("Calling AuthService.LoginAsync");
         var success = await AuthService.LoginAsync(email, password);
+        Logger.LogInformation("LoginAsync returned: success={Success}", success);
+
+        isLoggingIn = false;
 
         if (success)
         {
+            Logger.LogInformation("Login successful, checking admin status");
             var isAdmin = await AuthService.IsAdminAsync();
+            Logger.LogInformation("IsAdminAsync returned: isAdmin={IsAdmin}", isAdmin);
+
             if (isAdmin)
             {
-                Navigation.NavigateTo("/");
+                Logger.LogInformation("User is admin, navigating to dashboard");
+                Navigation.NavigateTo("/", forceLoad: true);
+                return; // Important: return to avoid StateHasChanged and clearing fields
             }
             else
             {
+                Logger.LogInformation("User is not admin, logging out");
                 await AuthService.LogoutAsync();
                 errorMessage = "Access denied. Admin privileges required.";
             }
         }
         else
         {
+            Logger.LogInformation("Login failed, showing error");
             errorMessage = "Invalid email or password";
         }
 
-        isLoggingIn = false;
         StateHasChanged();
     }
 }

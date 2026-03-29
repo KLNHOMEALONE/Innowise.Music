@@ -1,4 +1,6 @@
 @inherits LayoutComponentBase
+@inject IAuthService AuthService
+@inject IJSRuntime JS
 
 <div class="admin-layout">
     <NavMenu />
@@ -17,14 +19,49 @@
 </div>
 
 @code {
-    private string UserName => "Admin"; // TODO: Get from auth service
+    private string UserName => _userName ?? "Admin";
+    private string? _userName;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUserInfo();
+    }
+
+    private async Task LoadUserInfo()
+    {
+        // Try to get user email from token claims
+        var token = AuthService.GetToken();
+        if (!string.IsNullOrEmpty(token))
+        {
+            try
+            {
+                var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+                var jwtToken = handler.ReadJwtToken(token);
+                var emailClaim = jwtToken.Claims.FirstOrDefault(c =>
+                    c.Type == System.Security.Claims.ClaimTypes.Email ||
+                    c.Type == "email")?.Value;
+                
+                _userName = emailClaim ?? "Admin";
+            }
+            catch
+            {
+                _userName = "Admin";
+            }
+        }
+        else
+        {
+            _userName = "Admin";
+        }
+        
+        StateHasChanged();
+    }
 
     private async Task Logout()
     {
-        // TODO: Implement logout
-        NavigationManager.NavigateTo("/login", forceLoad: true);
+        // Clear authentication state
+        await AuthService.LogoutAsync();
+        
+        // Force full page navigation to login using JavaScript
+        await JS.InvokeVoidAsync("window.location.assign", "/login");
     }
-
-    [Inject]
-    private NavigationManager NavigationManager { get; set; } = default!;
 }

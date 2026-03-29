@@ -1,65 +1,68 @@
 @page "/"
 @page "/dashboard"
+@layout MainLayout
 
-<div class="dashboard-page">
-    <div class="dashboard-header">
-        <h1>Dashboard</h1>
-        <p class="dashboard-subtitle">Welcome to Innowise.Music Admin Dashboard</p>
-    </div>
+<AuthorizeView>
+    <div class="dashboard-page">
+        <div class="dashboard-header">
+            <h1>Dashboard</h1>
+            <p class="dashboard-subtitle">Welcome to Innowise.Music Admin Dashboard</p>
+        </div>
 
-    <div class="dashboard-stats">
-        <div class="stat-card">
-            <div class="stat-icon artists">🎤</div>
-            <div class="stat-info">
-                <h3>Artists</h3>
-                <p class="stat-value">@artistCount</p>
+        <div class="dashboard-stats">
+            <div class="stat-card">
+                <div class="stat-icon artists">🎤</div>
+                <div class="stat-info">
+                    <h3>Artists</h3>
+                    <p class="stat-value">@artistCount</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon albums">💿</div>
+                <div class="stat-info">
+                    <h3>Albums</h3>
+                    <p class="stat-value">@albumCount</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon tracks">🎵</div>
+                <div class="stat-info">
+                    <h3>Tracks</h3>
+                    <p class="stat-value">@trackCount</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon genres">🎭</div>
+                <div class="stat-info">
+                    <h3>Genres</h3>
+                    <p class="stat-value">@genreCount</p>
+                </div>
             </div>
         </div>
-        <div class="stat-card">
-            <div class="stat-icon albums">💿</div>
-            <div class="stat-info">
-                <h3>Albums</h3>
-                <p class="stat-value">@albumCount</p>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon tracks">🎵</div>
-            <div class="stat-info">
-                <h3>Tracks</h3>
-                <p class="stat-value">@trackCount</p>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon genres">🎭</div>
-            <div class="stat-info">
-                <h3>Genres</h3>
-                <p class="stat-value">@genreCount</p>
-            </div>
-        </div>
-    </div>
 
-    <div class="dashboard-actions">
-        <h2>Quick Actions</h2>
-        <div class="action-buttons">
-            <a href="artists" class="action-btn">
-                <span class="btn-icon">➕</span>
-                <span>Add Artist</span>
-            </a>
-            <a href="albums" class="action-btn">
-                <span class="btn-icon">➕</span>
-                <span>Add Album</span>
-            </a>
-            <a href="tracks" class="action-btn">
-                <span class="btn-icon">➕</span>
-                <span>Add Track</span>
-            </a>
-            <a href="genres" class="action-btn">
-                <span class="btn-icon">➕</span>
-                <span>Add Genre</span>
-            </a>
+        <div class="dashboard-actions">
+            <h2>Quick Actions</h2>
+            <div class="action-buttons">
+                <a href="/artists" class="action-btn">
+                    <span class="btn-icon">➕</span>
+                    <span>Add Artist</span>
+                </a>
+                <a href="/albums" class="action-btn">
+                    <span class="btn-icon">➕</span>
+                    <span>Add Album</span>
+                </a>
+                <a href="/tracks" class="action-btn">
+                    <span class="btn-icon">➕</span>
+                    <span>Add Track</span>
+                </a>
+                <a href="/genres" class="action-btn">
+                    <span class="btn-icon">➕</span>
+                    <span>Add Genre</span>
+                </a>
+            </div>
         </div>
     </div>
-</div>
+</AuthorizeView>
 
 @code {
     private int artistCount;
