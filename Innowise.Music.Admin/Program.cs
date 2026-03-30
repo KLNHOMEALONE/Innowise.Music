@@ -1,18 +1,29 @@
 using Innowise.Music.Admin.Components;
 using Innowise.Music.Admin.Services;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
+using System.Net.Http;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+builder.Services.AddServerSideBlazor();
 
 // Configure API settings
-var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5236/api";
+var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"] ?? "http://music_identity_server:8080/api";
 builder.Services.AddScoped(sp =>
 {
-    var httpClient = new HttpClient { BaseAddress = new Uri(apiBaseUrl) };
+    var handler = new SocketsHttpHandler
+    {
+        SslOptions = new SslClientAuthenticationOptions
+        {
+            RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true
+        }
+    };
+    var httpClient = new HttpClient(handler) { BaseAddress = new Uri(apiBaseUrl) };
     return httpClient;
 });
 
@@ -35,7 +46,7 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
+    app.UseExceptionHandler("/Error");
     app.UseHsts();
 }
 
@@ -44,11 +55,9 @@ app.UseStaticFiles();
 app.UseAntiforgery();
 app.UseSession();
 
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
+app.UseRouting();
 
-
-// Map fallback route to handle client-side routing
+app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 
 app.Run();

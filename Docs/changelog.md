@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-03-29] - Fixed Logout Functionality in Admin Dashboard
+
+### Fixed
+- **Logout button now properly redirects to login page**: The logout functionality in `MainLayout.razor` was not working because it was using JavaScript interop (`window.location.replace`) which didn't properly reset the Blazor circuit.
+- Changed from `IJSRuntime` to `NavigationManager` for navigation
+- Using `Navigation.NavigateTo("/login", forceLoad: true)` ensures a full page reload that properly clears the session and redirects to login
+- Updated `AuthorizeRouteView.razor` to also use `forceLoad: true` for consistent behavior
+
+### Changed
+- `MainLayout.razor` - Replaced `@inject IJSRuntime JS` with `@inject NavigationManager Navigation`
+- `MainLayout.razor` - Changed logout method from `JS.InvokeVoidAsync("window.location.replace", "/login")` to `Navigation.NavigateTo("/login", forceLoad: true)`
+- `AuthorizeRouteView.razor` - Changed redirect from `forceLoad: false` to `forceLoad: true`
+
+---
+
+## [2026-03-29] - Fixed Unauthenticated Redirect to Login Page
+
+### Fixed
+- **Unauthenticated users now properly redirected to login page**: The previous implementation in `Routes.razor` used `OnAfterRenderAsync` which ran too late - after the page had already rendered. This caused the dashboard to briefly appear before redirecting.
+- Created new `AuthorizeRouteView.razor` component that wraps `RouteView` and checks authentication in `OnParametersSetAsync` before rendering any protected page
+- The `Routes.razor` now uses `AuthorizeRouteView` instead of the standard `RouteView` component
+- Login page is explicitly allowed without authentication; all other pages require valid session token
+
+### Changed
+- `Routes.razor` - Simplified to use `AuthorizeRouteView` instead of custom authentication logic
+- `AuthorizeRouteView.razor` (new) - Component that intercepts routing to check authentication status before rendering pages
+
+---
+
 ## [2026-03-29] - Complete Authentication Workflow Implementation
 
 ### Fixed

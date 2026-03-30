@@ -1,5 +1,7 @@
 @inherits LayoutComponentBase
 @inject IAuthService AuthService
+@inject NavigationManager Navigation
+@inject Microsoft.Extensions.Logging.ILogger<MainLayout> Logger
 @inject IJSRuntime JS
 
 <div class="admin-layout">
@@ -58,10 +60,17 @@
 
     private async Task Logout()
     {
+        // Debug: Log to browser console to verify click is registered
+        await JS.InvokeVoidAsync("console.log", "Logout button clicked in Blazor!");
+        Logger.LogInformation("Logout button clicked, starting logout process");
+        
         // Clear authentication state
         await AuthService.LogoutAsync();
+        Logger.LogInformation("AuthService.LogoutAsync completed");
         
-        // Force full page navigation to login using JavaScript
-        await JS.InvokeVoidAsync("window.location.assign", "/login");
+        // Force full page navigation to login
+        // Using forceLoad: true ensures a full page reload which resets the Blazor circuit
+        Logger.LogInformation("Navigating to /login with forceLoad: true");
+        Navigation.NavigateTo("/login", forceLoad: true);
     }
 }

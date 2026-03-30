@@ -4,11 +4,18 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using System.Net.Http;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
+using System.Collections.Concurrent;
 
 namespace Innowise.Music.Admin.Services;
 
 public class AuthService : IAuthService
 {
+    // Static token cache for development (per user session)
+    private static readonly ConcurrentDictionary<string, string> TokenCache = new();
+    
     private readonly HttpClient _httpClient;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ILogger<AuthService> _logger;
@@ -22,6 +29,10 @@ public class AuthService : IAuthService
         _httpClient = httpClient;
         _httpContextAccessor = httpContextAccessor;
         _logger = logger;
+        
+        // Log the full exception for debugging
+        _httpClient.DefaultRequestHeaders.Clear();
+        
         LoadToken();
     }
 
@@ -41,7 +52,11 @@ public class AuthService : IAuthService
             
             _logger.LogInformation("Login payload: Email={Email}, Password length={PasswordLength}", payload.Email, payload.Password?.Length);
 
-            var response = await _httpClient.PostAsJsonAsync("authentication/login", payload, 
+            // Log the full URL for debugging
+            var requestUrl = new Uri(_httpClient.BaseAddress!, "authentication/login").ToString();
+            _logger.LogInformation("Posting to URL: {Url}", requestUrl);
+            
+            var response = await _httpClient.PostAsJsonAsync("authentication/login", payload,
                 new System.Text.Json.JsonSerializerOptions
                 {
                     PropertyNamingPolicy = null // Preserve PascalCase
@@ -57,19 +72,34 @@ public class AuthService : IAuthService
                 _logger.LogInformation("Login response content length: {Length}", content.Length);
                 _logger.LogInformation("Login response content: {Content}", content);
 
-                var authResponse = JsonSerializer.Deserialize<AuthResponse>(content, new JsonSerializerOptions
+                AuthResponse? authResponse = null;
+                try
                 {
-                    PropertyNameCaseInsensitive = true
-                });
+                    authResponse = JsonSerializer.Deserialize<AuthResponse>(content, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+                }
+                catch (JsonException jsonEx)
+                {
+                    _logger.LogError(jsonEx, "Failed to deserialize response. Raw content: {Content}", content);
+                    return false;
+                }
 
                 if (authResponse?.Token != null)
                 {
                     _logger.LogInformation("Token received, length: {Length}", authResponse.Token.Length);
+                    
+                    // Clear any existing token and claims before saving new one
+                    ClearToken();
+                    _token = null;
+                    _claimsPrincipal = null;
+                    
                     _token = authResponse.Token;
                     SaveToken(_token);
                     ParseToken();
                     OnAuthenticationStateChanged?.Invoke();
-                    _logger.LogInformation("Login successful, token saved and parsed.");
+                    _logger.LogInformation("Login successful, token saved and parsed. IsAdmin: {IsAdmin}", _claimsPrincipal?.IsInRole("Administrator"));
                     return true;
                 }
                 else
@@ -121,10 +151,28 @@ public class AuthService : IAuthService
 
         if (_claimsPrincipal == null)
         {
+            _logger.LogWarning("IsAdminAsync: _claimsPrincipal is null after ParseToken");
             return false;
         }
 
-        return await Task.FromResult(_claimsPrincipal.IsInRole("Administrator"));
+        var isAdmin = _claimsPrincipal.IsInRole("Administrator");
+        _logger.LogInformation("IsAdminAsync: IsInRole('Administrator') = {IsAdmin}", isAdmin);
+        
+        // Log all identity names for debugging
+        foreach (var identity in _claimsPrincipal.Identities)
+        {
+            _logger.LogInformation("Identity: AuthenticationType={AuthType}, IsAuthenticated={IsAuth}, RoleClaimType={RoleType}",
+                identity.AuthenticationType,
+                identity.IsAuthenticated,
+                identity.RoleClaimType);
+            
+            foreach (var claim in identity.Claims.Where(c => c.Type == "role" || c.Type == ClaimTypes.Role))
+            {
+                _logger.LogInformation("  Role Claim: Type={Type}, Value={Value}", claim.Type, claim.Value);
+            }
+        }
+        
+        return await Task.FromResult(isAdmin);
     }
 
     public string? GetToken()
@@ -144,11 +192,32 @@ public class AuthService : IAuthService
         {
             var handler = new JwtSecurityTokenHandler();
             var token = handler.ReadJwtToken(_token);
-            var identity = new ClaimsIdentity(token.Claims, "JWT");
+            
+            // Log all claims for debugging
+            _logger.LogInformation("Token claims:");
+            foreach (var claim in token.Claims)
+            {
+                _logger.LogInformation("  {Type}: {Value}", claim.Type, claim.Value);
+            }
+            
+            // Create identity with role claim type set to ClaimTypes.Role for IsInRole compatibility
+            var identity = new ClaimsIdentity(token.Claims, "JWT", "name", ClaimTypes.Role);
+            
+            // Also add role claims from the token if they exist with "role" type
+            foreach (var roleClaim in token.Claims.Where(c => c.Type == "role" || c.Type == "roles"))
+            {
+                identity.AddClaim(new Claim(ClaimTypes.Role, roleClaim.Value));
+            }
+            
             _claimsPrincipal = new ClaimsPrincipal(identity);
+            
+            _logger.LogInformation("Token parsed successfully. Claims count: {Count}, IsInRole('Administrator'): {IsAdmin}",
+                token.Claims.Count(),
+                _claimsPrincipal.IsInRole("Administrator"));
         }
-        catch (SecurityTokenException)
+        catch (SecurityTokenException ex)
         {
+            _logger.LogError(ex, "Failed to parse token");
             // Token is invalid or expired, clear it
             _token = null;
             _claimsPrincipal = null;
@@ -158,19 +227,21 @@ public class AuthService : IAuthService
 
     private void SaveToken(string token)
     {
-        // In Blazor Server, we can use session or cookies
-        // For simplicity, using session
-        if (_httpContextAccessor.HttpContext?.Session != null)
+        // Use in-memory cache instead of session to avoid size limitations
+        var sessionId = GetSessionId();
+        if (!string.IsNullOrEmpty(sessionId))
         {
-            _httpContextAccessor.HttpContext.Session.SetString("auth_token", token);
+            TokenCache[sessionId] = token;
+            _logger.LogInformation("Token saved to cache for session {SessionId}", sessionId);
         }
     }
 
     private void LoadToken()
     {
-        if (_httpContextAccessor.HttpContext?.Session != null)
+        var sessionId = GetSessionId();
+        if (!string.IsNullOrEmpty(sessionId) && TokenCache.TryGetValue(sessionId, out var token))
         {
-            _token = _httpContextAccessor.HttpContext.Session.GetString("auth_token");
+            _token = token;
             if (!string.IsNullOrEmpty(_token))
             {
                 ParseToken();
@@ -180,10 +251,23 @@ public class AuthService : IAuthService
 
     private void ClearToken()
     {
-        if (_httpContextAccessor.HttpContext?.Session != null)
+        var sessionId = GetSessionId();
+        if (!string.IsNullOrEmpty(sessionId))
         {
-            _httpContextAccessor.HttpContext.Session.Remove("auth_token");
+            TokenCache.TryRemove(sessionId, out _);
         }
+    }
+
+    private string? GetSessionId()
+    {
+        // Use the session ID if available, otherwise use a circuit ID
+        if (_httpContextAccessor.HttpContext?.Session?.Id != null)
+        {
+            return _httpContextAccessor.HttpContext.Session.Id;
+        }
+        
+        // For Blazor Server, use the circuit ID as fallback
+        return _httpContextAccessor.HttpContext?.Connection.Id;
     }
 
     private class AuthResponse

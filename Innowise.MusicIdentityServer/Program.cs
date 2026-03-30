@@ -67,6 +67,12 @@ builder.Services.AddAuthentication(options => {
 //    options.CallbackPath = "/signin-google";
 //});
 
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(8080); // Listen on both IPv4 and IPv6
+    options.ListenAnyIP(8081); // Listen on both IPv4 and IPv6 for HTTPS
+});
+
 var app = builder.Build();
 
 // Automatically apply pending EF Core migrations

@@ -1,0 +1,47 @@
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Routing
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+
+<RouteView RouteData="RouteData" DefaultLayout="DefaultLayout" />
+
+@code {
+    [Parameter]
+    public RouteData RouteData { get; set; } = default!;
+
+    [Parameter]
+    public Type DefaultLayout { get; set; } = default!;
+
+    private bool _hasRedirected;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_hasRedirected)
+        {
+            // Get the current route's page type
+            var pageType = RouteData.PageType;
+            
+            // Check if the page requires authentication (all pages except Login)
+            var requiresAuth = !IsLoginPage(pageType);
+            
+            if (requiresAuth)
+            {
+                var isAuthenticated = await AuthService.IsAuthenticatedAsync();
+                
+                if (!isAuthenticated)
+                {
+                    _hasRedirected = true;
+                    // Use forceLoad: true to force a full page reload
+                    // This ensures the Blazor circuit is properly reset
+                    Navigation.NavigateTo("/login", forceLoad: true);
+                }
+            }
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private bool IsLoginPage(Type pageType)
+    {
+        return pageType.Name.Equals("Login", StringComparison.OrdinalIgnoreCase);
+    }
+}

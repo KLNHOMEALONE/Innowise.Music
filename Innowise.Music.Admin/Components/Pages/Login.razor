@@ -3,6 +3,7 @@
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
 @inject Microsoft.Extensions.Logging.ILogger<Login> Logger
+@inject IJSRuntime JS
 
 <div class="login-container">
     <div class="login-card">
@@ -49,6 +50,8 @@
 
     private async Task HandleLogin()
     {
+        // Debug: Log to browser console to verify form submission
+        await JS.InvokeVoidAsync("console.log", "HandleLogin called in Blazor!");
         Logger.LogInformation("HandleLogin called with email={Email}, password length={PasswordLength}", email, password?.Length);
 
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
@@ -76,12 +79,22 @@
             if (isAdmin)
             {
                 Logger.LogInformation("User is admin, navigating to dashboard");
-                Navigation.NavigateTo("/", forceLoad: true);
+                try
+                {
+                    Navigation.NavigateTo("/", forceLoad: false);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "Navigation to dashboard failed");
+                    errorMessage = "Login successful but navigation failed. Please try again.";
+                    StateHasChanged();
+                    return;
+                }
                 return; // Important: return to avoid StateHasChanged and clearing fields
             }
             else
             {
-                Logger.LogInformation("User is not admin, logging out");
+                Logger.LogWarning("User is not admin, logging out. Token: {Token}", AuthService.GetToken());
                 await AuthService.LogoutAsync();
                 errorMessage = "Access denied. Admin privileges required.";
             }
