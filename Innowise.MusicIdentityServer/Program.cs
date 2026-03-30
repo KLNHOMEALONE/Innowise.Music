@@ -69,8 +69,11 @@ builder.Services.AddAuthentication(options => {
 
 builder.WebHost.ConfigureKestrel(options =>
 {
-    options.ListenAnyIP(8080); // Listen on both IPv4 and IPv6
-    options.ListenAnyIP(8081); // Listen on both IPv4 and IPv6 for HTTPS
+    options.ListenAnyIP(8080); // HTTP
+    options.ListenAnyIP(8081, listenOptions =>
+    {
+        listenOptions.UseHttps(); // HTTPS with default certificate
+    });
 });
 
 var app = builder.Build();

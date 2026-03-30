@@ -49,8 +49,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
-      - ASPNETCORE_Kestrel__Certificates__Default__Password=${KESTREL_CERT_PASSWORD}
-      - ASPNETCORE_Kestrel__Certificates__Default__Path=/home/app/.aspnet/https/Innowise.MusicIdentityServer.pfx
+      - ASPNETCORE_HTTPS_PORTS=8081
       - ConnectionStrings__PostgresAppDbConnection=Server=postgres;Port=5432;Database=musicidentity;User Id=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
     ports:
       - "5236:8080" # Mapping to launchSettings.json port

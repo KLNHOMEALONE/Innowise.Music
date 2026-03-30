@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-03-30] - Fixed HTTPS/SSL Configuration for Identity Server
+
+### Fixed
+- **Resolved SSL error `WRONG_VERSION_NUMBER` when accessing Identity Server via HTTPS on port 7008**:
+  - The Identity Server container was listening on HTTP only for both ports 8080 and 8081, despite Docker mapping port 7008 to 8081 expecting HTTPS
+  - Root cause: `ConfigureKestrel()` in `Program.cs` was overriding the environment variables and binding both ports as HTTP
+  - Fixed by adding `.UseHttps()` to port 8081 configuration in Kestrel
+  - Updated `docker-compose.yml` to use `ASPNETCORE_HTTPS_PORTS=8081` instead of custom certificate path
+  - The server now correctly listens on `https://[::]:8081` and Postman can successfully connect via HTTPS
+
+### Changed
+- `Innowise.MusicIdentityServer/Program.cs` - Added HTTPS configuration to Kestrel for port 8081
+- `docker-compose.yml` - Simplified HTTPS configuration by using environment variables instead of custom certificate path
+
 ## [2026-03-29] - Fixed Logout Functionality in Admin Dashboard
 
 ### Fixed
