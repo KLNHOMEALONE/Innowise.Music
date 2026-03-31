@@ -326,3 +326,105 @@ All operations should include proper error handling:
 3. **User Management**: Admin interface for managing users
 4. **Content Moderation**: Review and approve user-generated content
 5. **Backup & Restore**: Database backup functionality
+
+## Troubleshooting & Common Issues
+
+### Authentication Issues in Docker
+
+If you're experiencing authentication issues when running the Admin Dashboard in Docker but it works from the mobile app or Postman, the issue is likely related to Docker network DNS resolution.
+
+#### Root Cause
+
+Docker Compose uses **service names** (not container names) for internal DNS resolution. The Identity Server service name is `innowise.musicidentityserver`, but the Admin Dashboard was configured to use `music_identity_server` (the container name). This causes the Admin container to fail when trying to reach the Identity Server API.
+
+#### Solution: Update Base URL Configuration
+
+**Option 1: Update docker-compose.yml (Recommended)**
+
+Change the `ApiSettings__BaseUrl` environment variable to use the service name:
+
+```yaml
+innowise.music.admin:
+  environment:
+    - ApiSettings__BaseUrl=http://innowise.musicidentityserver:8080/api
+```
+
+**Option 2: Add network aliases**
+
+Add a network alias to the Identity Server service so it responds to both names:
+
+```yaml
+innowise.musicidentityserver:
+  networks:
+    default:
+      aliases:
+        - music_identity_server
+```
+
+#### Diagnostic Commands
+
+To verify the issue:
+
+```bash
+# Test DNS resolution from Admin container
+docker exec music_admin_dashboard nslookup innowise.musicidentityserver
+docker exec music_admin_dashboard nslookup music_identity_server
+
+# Test API connectivity
+docker exec music_admin_dashboard curl -v http://innowise.musicidentityserver:8080/api/health
+```
+
+#### Configuration Reference
+
+| Environment | Service Name | Container Name | Base URL | Port |
+|-------------|--------------|----------------|----------|------|
+| Development (VS Debug) | N/A | N/A | `https://localhost:7008/api` | 7008 (HTTPS) |
+| Docker Compose | `innowise.musicidentityserver` | `music_identity_server` | `https://music_identity_server:8081/api` | 8081 (HTTPS internal) |
+
+### Deployment Modes
+
+The Admin Dashboard supports two deployment modes with different API endpoint configurations:
+
+#### Mode 1: Development (Visual Studio Debug)
+
+In this mode, the Admin Dashboard runs directly from Visual Studio while the Identity Server runs in a Docker container.
+
+**Configuration:**
+- **File**: `appsettings.Development.json`
+- **Base URL**: `https://localhost:7008/api`
+- **How it works**: The Identity Server container exposes port 7008 (HTTPS) to the host machine. The Admin app connects to localhost:7008 to reach the Identity Server.
+
+**Start sequence:**
+1. Start Identity Server container: `docker-compose up innowise.musicidentityserver`
+2. Run Admin Dashboard from Visual Studio (F5)
+
+#### Mode 2: Docker Compose (Containerized)
+
+Both Admin Dashboard and Identity Server run in Docker containers within the same network.
+
+**Configuration:**
+- **File**: `appsettings.json` (overridden by `docker-compose.yml` environment variable)
+- **Base URL**: `https://music_identity_server:8081/api`
+- **How it works**: Containers communicate via Docker's internal DNS using service names. The Admin container connects to `music_identity_server` (alias for `innowise.musicidentityserver`) on port 8081 (HTTPS).
+
+**Start sequence:**
+1. Start all services: `docker-compose up`
+2. Access Admin Dashboard at `http://localhost:5237`
+
+#### Environment Variable Override
+
+The `docker-compose.yml` sets the API base URL via environment variable, which takes precedence over `appsettings.json`:
+
+```yaml
+innowise.music.admin:
+  environment:
+    - ApiSettings__BaseUrl=https://music_identity_server:8081/api
+```
+
+This allows the same `appsettings.json` to be used across different environments while still allowing overrides when needed.
+
+#### Other Common Issues
+
+1. **Container startup order** - The Admin container may start before Identity Server is ready. Add a health check dependency.
+2. **CORS configuration** - Ensure Identity Server allows requests from the Admin origin.
+3. **SSL certificate validation** - The Admin uses `SocketsHttpHandler` with `RemoteCertificateValidationCallback` to accept self-signed certificates.

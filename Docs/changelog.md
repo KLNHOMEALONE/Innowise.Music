@@ -2,6 +2,49 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-03-31] - Admin Dashboard Deployment Configuration & Login Fix
+
+### Fixed
+- **Resolved 404 error when logging into Admin Dashboard**:
+  - The `LoginAsync` method was calling `authentication/login` (relative path) which resulted in incorrect URL construction
+  - Fixed by changing the endpoint to `api/authentication/login` (absolute path) in `AuthService.cs`
+  - Login now works correctly in both development mode (VS Debug) and Docker Compose deployment
+
+### Changed
+- **Updated API endpoint configuration to use consistent HTTPS**:
+  - `appsettings.json` - Changed BaseUrl from `http://music_identity_server:8080/api` to `https://music_identity_server:8081/api`
+  - `appsettings.Development.json` - Changed BaseUrl from `http://localhost:5236/api/` to `https://localhost:7008/api`
+  - `docker-compose.yml` - Updated `ApiSettings__BaseUrl` to use HTTPS: `https://music_identity_server:8081/`
+  - `AuthService.cs` - Changed `PostAsJsonAsync("authentication/login", ...)` to `PostAsJsonAsync("api/authentication/login", ...)`
+
+### Added
+- **Comprehensive deployment documentation in `Docs/admin-dashboard.md`**:
+  - Added "Deployment Modes" section explaining two deployment scenarios:
+    - Mode 1: Development (Visual Studio Debug) - Admin runs from VS, Identity Server in Docker
+    - Mode 2: Docker Compose - Both run in containers
+  - Added configuration reference table with ports and URLs
+  - Documented environment variable override mechanism
+  - Updated troubleshooting section with HTTPS configuration details
+
+## [2026-03-30] - Admin Dashboard Docker Authentication Fix
+
+### Fixed
+- **Resolved "Invalid email or password" error when running Admin Dashboard in Docker**:
+  - Root cause: Docker DNS resolution issue - the Admin container was trying to reach `music_identity_server` (container name) but Docker's internal DNS uses service names
+  - The Identity Server service name is `innowise.musicidentityserver`, but the Admin was configured to use `music_identity_server`
+  - Added network alias `music_identity_server` to the Identity Server service for backward compatibility
+  - Credentials work correctly from mobile app and Postman because they use `localhost` (host machine) not Docker internal networking
+
+### Changed
+- `docker-compose.yml` - Added network alias `music_identity_server` to `innowise.musicidentityserver` service
+
+### Added
+- `Docs/admin-dashboard.md` - Added "Troubleshooting & Common Issues" section with:
+  - Root cause analysis of Docker DNS resolution issues
+  - Two solution options (update Base URL or add network aliases)
+  - Diagnostic commands for verifying connectivity
+  - Configuration reference table
+
 ## [2026-03-30] - Fixed HTTPS/SSL Configuration for Identity Server
 
 ### Fixed

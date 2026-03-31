@@ -56,7 +56,7 @@ public class AuthService : IAuthService
             var requestUrl = new Uri(_httpClient.BaseAddress!, "authentication/login").ToString();
             _logger.LogInformation("Posting to URL: {Url}", requestUrl);
             
-            var response = await _httpClient.PostAsJsonAsync("authentication/login", payload,
+            var response = await _httpClient.PostAsJsonAsync("api/authentication/login", payload,
                 new System.Text.Json.JsonSerializerOptions
                 {
                     PropertyNamingPolicy = null // Preserve PascalCase
