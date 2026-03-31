@@ -88,7 +88,8 @@
         // Load artists for dropdown
         try
         {
-            artists = (await MusicService.GetArtistsAsync()).ToList();
+            var pagedArtists = await MusicService.GetAllArtistsAsync();
+            artists = pagedArtists.Items.ToList();
         }
         catch (Exception ex)
         {

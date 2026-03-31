@@ -98,6 +98,11 @@ public class MusicService : IMusicService
             .ToListAsync();
     }
 
+    public async Task<int> GetArtistsCountAsync()
+    {
+        return await _context.Artists.CountAsync();
+    }
+
     public async Task<Artist?> GetArtistAsync(Guid id)
     {
         return await _context.Artists
@@ -160,6 +165,11 @@ public class MusicService : IMusicService
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
+    }
+
+    public async Task<int> GetAlbumsCountAsync()
+    {
+        return await _context.Albums.CountAsync();
     }
 
     public async Task<Album?> GetAlbumAsync(Guid id)
@@ -239,6 +249,11 @@ public class MusicService : IMusicService
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
+    }
+
+    public async Task<int> GetTracksCountAsync()
+    {
+        return await _context.Tracks.CountAsync();
     }
 
     public async Task<Track?> CreateTrackAsync(Track track)

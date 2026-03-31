@@ -120,7 +120,8 @@
 
         try
         {
-            artists = (await MusicService.GetArtistsAsync()).ToList();
+            var pagedResponse = await MusicService.GetAllArtistsAsync();
+            artists = pagedResponse.Items.ToList();
         }
         catch (Exception ex)
         {

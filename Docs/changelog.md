@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-03-31] - Fixed AdminMusicService API Endpoints & Dashboard Statistics
+
+### Fixed
+- **Corrected all API endpoint paths in `AdminMusicService.cs`**:
+  - The `AdminMusicController` uses `[Route("api/admin")]` attribute, making all endpoints prefixed with `api/admin/`
+  - The service was incorrectly using just `admin/` as the prefix, causing 404 errors for all music CRUD operations
+  - Updated all 21 endpoint calls to use the correct `api/admin/` prefix:
+    - Genres: `api/admin/genres` (5 endpoints)
+    - Artists: `api/admin/artists` (5 endpoints)
+    - Albums: `api/admin/albums` (5 endpoints)
+    - Tracks: `api/admin/tracks` (6 endpoints including upload)
+
+- **Fixed JSON deserialization mismatch for paginated endpoints**:
+  - The controller's list endpoints (`GET /api/admin/artists`, `/albums`, `/tracks`) return `PagedResponse<T>` not `List<T>`
+  - Removed duplicate `GetArtistsAsync()`, `GetAlbumsAsync()`, `GetTracksAsync()` methods that expected `List<T>`
+  - Updated all list pages and form pages to use `GetAllArtistsAsync()`, `GetAllAlbumsAsync()`, `GetAllTracksAsync()` which correctly return `PagedResponse<T>`
+  - Updated `ArtistsList.razor`, `AlbumsList.razor`, `TracksList.razor` to extract `.Items` from paged responses
+  - Updated `AlbumForm.razor` and `TrackForm.razor` to use paginated methods for dropdown data
+
+- **Implemented real-time statistics in Dashboard page**:
+  - `Dashboard.razor` was showing placeholder values (all zeros) for Artists, Albums, Tracks, and Genres counts
+  - Implemented `LoadDashboardStats()` method that calls the API to fetch actual counts:
+    - Uses `GetAllArtistsAsync()`, `GetAllAlbumsAsync()`, `GetAllTracksAsync()` with `pageSize=1` to efficiently get `TotalCount`
+    - Uses `GetAllGenresAsync()` to get the list and count genres
+  - Dashboard now displays accurate statistics from the database
+
 ## [2026-03-31] - Admin Dashboard Deployment Configuration & Login Fix
 
 ### Fixed

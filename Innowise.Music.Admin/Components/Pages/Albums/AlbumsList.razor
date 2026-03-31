@@ -114,7 +114,8 @@
 
         try
         {
-            var albumDtos = await MusicService.GetAlbumsAsync();
+            var pagedResponse = await MusicService.GetAllAlbumsAsync();
+            var albumDtos = pagedResponse.Items;
             albums = albumDtos.Select(a => new AlbumViewModel
             {
                 Id = a.Id,

@@ -115,7 +115,8 @@
 
         try
         {
-            var trackDtos = await MusicService.GetTracksAsync();
+            var pagedResponse = await MusicService.GetAllTracksAsync();
+            var trackDtos = pagedResponse.Items;
             tracks = trackDtos.Select(t => new TrackViewModel
             {
                 Id = t.Id,

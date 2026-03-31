@@ -17,7 +17,6 @@ public interface IAdminMusicService
     Task<Artist?> CreateArtistAsync(Artist artist);
     Task<Artist?> UpdateArtistAsync(Guid id, Artist artist);
     Task<bool> DeleteArtistAsync(Guid id);
-    Task<List<Artist>> GetArtistsAsync();
 
     // Album operations
     Task<PagedResponse<Album>> GetAllAlbumsAsync(int page = 1, int pageSize = 20);
@@ -25,7 +24,6 @@ public interface IAdminMusicService
     Task<Album?> CreateAlbumAsync(Album album);
     Task<Album?> UpdateAlbumAsync(Guid id, Album album);
     Task<bool> DeleteAlbumAsync(Guid id);
-    Task<List<Album>> GetAlbumsAsync();
 
     // Track operations
     Task<PagedResponse<Track>> GetAllTracksAsync(int page = 1, int pageSize = 20);
@@ -34,5 +32,4 @@ public interface IAdminMusicService
     Task<Track?> UpdateTrackAsync(Guid id, Track track);
     Task<bool> DeleteTrackAsync(Guid id);
     Task<bool> UploadTrackAudioAsync(Guid trackId, Stream stream, string fileName);
-    Task<List<Track>> GetTracksAsync();
 }

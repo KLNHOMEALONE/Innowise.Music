@@ -15,6 +15,7 @@ public interface IMusicService
     
     // Artist CRUD operations
     Task<IEnumerable<Artist>> GetAllArtistsAsync(int page, int pageSize);
+    Task<int> GetArtistsCountAsync();
     Task<Artist?> GetArtistAsync(Guid id);
     Task<Artist?> CreateArtistAsync(Artist artist);
     Task<Artist?> UpdateArtistAsync(Guid id, Artist artist);
@@ -22,6 +23,7 @@ public interface IMusicService
     
     // Album CRUD operations
     Task<IEnumerable<Album>> GetAllAlbumsAsync(int page, int pageSize);
+    Task<int> GetAlbumsCountAsync();
     Task<Album?> GetAlbumAsync(Guid id);
     Task<Album?> CreateAlbumAsync(Album album);
     Task<Album?> UpdateAlbumAsync(Guid id, Album album);
@@ -30,6 +32,7 @@ public interface IMusicService
     
     // Track CRUD operations
     Task<IEnumerable<Track>> GetAllTracksAsync(int page, int pageSize);
+    Task<int> GetTracksCountAsync();
     Task<Track?> CreateTrackAsync(Track track);
     Task<Track?> UpdateTrackAsync(Guid id, Track track);
     Task<bool> DeleteTrackAsync(Guid id);

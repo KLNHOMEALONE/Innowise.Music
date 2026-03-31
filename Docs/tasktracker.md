@@ -305,11 +305,12 @@
 - **Status**: In progress
 - **Description**: Blazor Web admin dashboard for managing music content (artists, albums, tracks, genres). See detailed plan in `Docs/admin-dashboard-plan.md`.
 - **Steps**:
-    - [ ] **Phase 1: Backend API Enhancements**
-        - [ ] Extend IMusicService with CRUD operations for all entities
-        - [ ] Implement CRUD methods in MusicService
-        - [ ] Create AdminMusicController with admin endpoints
-        - [ ] Add role-based authorization to admin endpoints
+    - [x] **Phase 1: Backend API Enhancements**
+        - [x] Extend IMusicService with CRUD operations for all entities
+        - [x] Implement CRUD methods in MusicService
+        - [x] Create AdminMusicController with admin endpoints
+        - [x] Add role-based authorization to admin endpoints
+        - [x] Fix AdminMusicService endpoint paths to use `api/admin/` prefix
     - [ ] **Phase 2: Blazor Admin Project Creation**
         - [ ] Create Innowise.Music.Admin project
         - [ ] Set up project structure (Components, Services, Models)

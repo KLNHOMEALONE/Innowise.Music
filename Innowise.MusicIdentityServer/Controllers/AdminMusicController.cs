@@ -100,14 +100,14 @@ public class AdminMusicController : ControllerBase
     /// </summary>
     [HttpGet("artists")]
     public async Task<ActionResult<PagedResponse<Artist>>> GetArtists(
-        [FromQuery] int page = 1, 
+        [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
     {
         pageSize = Math.Min(pageSize, 100); // Cap at 100
         page = Math.Max(page, 1); // Minimum page 1
 
         var artists = await _musicService.GetAllArtistsAsync(page, pageSize);
-        var totalCount = await GetTotalArtistsCount();
+        var totalCount = await _musicService.GetArtistsCountAsync();
 
         return Ok(new PagedResponse<Artist>
         {
@@ -116,15 +116,6 @@ public class AdminMusicController : ControllerBase
             Page = page,
             PageSize = pageSize
         });
-    }
-
-    private async Task<int> GetTotalArtistsCount()
-    {
-        // Quick count without loading all data
-        var artists = await _musicService.GetAllArtistsAsync(1, 1);
-        // This is a workaround since we don't have a direct count method
-        // In production, add a CountAsync method to the service
-        return artists.Any() ? 100 : 0; // Placeholder
     }
 
     /// <summary>
@@ -196,17 +187,19 @@ public class AdminMusicController : ControllerBase
     /// </summary>
     [HttpGet("albums")]
     public async Task<ActionResult<PagedResponse<Album>>> GetAlbums(
-        [FromQuery] int page = 1, 
+        [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
     {
         pageSize = Math.Min(pageSize, 100);
         page = Math.Max(page, 1);
 
         var albums = await _musicService.GetAllAlbumsAsync(page, pageSize);
+        var totalCount = await _musicService.GetAlbumsCountAsync();
+
         return Ok(new PagedResponse<Album>
         {
             Items = albums,
-            TotalCount = albums.Count(),
+            TotalCount = totalCount,
             Page = page,
             PageSize = pageSize
         });
@@ -291,17 +284,19 @@ public class AdminMusicController : ControllerBase
     /// </summary>
     [HttpGet("tracks")]
     public async Task<ActionResult<PagedResponse<Track>>> GetTracks(
-        [FromQuery] int page = 1, 
+        [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
     {
         pageSize = Math.Min(pageSize, 100);
         page = Math.Max(page, 1);
 
         var tracks = await _musicService.GetAllTracksAsync(page, pageSize);
+        var totalCount = await _musicService.GetTracksCountAsync();
+
         return Ok(new PagedResponse<Track>
         {
             Items = tracks,
-            TotalCount = tracks.Count(),
+            TotalCount = totalCount,
             Page = page,
             PageSize = pageSize
         });

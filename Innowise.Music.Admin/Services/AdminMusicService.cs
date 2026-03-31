@@ -31,20 +31,20 @@ public class AdminMusicService : IAdminMusicService
     public async Task<List<Genre>> GetAllGenresAsync()
     {
         await AddAuthHeaderAsync();
-        var response = await _httpClient.GetFromJsonAsync<List<Genre>>("admin/genres");
+        var response = await _httpClient.GetFromJsonAsync<List<Genre>>("api/admin/genres");
         return response ?? new List<Genre>();
     }
 
     public async Task<Genre?> GetGenreAsync(Guid id)
     {
         await AddAuthHeaderAsync();
-        return await _httpClient.GetFromJsonAsync<Genre>($"admin/genres/{id}");
+        return await _httpClient.GetFromJsonAsync<Genre>($"api/admin/genres/{id}");
     }
 
     public async Task<Genre?> CreateGenreAsync(Genre genre)
     {
         await AddAuthHeaderAsync();
-        var response = await _httpClient.PostAsJsonAsync("admin/genres", genre);
+        var response = await _httpClient.PostAsJsonAsync("api/admin/genres", genre);
         if (response.IsSuccessStatusCode)
         {
             return await response.Content.ReadFromJsonAsync<Genre>();
@@ -55,7 +55,7 @@ public class AdminMusicService : IAdminMusicService
     public async Task<Genre?> UpdateGenreAsync(Guid id, Genre genre)
     {
         await AddAuthHeaderAsync();
-        var response = await _httpClient.PutAsJsonAsync($"admin/genres/{id}", genre);
+        var response = await _httpClient.PutAsJsonAsync($"api/admin/genres/{id}", genre);
         if (response.IsSuccessStatusCode)
         {
             return await response.Content.ReadFromJsonAsync<Genre>();
@@ -66,7 +66,7 @@ public class AdminMusicService : IAdminMusicService
     public async Task<bool> DeleteGenreAsync(Guid id)
     {
         await AddAuthHeaderAsync();
-        var response = await _httpClient.DeleteAsync($"admin/genres/{id}");
+        var response = await _httpClient.DeleteAsync($"api/admin/genres/{id}");
         return response.IsSuccessStatusCode;
     }
 
@@ -76,20 +76,20 @@ public class AdminMusicService : IAdminMusicService
     {
         await AddAuthHeaderAsync();
         var response = await _httpClient.GetFromJsonAsync<PagedResponse<Artist>>(
-            $"admin/artists?page={page}&pageSize={pageSize}");
+            $"api/admin/artists?page={page}&pageSize={pageSize}");
         return response ?? new PagedResponse<Artist>();
     }
 
     public async Task<Artist?> GetArtistAsync(Guid id)
     {
         await AddAuthHeaderAsync();
-        return await _httpClient.GetFromJsonAsync<Artist>($"admin/artists/{id}");
+        return await _httpClient.GetFromJsonAsync<Artist>($"api/admin/artists/{id}");
     }
 
     public async Task<Artist?> CreateArtistAsync(Artist artist)
     {
         await AddAuthHeaderAsync();
-        var response = await _httpClient.PostAsJsonAsync("admin/artists", artist);
+        var response = await _httpClient.PostAsJsonAsync("api/admin/artists", artist);
         if (response.IsSuccessStatusCode)
         {
             return await response.Content.ReadFromJsonAsync<Artist>();
@@ -100,7 +100,7 @@ public class AdminMusicService : IAdminMusicService
     public async Task<Artist?> UpdateArtistAsync(Guid id, Artist artist)
     {
         await AddAuthHeaderAsync();
-        var response = await _httpClient.PutAsJsonAsync($"admin/artists/{id}", artist);
+        var response = await _httpClient.PutAsJsonAsync($"api/admin/artists/{id}", artist);
         if (response.IsSuccessStatusCode)
         {
             return await response.Content.ReadFromJsonAsync<Artist>();
@@ -111,16 +111,10 @@ public class AdminMusicService : IAdminMusicService
     public async Task<bool> DeleteArtistAsync(Guid id)
     {
         await AddAuthHeaderAsync();
-        var response = await _httpClient.DeleteAsync($"admin/artists/{id}");
+        var response = await _httpClient.DeleteAsync($"api/admin/artists/{id}");
         return response.IsSuccessStatusCode;
     }
 
-    public async Task<List<Artist>> GetArtistsAsync()
-    {
-        await AddAuthHeaderAsync();
-        var response = await _httpClient.GetFromJsonAsync<List<Artist>>("admin/artists");
-        return response ?? new List<Artist>();
-    }
 
     // ==================== Album Operations ====================
 
@@ -128,20 +122,20 @@ public class AdminMusicService : IAdminMusicService
     {
         await AddAuthHeaderAsync();
         var response = await _httpClient.GetFromJsonAsync<PagedResponse<Album>>(
-            $"admin/albums?page={page}&pageSize={pageSize}");
+            $"api/admin/albums?page={page}&pageSize={pageSize}");
         return response ?? new PagedResponse<Album>();
     }
 
     public async Task<Album?> GetAlbumAsync(Guid id)
     {
         await AddAuthHeaderAsync();
-        return await _httpClient.GetFromJsonAsync<Album>($"admin/albums/{id}");
+        return await _httpClient.GetFromJsonAsync<Album>($"api/admin/albums/{id}");
     }
 
     public async Task<Album?> CreateAlbumAsync(Album album)
     {
         await AddAuthHeaderAsync();
-        var response = await _httpClient.PostAsJsonAsync("admin/albums", album);
+        var response = await _httpClient.PostAsJsonAsync("api/admin/albums", album);
         if (response.IsSuccessStatusCode)
         {
             return await response.Content.ReadFromJsonAsync<Album>();
@@ -152,7 +146,7 @@ public class AdminMusicService : IAdminMusicService
     public async Task<Album?> UpdateAlbumAsync(Guid id, Album album)
     {
         await AddAuthHeaderAsync();
-        var response = await _httpClient.PutAsJsonAsync($"admin/albums/{id}", album);
+        var response = await _httpClient.PutAsJsonAsync($"api/admin/albums/{id}", album);
         if (response.IsSuccessStatusCode)
         {
             return await response.Content.ReadFromJsonAsync<Album>();
@@ -163,16 +157,10 @@ public class AdminMusicService : IAdminMusicService
     public async Task<bool> DeleteAlbumAsync(Guid id)
     {
         await AddAuthHeaderAsync();
-        var response = await _httpClient.DeleteAsync($"admin/albums/{id}");
+        var response = await _httpClient.DeleteAsync($"api/admin/albums/{id}");
         return response.IsSuccessStatusCode;
     }
 
-    public async Task<List<Album>> GetAlbumsAsync()
-    {
-        await AddAuthHeaderAsync();
-        var response = await _httpClient.GetFromJsonAsync<List<Album>>("admin/albums");
-        return response ?? new List<Album>();
-    }
 
     // ==================== Track Operations ====================
 
@@ -180,20 +168,20 @@ public class AdminMusicService : IAdminMusicService
     {
         await AddAuthHeaderAsync();
         var response = await _httpClient.GetFromJsonAsync<PagedResponse<Track>>(
-            $"admin/tracks?page={page}&pageSize={pageSize}");
+            $"api/admin/tracks?page={page}&pageSize={pageSize}");
         return response ?? new PagedResponse<Track>();
     }
 
     public async Task<Track?> GetTrackAsync(Guid id)
     {
         await AddAuthHeaderAsync();
-        return await _httpClient.GetFromJsonAsync<Track>($"admin/tracks/{id}");
+        return await _httpClient.GetFromJsonAsync<Track>($"api/admin/tracks/{id}");
     }
 
     public async Task<Track?> CreateTrackAsync(Track track)
     {
         await AddAuthHeaderAsync();
-        var response = await _httpClient.PostAsJsonAsync("admin/tracks", track);
+        var response = await _httpClient.PostAsJsonAsync("api/admin/tracks", track);
         if (response.IsSuccessStatusCode)
         {
             return await response.Content.ReadFromJsonAsync<Track>();
@@ -204,7 +192,7 @@ public class AdminMusicService : IAdminMusicService
     public async Task<Track?> UpdateTrackAsync(Guid id, Track track)
     {
         await AddAuthHeaderAsync();
-        var response = await _httpClient.PutAsJsonAsync($"admin/tracks/{id}", track);
+        var response = await _httpClient.PutAsJsonAsync($"api/admin/tracks/{id}", track);
         if (response.IsSuccessStatusCode)
         {
             return await response.Content.ReadFromJsonAsync<Track>();
@@ -215,7 +203,7 @@ public class AdminMusicService : IAdminMusicService
     public async Task<bool> DeleteTrackAsync(Guid id)
     {
         await AddAuthHeaderAsync();
-        var response = await _httpClient.DeleteAsync($"admin/tracks/{id}");
+        var response = await _httpClient.DeleteAsync($"api/admin/tracks/{id}");
         return response.IsSuccessStatusCode;
     }
 
@@ -230,14 +218,8 @@ public class AdminMusicService : IAdminMusicService
         fileContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
         content.Add(fileContent, "file", fileName);
 
-        var response = await _httpClient.PostAsync($"admin/tracks/{trackId}/upload", content);
+        var response = await _httpClient.PostAsync($"api/admin/tracks/{trackId}/upload", content);
         return response.IsSuccessStatusCode;
     }
 
-    public async Task<List<Track>> GetTracksAsync()
-    {
-        await AddAuthHeaderAsync();
-        var response = await _httpClient.GetFromJsonAsync<List<Track>>("admin/tracks");
-        return response ?? new List<Track>();
-    }
 }

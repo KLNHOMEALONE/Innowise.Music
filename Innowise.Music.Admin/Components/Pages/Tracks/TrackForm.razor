@@ -106,12 +106,12 @@
         // Load dropdown data
         try
         {
-            var artistsTask = MusicService.GetArtistsAsync();
-            var albumsTask = MusicService.GetAlbumsAsync();
+            var artistsTask = MusicService.GetAllArtistsAsync();
+            var albumsTask = MusicService.GetAllAlbumsAsync();
             await Task.WhenAll(artistsTask, albumsTask);
             
-            artists = artistsTask.Result.ToList();
-            albums = albumsTask.Result.ToList();
+            artists = artistsTask.Result.Items.ToList();
+            albums = albumsTask.Result.Items.ToList();
         }
         catch (Exception ex)
         {
