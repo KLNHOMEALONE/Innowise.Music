@@ -1,5 +1,18 @@
 # Task Tracker - Innowise.Music
 
+## Task: Fix Admin Dashboard Black Screen
+- **Status**: Completed
+- **Description**: The admin dashboard was showing a black screen when accessed. The root cause was the auto-generated `Routes` component in .NET 9 not using our custom `AuthorizeRouteView`, the authentication check happening after the page rendered (causing a black screen flash), and the login form submit not firing.
+- **Steps**:
+  - [x] Investigated the routing system and identified that `Routes` component was auto-generated and not using `AuthorizeRouteView`
+  - [x] Created custom `Routes.razor` using Blazor's `Router` component with `AuthorizeRouteView`
+  - [x] Updated `AuthorizeRouteView.razor` to check authentication in `OnInitializedAsync` before rendering
+  - [x] Added loading state display during authentication checks
+  - [x] Fixed `Shared/AuthorizeView.razor` to show loading indicator when redirecting to login
+  - [x] Fixed login form submission by changing `@onsubmit` to `@onsubmit.prevent` in `Login.razor`
+  - [x] Verified build succeeds with no errors
+- **Dependencies**: None
+
 ## Task: Fix Audio Player
 - **Status**: Completed
 - **Description**: The mini audio player was not playing selected tracks, and the progress bar was not updating. The root cause was a missing `MediaElement` in the `MiniPlayerControl` and a lack of initialization in the `AudioService`.
@@ -151,6 +164,21 @@
     - Updated `MiniPlayerControl.xaml` to display track information, playback controls, and progress bar dynamically.
     - Resolved XAML binding issues within `DataTemplate` for command invocation from `HomeItem` by introducing a `Parent` reference in `HomeItem` back to `HomePageViewModel`.
     - Refactored `MiniPlayerControl.xaml.cs` to correctly instantiate `MiniPlayerViewModel` using `Handler.MauiContext.Services.GetService<MiniPlayerViewModel>()` in the `Loaded` event, resolving XAML compilation errors.
+
+## Task: Batch Track Upload Feature (Admin Dashboard)
+- **Status**: Completed
+- **Description**: Implemented complete batch upload functionality for music tracks with automatic metadata extraction using TagLibSharp.
+- **Steps**:
+    - [x] Created `TrackUploadDto.cs` models in both Identity Server and Admin projects
+    - [x] Implemented `IMetadataExtractionService` and `MetadataExtractionService` using TagLibSharp
+    - [x] Added batch upload methods to `IMusicService` and `MusicService` (GetOrCreateArtist, GetOrCreateAlbum, GetOrCreateGenres)
+    - [x] Added `POST /api/admin/tracks/upload-batch` endpoint to `AdminMusicController`
+    - [x] Added `UploadTracksBatchAsync()` to `IAdminMusicService` and `AdminMusicService`
+    - [x] Created `MultiTrackUpload.razor` component with file selection, metadata preview, and upload
+    - [x] Updated `TracksList.razor` with "Add Tracks" button
+    - [x] Fixed Blazor Server interop issues (render mode, StateHasChanged, disabled attribute syntax)
+    - [x] Updated documentation (changelog.md)
+- **Dependencies**: TagLibSharp, Identity Server API
 
 ## Task: Music Library
 - **Status**: Not started

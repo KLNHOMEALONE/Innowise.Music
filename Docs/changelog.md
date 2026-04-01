@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-04-01] - Fixed Admin Dashboard Black Screen Issue
+
+### Fixed
+- **Admin Dashboard Black Screen**: Resolved the black screen issue when running the admin dashboard
+  - Created custom `Routes.razor` component to properly integrate authentication routing
+  - Updated `AuthorizeRouteView.razor` to show loading state during authentication checks instead of rendering page then redirecting
+  - Fixed `Shared/AuthorizeView.razor` to show loading indicator when redirecting to login instead of showing empty content
+- **Login Form Submit Not Firing**: Fixed the `HandleLogin` method not being triggered on form submission
+  - Changed `@onsubmit="HandleLogin"` to `@onsubmit.prevent="HandleLogin"` in `Login.razor` to prevent browser's default form submission
+
+### Technical Details
+- The root cause was the auto-generated `Routes` component in .NET 9 not using our custom `AuthorizeRouteView`
+- The new `Routes.razor` uses Blazor's `Router` component with our `AuthorizeRouteView` for proper auth flow
+- Authentication checks now happen in `OnInitializedAsync` before rendering, preventing the black screen flash
+
 ## [2026-04-01] - Music Tracks Batch Upload Implementation
 
 ### Added
@@ -35,6 +50,14 @@ All notable changes to this project will be documented in this file.
 - Option to create new entities if not found
 - Comprehensive error handling with detailed feedback
 - Progress indication during extraction and upload
+
+### Fixed
+- **Blazor Server Interop Issues in MultiTrackUpload.razor**:
+  - Changed render mode in `_Host.cshtml` from `ServerPrerendered` to `Server` to ensure SignalR connection is established immediately
+  - Fixed `disabled` attribute syntax: changed `disabled="!CanExtract"` to `disabled="@(!CanExtract)"` to properly evaluate the expression
+  - Added `await InvokeAsync(StateHasChanged)` to all event handlers (`RemoveFile`, `ResetUpload`, `UploadTracks`, `ExtractMetadata`) to ensure UI updates
+  - Removed CSS that was hiding the file input's `::file-selector-button`, which was blocking user interaction
+  - Simplified file input styling to use standard browser appearance
 
 ## [2026-03-31] - Fixed AdminMusicService API Endpoints & Dashboard Statistics
 

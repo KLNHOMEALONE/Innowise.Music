@@ -13,7 +13,11 @@
 }
 else if (!_isAuthenticated)
 {
-    // Will redirect to login in OnAfterRenderAsync
+    // Redirecting to login - show loading state
+    <div class="loading-container">
+        <div class="spinner"></div>
+        <p>Redirecting to login...</p>
+    </div>
 }
 else if (!_isAdmin)
 {

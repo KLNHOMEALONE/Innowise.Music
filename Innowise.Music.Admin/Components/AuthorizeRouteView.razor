@@ -3,7 +3,24 @@
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
 
-<RouteView RouteData="RouteData" DefaultLayout="DefaultLayout" />
+@if (_isLoading)
+{
+    <div class="loading-container">
+        <div class="spinner"></div>
+        <p>Loading...</p>
+    </div>
+}
+else if (_redirectToLogin)
+{
+    <div class="loading-container">
+        <div class="spinner"></div>
+        <p>Redirecting to login...</p>
+    </div>
+}
+else
+{
+    <RouteView RouteData="RouteData" DefaultLayout="DefaultLayout" />
+}
 
 @code {
     [Parameter]
@@ -12,32 +29,36 @@
     [Parameter]
     public Type DefaultLayout { get; set; } = default!;
 
-    private bool _hasRedirected;
+    private bool _isLoading = true;
+    private bool _redirectToLogin;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnInitializedAsync()
     {
-        if (firstRender && !_hasRedirected)
+        // Get the current route's page type
+        var pageType = RouteData.PageType;
+        
+        // Check if the page requires authentication (all pages except Login)
+        var requiresAuth = !IsLoginPage(pageType);
+        
+        if (requiresAuth)
         {
-            // Get the current route's page type
-            var pageType = RouteData.PageType;
+            var isAuthenticated = await AuthService.IsAuthenticatedAsync();
             
-            // Check if the page requires authentication (all pages except Login)
-            var requiresAuth = !IsLoginPage(pageType);
-            
-            if (requiresAuth)
+            if (!isAuthenticated)
             {
-                var isAuthenticated = await AuthService.IsAuthenticatedAsync();
+                _redirectToLogin = true;
+                _isLoading = false;
+                StateHasChanged();
                 
-                if (!isAuthenticated)
-                {
-                    _hasRedirected = true;
-                    // Use forceLoad: true to force a full page reload
-                    // This ensures the Blazor circuit is properly reset
-                    Navigation.NavigateTo("/login", forceLoad: true);
-                }
+                // Redirect to login after a brief delay to show the loading state
+                await Task.Delay(100);
+                Navigation.NavigateTo("/login", forceLoad: true);
+                return;
             }
         }
-        await base.OnAfterRenderAsync(firstRender);
+        
+        _isLoading = false;
+        StateHasChanged();
     }
 
     private bool IsLoginPage(Type pageType)

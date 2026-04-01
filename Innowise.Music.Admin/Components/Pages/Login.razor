@@ -4,6 +4,7 @@
 @inject NavigationManager Navigation
 @inject Microsoft.Extensions.Logging.ILogger<Login> Logger
 @inject IJSRuntime JS
+@rendermode InteractiveServer
 
 <div class="login-container">
     <div class="login-card">
@@ -12,24 +13,24 @@
             <p class="login-subtitle">Admin Dashboard</p>
         </div>
 
-        <form @onsubmit="HandleLogin" class="login-form">
+        <EditForm Model="this" FormName="LoginForm" OnSubmit="HandleLogin">
             <div class="form-group">
                 <label for="email">Email</label>
-                <input type="email" id="email" @bind="email" class="form-control" placeholder="Enter your email" required />
+                <InputText id="email" @bind-Value="Email" class="form-control" placeholder="Enter your email" />
             </div>
 
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" @bind="password" class="form-control" placeholder="Enter your password" required />
+                <InputText id="password" @bind-Value="Password" class="form-control" placeholder="Enter your password" type="password" />
             </div>
 
-            @if (!string.IsNullOrEmpty(errorMessage))
+            @if (!string.IsNullOrEmpty(ErrorMessage))
             {
-                <div class="error-message">@errorMessage</div>
+                <div class="error-message">@ErrorMessage</div>
             }
 
-            <button type="submit" class="btn-login" disabled="@isLoggingIn">
-                @if (isLoggingIn)
+            <button type="submit" class="btn-login" disabled="@IsLoggingIn">
+                @if (IsLoggingIn)
                 {
                     <span>Logging in...</span>
                 }
@@ -38,37 +39,35 @@
                     <span>Login</span>
                 }
             </button>
-        </form>
+        </EditForm>
     </div>
 </div>
 
 @code {
-    private string email = string.Empty;
-    private string password = string.Empty;
-    private string errorMessage = string.Empty;
-    private bool isLoggingIn;
+    public string Email { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+    public string ErrorMessage { get; set; } = string.Empty;
+    public bool IsLoggingIn { get; set; }
 
     private async Task HandleLogin()
     {
-        // Debug: Log to browser console to verify form submission
-        await JS.InvokeVoidAsync("console.log", "HandleLogin called in Blazor!");
-        Logger.LogInformation("HandleLogin called with email={Email}, password length={PasswordLength}", email, password?.Length);
+        Logger.LogInformation("HandleLogin called with email={Email}, password length={PasswordLength}", Email, Password?.Length);
 
-        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+        if (string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(Password))
         {
-            errorMessage = "Please enter email and password";
+            ErrorMessage = "Please enter email and password";
             return;
         }
 
-        isLoggingIn = true;
-        errorMessage = string.Empty;
+        IsLoggingIn = true;
+        ErrorMessage = string.Empty;
         StateHasChanged();
 
         Logger.LogInformation("Calling AuthService.LoginAsync");
-        var success = await AuthService.LoginAsync(email, password);
+        var success = await AuthService.LoginAsync(Email, Password);
         Logger.LogInformation("LoginAsync returned: success={Success}", success);
 
-        isLoggingIn = false;
+        IsLoggingIn = false;
 
         if (success)
         {
@@ -86,23 +85,23 @@
                 catch (Exception ex)
                 {
                     Logger.LogError(ex, "Navigation to dashboard failed");
-                    errorMessage = "Login successful but navigation failed. Please try again.";
+                    ErrorMessage = "Login successful but navigation failed. Please try again.";
                     StateHasChanged();
                     return;
                 }
-                return; // Important: return to avoid StateHasChanged and clearing fields
+                return;
             }
             else
             {
                 Logger.LogWarning("User is not admin, logging out. Token: {Token}", AuthService.GetToken());
                 await AuthService.LogoutAsync();
-                errorMessage = "Access denied. Admin privileges required.";
+                ErrorMessage = "Access denied. Admin privileges required.";
             }
         }
         else
         {
             Logger.LogInformation("Login failed, showing error");
-            errorMessage = "Invalid email or password";
+            ErrorMessage = "Invalid email or password";
         }
 
         StateHasChanged();
