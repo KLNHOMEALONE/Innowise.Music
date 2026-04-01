@@ -1,0 +1,19 @@
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+@inject Microsoft.Extensions.Logging.ILogger<LogoutButton> Logger
+@rendermode InteractiveServer
+
+<button class="btn-logout" @onclick="HandleLogout">Logout</button>
+
+@code {
+    private async Task HandleLogout()
+    {
+        Logger.LogInformation("Logout button clicked, starting logout process");
+        
+        await AuthService.LogoutAsync();
+        Logger.LogInformation("AuthService.LogoutAsync completed");
+        
+        Logger.LogInformation("Navigating to /login with forceLoad: true");
+        Navigation.NavigateTo("/login", forceLoad: true);
+    }
+}

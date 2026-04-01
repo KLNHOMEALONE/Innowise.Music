@@ -11,7 +11,7 @@
             <h1 class="admin-title">Innowise.Music Admin</h1>
             <div class="header-actions">
                 <span class="user-info">@UserName</span>
-                <button class="btn-logout" @onclick="Logout">Logout</button>
+                <LogoutButton />
             </div>
         </header>
         <div class="page-content">
@@ -31,7 +31,6 @@
 
     private async Task LoadUserInfo()
     {
-        // Try to get user email from token claims
         var token = AuthService.GetToken();
         if (!string.IsNullOrEmpty(token))
         {
@@ -56,21 +55,5 @@
         }
         
         StateHasChanged();
-    }
-
-    private async Task Logout()
-    {
-        // Debug: Log to browser console to verify click is registered
-        await JS.InvokeVoidAsync("console.log", "Logout button clicked in Blazor!");
-        Logger.LogInformation("Logout button clicked, starting logout process");
-        
-        // Clear authentication state
-        await AuthService.LogoutAsync();
-        Logger.LogInformation("AuthService.LogoutAsync completed");
-        
-        // Force full page navigation to login
-        // Using forceLoad: true ensures a full page reload which resets the Blazor circuit
-        Logger.LogInformation("Navigating to /login with forceLoad: true");
-        Navigation.NavigateTo("/login", forceLoad: true);
     }
 }
