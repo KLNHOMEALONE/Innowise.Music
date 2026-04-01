@@ -39,10 +39,22 @@
 </div>
 
 @code {
+    [SupplyParameterFromQuery(Name = "logout")]
+    public bool IsLogout { get; set; }
+
     private string email = string.Empty;
     private string password = string.Empty;
     public string ErrorMessage { get; set; } = string.Empty;
     public bool IsLoggingIn { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (IsLogout)
+        {
+            Logger.LogInformation("Logout requested, clearing authentication state");
+            await AuthService.LogoutAsync();
+        }
+    }
 
     private async Task HandleLogin()
     {
