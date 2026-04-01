@@ -11,6 +11,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.3.0" />
+    <PackageReference Include="TagLibSharp" Version="2.3.0" />
   </ItemGroup>
 
 
@@ -18,8 +19,7 @@
   <!-- Exclude IdentityServer appsettings from Admin publish to avoid conflicts -->
   <Target Name="ExcludeIdentityServerAppSettings" BeforeTargets="ComputeFilesToPublish">
     <ItemGroup>
-      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
-        Condition="'%(Filename)' == 'appsettings' AND %(Extension) == '.json' AND !$([System.String]::new('%(FullPath)').Contains('Innowise.Music.Admin'))" />
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(Filename)' == 'appsettings' AND %(Extension) == '.json' AND !$([System.String]::new('%(FullPath)').Contains('Innowise.Music.Admin'))" />
     </ItemGroup>
   </Target>
 
