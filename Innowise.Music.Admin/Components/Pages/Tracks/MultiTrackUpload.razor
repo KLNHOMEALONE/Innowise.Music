@@ -12,9 +12,7 @@
 
 <PageTitle>Upload Tracks - Admin Dashboard</PageTitle>
 
-<AuthorizeView>
-    <Authorized>
-        <div class="page-header">
+<div class="page-header">
             <h1>Upload Multiple Tracks</h1>
             <a href="/tracks" class="btn-secondary">← Back to Tracks</a>
         </div>
@@ -203,14 +201,7 @@
             }
         </div>
     }
-    </Authorized>
-    <NotAuthorized>
-        <div class="access-denied">
-            <p>You must be logged in to access this page.</p>
-            <a href="/login" class="btn-primary">Login</a>
-        </div>
-    </NotAuthorized>
-</AuthorizeView>
+
 
 <style>
     .upload-zone {

@@ -6,8 +6,7 @@
 
 <PageTitle>Artists - Admin Dashboard</PageTitle>
 
-<AuthorizeView>
-    <div class="page-header">
+<div class="page-header">
         <h1>Artists Management</h1>
         <a href="/artists/new" class="btn-primary">+ Add Artist</a>
     </div>
@@ -99,7 +98,6 @@
             </div>
         </div>
     }
-</AuthorizeView>
 
 @code {
     private List<Artist> artists = new();

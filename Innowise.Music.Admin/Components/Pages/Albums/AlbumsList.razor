@@ -6,8 +6,7 @@
 
 <PageTitle>Albums - Admin Dashboard</PageTitle>
 
-<AuthorizeView>
-    <div class="page-header">
+<div class="page-header">
         <h1>Albums Management</h1>
         <a href="/albums/new" class="btn-primary">+ Add Album</a>
     </div>
@@ -93,7 +92,6 @@
             </div>
         </div>
     }
-</AuthorizeView>
 
 @code {
     private List<AlbumViewModel> albums = new();

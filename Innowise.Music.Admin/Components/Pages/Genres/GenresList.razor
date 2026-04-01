@@ -6,8 +6,7 @@
 
 <PageTitle>Genres - Admin Dashboard</PageTitle>
 
-<AuthorizeView>
-    <div class="page-header">
+<div class="page-header">
         <h1>Genres Management</h1>
         <a href="/genres/new" class="btn-primary">+ Add Genre</a>
     </div>
@@ -83,7 +82,6 @@
             </div>
         }
     </div>
-</AuthorizeView>
 
 @code {
     private List<Genre> genres = new();
