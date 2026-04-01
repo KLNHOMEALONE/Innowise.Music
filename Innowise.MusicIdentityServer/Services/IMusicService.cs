@@ -44,4 +44,10 @@ public interface IMusicService
     Task<Genre?> CreateGenreAsync(Genre genre);
     Task<Genre?> UpdateGenreAsync(Guid id, Genre genre);
     Task<bool> DeleteGenreAsync(Guid id);
+    
+    // Batch upload operations
+    Task<BatchUploadResult> UploadTracksAsync(IEnumerable<TrackUploadDto> tracks);
+    Task<Artist?> GetOrCreateArtistAsync(string artistName);
+    Task<Album?> GetOrCreateAlbumAsync(string albumTitle, Guid artistId, uint? year);
+    Task<IEnumerable<Genre>> GetOrCreateGenresAsync(IEnumerable<string> genreNames);
 }

@@ -394,4 +394,202 @@ public class MusicService : IMusicService
 
         return true;
     }
+    
+    // ==================== Batch Upload Operations ====================
+    
+    public async Task<BatchUploadResult> UploadTracksAsync(IEnumerable<TrackUploadDto> tracks)
+    {
+        var result = new BatchUploadResult();
+        
+        foreach (var trackDto in tracks)
+        {
+            try
+            {
+                // Get or create artist
+                var artist = await GetOrCreateArtistAsync(trackDto.ArtistName);
+                if (artist == null)
+                {
+                    result.Errors.Add($"Failed to create artist: {trackDto.ArtistName}");
+                    result.Results.Add(new TrackUploadResult
+                    {
+                        FileName = trackDto.FileName,
+                        Success = false,
+                        Error = $"Failed to create artist: {trackDto.ArtistName}"
+                    });
+                    result.FailedCount++;
+                    continue;
+                }
+                
+                // Get or create album (if specified)
+                Album? album = null;
+                if (!string.IsNullOrWhiteSpace(trackDto.AlbumName))
+                {
+                    album = await GetOrCreateAlbumAsync(trackDto.AlbumName, artist.Id, trackDto.Year);
+                }
+                
+                // Get or create genres
+                var genreList = new List<Genre>();
+                if (trackDto.Genres != null && trackDto.Genres.Any())
+                {
+                    var genres = await GetOrCreateGenresAsync(trackDto.Genres);
+                    genreList.AddRange(genres);
+                }
+                
+                // Create track
+                var track = new Track
+                {
+                    Id = Guid.NewGuid(),
+                    Title = trackDto.Title,
+                    ArtistId = artist.Id,
+                    AlbumId = album?.Id,
+                    TrackNumber = trackDto.TrackNumber,
+                    Duration = trackDto.Duration,
+                    AudioData = trackDto.AudioData,
+                    AudioFormat = trackDto.AudioFormat,
+                    Bitrate = trackDto.Bitrate,
+                    SampleRate = trackDto.SampleRate,
+                    FileSize = trackDto.FileSize,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+                
+                // Add genres to track
+                if (genreList.Any())
+                {
+                    track.Genres = genreList;
+                }
+                
+                _context.Tracks.Add(track);
+                await _context.SaveChangesAsync();
+                
+                result.Results.Add(new TrackUploadResult
+                {
+                    FileName = trackDto.FileName,
+                    TrackId = track.Id,
+                    Success = true
+                });
+                result.UploadedCount++;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error uploading track: {trackDto.FileName}");
+                result.Errors.Add($"Error uploading {trackDto.FileName}: {ex.Message}");
+                result.Results.Add(new TrackUploadResult
+                {
+                    FileName = trackDto.FileName,
+                    Success = false,
+                    Error = ex.Message
+                });
+                result.FailedCount++;
+            }
+        }
+        
+        result.Success = result.UploadedCount > 0;
+        return result;
+    }
+    
+    public async Task<Artist?> GetOrCreateArtistAsync(string artistName)
+    {
+        if (string.IsNullOrWhiteSpace(artistName))
+        {
+            return null;
+        }
+        
+        // Try to find existing artist
+        var existingArtist = await _context.Artists
+            .FirstOrDefaultAsync(a => a.Name.ToLower() == artistName.ToLower());
+        
+        if (existingArtist != null)
+        {
+            return existingArtist;
+        }
+        
+        // Create new artist
+        var newArtist = new Artist
+        {
+            Id = Guid.NewGuid(),
+            Name = artistName,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+        
+        _context.Artists.Add(newArtist);
+        await _context.SaveChangesAsync();
+        
+        return newArtist;
+    }
+    
+    public async Task<Album?> GetOrCreateAlbumAsync(string albumTitle, Guid artistId, uint? year)
+    {
+        if (string.IsNullOrWhiteSpace(albumTitle))
+        {
+            return null;
+        }
+        
+        // Try to find existing album for this artist
+        var existingAlbum = await _context.Albums
+            .FirstOrDefaultAsync(a => a.Title.ToLower() == albumTitle.ToLower() && a.ArtistId == artistId);
+        
+        if (existingAlbum != null)
+        {
+            return existingAlbum;
+        }
+        
+        // Create new album
+        var newAlbum = new Album
+        {
+            Id = Guid.NewGuid(),
+            Title = albumTitle,
+            ArtistId = artistId,
+            ReleaseDate = year.HasValue ? new DateOnly((int)year.Value, 1, 1) : null,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+        
+        _context.Albums.Add(newAlbum);
+        await _context.SaveChangesAsync();
+        
+        return newAlbum;
+    }
+    
+    public async Task<IEnumerable<Genre>> GetOrCreateGenresAsync(IEnumerable<string> genreNames)
+    {
+        var genres = new List<Genre>();
+        
+        if (genreNames == null || !genreNames.Any())
+        {
+            return genres;
+        }
+        
+        foreach (var genreName in genreNames.Distinct())
+        {
+            if (string.IsNullOrWhiteSpace(genreName))
+            {
+                continue;
+            }
+            
+            // Try to find existing genre
+            var existingGenre = await _context.Genres
+                .FirstOrDefaultAsync(g => g.Name.ToLower() == genreName.ToLower());
+            
+            if (existingGenre != null)
+            {
+                genres.Add(existingGenre);
+                continue;
+            }
+            
+            // Create new genre
+            var newGenre = new Genre
+            {
+                Id = Guid.NewGuid(),
+                Name = genreName
+            };
+            
+            _context.Genres.Add(newGenre);
+            genres.Add(newGenre);
+        }
+        
+        await _context.SaveChangesAsync();
+        return genres;
+    }
 }

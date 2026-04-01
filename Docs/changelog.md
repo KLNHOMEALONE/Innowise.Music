@@ -2,6 +2,40 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-04-01] - Music Tracks Batch Upload Implementation
+
+### Added
+
+- **Batch Track Upload Feature**: Implemented complete batch upload functionality for music tracks with automatic metadata extraction using TagLibSharp.
+
+- **Backend API (Identity Server)**:
+  - Created `TrackUploadDto.cs` model with batch upload DTOs and result classes
+  - Added `UploadTracksAsync()` method to `IMusicService` for batch processing
+  - Implemented `GetOrCreateArtistAsync()`, `GetOrCreateAlbumAsync()`, `GetOrCreateGenresAsync()` methods
+  - Added `POST /api/admin/tracks/upload-batch` endpoint to `AdminMusicController` with 500MB size limit
+  - Batch upload automatically creates missing artists, albums, and genres
+
+- **Admin Dashboard**:
+  - Created `ExtractedTrackMetadata.cs` model for preview data with UI-specific properties
+  - Created `TrackUploadDto.cs` in Admin project for upload data transfer
+  - Implemented `IMetadataExtractionService` interface
+  - Implemented `MetadataExtractionService` using TagLibSharp for metadata extraction
+  - Added `UploadTracksBatchAsync()` method to `IAdminMusicService` and `AdminMusicService`
+  - Created `MultiTrackUpload.razor` component with drag-and-drop file selection
+  - Added file validation (MP3, WAV, FLAC, AAC only; 50MB per file; 30 files max)
+  - Implemented metadata preview with editable fields
+  - Added dropdown selectors for existing artists/albums/genres
+  - Updated `TracksList.razor` with "Add Tracks" button
+  - Registered `IMetadataExtractionService` in `Program.cs`
+
+### Technical Details
+
+- Metadata extraction supports: Title, Artists, Album, Genres, Year, Track Number, Duration, Bitrate, Sample Rate
+- Auto-matching of existing entities by name (case-insensitive)
+- Option to create new entities if not found
+- Comprehensive error handling with detailed feedback
+- Progress indication during extraction and upload
+
 ## [2026-03-31] - Fixed AdminMusicService API Endpoints & Dashboard Statistics
 
 ### Fixed

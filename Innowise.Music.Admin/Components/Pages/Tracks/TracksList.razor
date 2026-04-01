@@ -9,7 +9,10 @@
 <AuthorizeView>
     <div class="page-header">
         <h1>Tracks Management</h1>
-        <a href="/tracks/new" class="btn-primary">+ Add Track</a>
+        <div class="header-actions">
+            <a href="/tracks/new" class="btn-primary">+ Add Track</a>
+            <a href="/tracks/upload-multi" class="btn-secondary">Add Tracks</a>
+        </div>
     </div>
 
     @if (isLoading)

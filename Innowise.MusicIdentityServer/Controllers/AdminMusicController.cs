@@ -413,6 +413,72 @@ public class AdminMusicController : ControllerBase
 
         return Ok(new { message = "Audio file uploaded successfully" });
     }
+    
+    /// <summary>
+    /// Upload multiple tracks with metadata extraction
+    /// </summary>
+    [HttpPost("tracks/upload-batch")]
+    [RequestSizeLimit(500 * 1024 * 1024)] // 500MB for batch
+    public async Task<ActionResult<BatchUploadResult>> UploadTracksBatch(IList<IFormFile> files)
+    {
+        if (files == null || files.Count == 0)
+        {
+            return BadRequest(new { message = "No files uploaded" });
+        }
+        
+        // Validate file count
+        if (files.Count > 30)
+        {
+            return BadRequest(new { message = "Maximum 30 files per batch allowed" });
+        }
+        
+        // Validate file types and sizes
+        var allowedExtensions = new[] { ".mp3", ".wav", ".flac", ".aac" };
+        var uploadDtos = new List<TrackUploadDto>();
+        
+        foreach (var file in files)
+        {
+            var extension = Path.GetExtension(file.FileName).ToLower();
+            if (!allowedExtensions.Contains(extension))
+            {
+                return BadRequest(new { message = $"File type {extension} is not supported. Allowed: {string.Join(", ", allowedExtensions)}" });
+            }
+            
+            if (file.Length > 50 * 1024 * 1024)
+            {
+                return BadRequest(new { message = $"File {file.FileName} exceeds 50MB limit" });
+            }
+            
+            // Read file into byte array
+            using var memoryStream = new MemoryStream();
+            await file.CopyToAsync(memoryStream);
+            var audioData = memoryStream.ToArray();
+            
+            // Determine audio format from extension
+            var audioFormat = extension switch
+            {
+                ".mp3" => "MP3",
+                ".wav" => "WAV",
+                ".flac" => "FLAC",
+                ".aac" => "AAC",
+                _ => "UNKNOWN"
+            };
+            
+            // Create upload DTO with filename as title (will be extracted by client)
+            uploadDtos.Add(new TrackUploadDto
+            {
+                FileName = file.FileName,
+                AudioData = audioData,
+                Title = Path.GetFileNameWithoutExtension(file.FileName), // Default title from filename
+                ArtistName = "Unknown Artist", // Will be provided by client
+                AudioFormat = audioFormat,
+                FileSize = audioData.Length
+            });
+        }
+        
+        var result = await _musicService.UploadTracksAsync(uploadDtos);
+        return Ok(result);
+    }
 
     // ==================== Helper Classes ====================
 

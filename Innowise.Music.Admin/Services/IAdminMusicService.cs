@@ -32,4 +32,7 @@ public interface IAdminMusicService
     Task<Track?> UpdateTrackAsync(Guid id, Track track);
     Task<bool> DeleteTrackAsync(Guid id);
     Task<bool> UploadTrackAudioAsync(Guid trackId, Stream stream, string fileName);
+    
+    // Batch upload operations
+    Task<BatchUploadResult> UploadTracksBatchAsync(IEnumerable<TrackUploadDto> tracks);
 }

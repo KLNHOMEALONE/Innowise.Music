@@ -1,0 +1,607 @@
+@page "/tracks/upload-multi"
+@inject IAdminMusicService MusicService
+@inject IMetadataExtractionService MetadataService
+@inject NavigationManager Navigation
+@inject IAuthService AuthService
+@layout MainLayout
+@using Innowise.Music.Admin.Models
+@using Microsoft.AspNetCore.Components.Forms
+
+<PageTitle>Upload Tracks - Admin Dashboard</PageTitle>
+
+<AuthorizeView>
+    <div class="page-header">
+        <h1>Upload Multiple Tracks</h1>
+        <a href="/tracks" class="btn-secondary">← Back to Tracks</a>
+    </div>
+
+    @if (errorMessage != null)
+    {
+        <div class="error-state">
+            <p>⚠️ @errorMessage</p>
+            <button class="btn-primary" @onclick="ResetUpload">Try Again</button>
+        </div>
+    }
+    else if (uploadComplete)
+    {
+        <div class="success-state">
+            <h2>Upload Complete!</h2>
+            <p>Successfully uploaded @uploadResult.UploadedCount track(s)</p>
+            @if (uploadResult.FailedCount > 0)
+            {
+                <p class="warning">Failed to upload @uploadResult.FailedCount track(s)</p>
+                @foreach (var error in uploadResult.Errors)
+                {
+                    <p class="error-text">• @error</p>
+                }
+            }
+            <div class="action-buttons">
+                <a href="/tracks/upload-multi" class="btn-primary">Upload More</a>
+                <a href="/tracks" class="btn-secondary">View All Tracks</a>
+            </div>
+        </div>
+    }
+    else if (showPreview)
+    {
+        <div class="content-card">
+            <h2>Review Tracks</h2>
+            <p class="subtitle">Please review and adjust the metadata before uploading</p>
+            
+            @if (extractedTracks.Any())
+            {
+                <div class="tracks-preview">
+                    @foreach (var track in extractedTracks)
+                    {
+                        <div class="track-preview-card">
+                            <div class="track-header">
+                                <h3>@track.FileName</h3>
+                                @if (!track.IsValid)
+                                {
+                                    <span class="validation-warning">⚠️ Missing required fields</span>
+                                }
+                            </div>
+                            
+                            <div class="track-fields">
+                                <div class="field-group">
+                                    <label>Title *</label>
+                                    <input type="text" @bind="track.Title" class="form-input" 
+                                           placeholder="Track title" />
+                                </div>
+                                
+                                <div class="field-group">
+                                    <label>Artist *</label>
+                                    <select @bind="track.MatchedArtistId" class="form-select">
+                                        <option value="">-- Select Artist --</option>
+                                        @foreach (var artist in artists)
+                                        {
+                                            <option value="@artist.Id">@artist.Name</option>
+                                        }
+                                    </select>
+                                    <input type="text" @bind="track.MatchedArtistName" class="form-input" 
+                                           placeholder="Or enter new artist name" />
+                                </div>
+                                
+                                <div class="field-group">
+                                    <label>Album</label>
+                                    <select @bind="track.MatchedAlbumId" class="form-select">
+                                        <option value="">-- Select Album --</option>
+                                        @foreach (var album in albums)
+                                        {
+                                            <option value="@album.Id">@album.Title</option>
+                                        }
+                                    </select>
+                                    <input type="text" @bind="track.MatchedAlbumName" class="form-input" 
+                                           placeholder="Or enter new album name" />
+                                </div>
+                                
+                                <div class="field-group">
+                                    <label>Genres</label>
+                                    <div class="checkbox-group">
+                                        @foreach (var genre in genres)
+                                        {
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" value="@genre.Id" 
+                                                       @bind="track.MatchedGenreIds" />
+                                                @genre.Name
+                                            </label>
+                                        }
+                                    </div>
+                                    <input type="text" @bind="track.GenresString" class="form-input" 
+                                           placeholder="Or enter new genres (comma-separated)" />
+                                </div>
+                                
+                                <div class="field-row">
+                                    <div class="field-group">
+                                        <label>Duration (seconds) *</label>
+                                        <input type="number" @bind="track.Duration" class="form-input" min="1" />
+                                    </div>
+                                    <div class="field-group">
+                                        <label>Track Number</label>
+                                        <input type="number" @bind="track.TrackNumber" class="form-input" min="1" />
+                                    </div>
+                                    <div class="field-group">
+                                        <label>Year</label>
+                                        <input type="number" @bind="track.Year" class="form-input" min="1900" max="2100" />
+                                    </div>
+                                </div>
+                                
+                                <div class="field-row">
+                                    <div class="field-group">
+                                        <label>Bitrate (kbps)</label>
+                                        <input type="number" @bind="track.Bitrate" class="form-input" readonly />
+                                    </div>
+                                    <div class="field-group">
+                                        <label>Sample Rate (Hz)</label>
+                                        <input type="number" @bind="track.SampleRate" class="form-input" readonly />
+                                    </div>
+                                    <div class="field-group">
+                                        <label>File Size</label>
+                                        <input type="text" value="@FormatFileSize(track.FileSize)" class="form-input" readonly />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                
+                <div class="upload-actions">
+                    <button class="btn-secondary" @onclick="ResetUpload">Cancel</button>
+                    <button class="btn-primary" @onclick="UploadTracks" disabled="!CanUpload">
+                        Upload @extractedTracks.Count Track(s)
+                    </button>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="content-card">
+            <div class="upload-zone">
+                <div class="upload-icon">🎵</div>
+                <h2>Drag & Drop Audio Files</h2>
+                <p>or click to browse</p>
+                <InputFile OnChange="HandleFileSelection" accept=".mp3,.wav,.flac,.aac" 
+                           multiple class="file-input" id="fileInput" />
+                <label for="fileInput" class="browse-button">Browse Files</label>
+                
+                <div class="upload-info">
+                    <p>Supported formats: MP3, WAV, FLAC, AAC</p>
+                    <p>Maximum 30 files per batch, 50MB per file</p>
+                </div>
+            </div>
+            
+            @if (selectedFiles.Any())
+            {
+                <div class="selected-files">
+                    <h3>Selected Files (@selectedFiles.Count)</h3>
+                    <ul class="file-list">
+                        @foreach (var file in selectedFiles)
+                        {
+                            <li>
+                                <span>@file.Name (@FormatFileSize(file.Length))</span>
+                                <button class="btn-remove" @onclick="() => RemoveFile(file)">×</button>
+                            </li>
+                        }
+                    </ul>
+                    <div class="action-buttons">
+                        <button class="btn-secondary" @onclick="ResetUpload">Clear All</button>
+                        <button class="btn-primary" @onclick="ExtractMetadata" disabled="!CanExtract">
+                            Extract Metadata
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</AuthorizeView>
+
+<style>
+    .upload-zone {
+        border: 2px dashed var(--primary-color);
+        border-radius: 12px;
+        padding: 48px;
+        text-align: center;
+        transition: all 0.3s ease;
+        background: rgba(var(--primary-rgb), 0.05);
+    }
+    
+    .upload-icon {
+        font-size: 64px;
+        margin-bottom: 16px;
+    }
+    
+    .file-input {
+        display: none;
+    }
+    
+    .browse-button {
+        display: inline-block;
+        padding: 12px 24px;
+        background: var(--primary-color);
+        color: white;
+        border-radius: 8px;
+        cursor: pointer;
+        margin-top: 16px;
+        transition: background 0.3s;
+    }
+    
+    .browse-button:hover {
+        background: var(--primary-dark);
+    }
+    
+    .upload-info {
+        margin-top: 24px;
+        color: var(--text-secondary);
+        font-size: 14px;
+    }
+    
+    .selected-files {
+        margin-top: 24px;
+    }
+    
+    .file-list {
+        list-style: none;
+        padding: 0;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    
+    .file-list li {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .btn-remove {
+        background: none;
+        border: none;
+        color: var(--error-color);
+        font-size: 20px;
+        cursor: pointer;
+        padding: 0 8px;
+    }
+    
+    .tracks-preview {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        margin-top: 24px;
+    }
+    
+    .track-preview-card {
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 20px;
+        background: var(--card-bg);
+    }
+    
+    .track-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .validation-warning {
+        color: var(--warning-color);
+        font-size: 14px;
+    }
+    
+    .track-fields {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .field-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    
+    .field-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+    }
+    
+    .form-input, .form-select {
+        padding: 10px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        font-size: 14px;
+    }
+    
+    .checkbox-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    
+    .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+    }
+    
+    .upload-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 24px;
+        padding-top: 24px;
+        border-top: 1px solid var(--border-color);
+    }
+    
+    .success-state {
+        text-align: center;
+        padding: 48px;
+    }
+    
+    .success-state h2 {
+        color: var(--success-color);
+        margin-bottom: 16px;
+    }
+    
+    .warning {
+        color: var(--warning-color);
+    }
+    
+    .error-text {
+        color: var(--error-color);
+        text-align: left;
+        margin: 4px 0;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        margin-top: 24px;
+    }
+</style>
+
+@code {
+    private List<ExtractedTrackMetadata> extractedTracks = new();
+    private List<Models.Artist> artists = new();
+    private List<Models.Album> albums = new();
+    private List<Models.Genre> genres = new();
+    private bool showPreview;
+    private bool uploadComplete;
+    private string? errorMessage;
+    private BatchUploadResult uploadResult = new();
+    
+    // File selection
+    private List<SelectedFile> selectedFiles = new();
+    private const long MaxFileSize = 50 * 1024 * 1024; // 50MB
+    private const int MaxFiles = 30;
+    
+    private bool CanExtract => selectedFiles.Any();
+    private bool CanUpload => extractedTracks.Any(t => t.IsValid);
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadExistingEntities();
+    }
+    
+    private async Task LoadExistingEntities()
+    {
+        try
+        {
+            // Load artists
+            var artistsResponse = await MusicService.GetAllArtistsAsync();
+            artists = artistsResponse.Items.ToList();
+            
+            // Load albums
+            var albumsResponse = await MusicService.GetAllAlbumsAsync();
+            albums = albumsResponse.Items.ToList();
+            
+            // Load genres
+            genres = await MusicService.GetAllGenresAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to load existing entities: {ex.Message}";
+        }
+    }
+    
+    private async Task HandleFileSelection(InputFileChangeEventArgs e)
+    {
+        errorMessage = null;
+        var files = e.GetMultipleFiles();
+        
+        // Validate file count
+        if (selectedFiles.Count + files.Count > MaxFiles)
+        {
+            errorMessage = $"Maximum {MaxFiles} files allowed per batch";
+            return;
+        }
+        
+        // Validate and add files
+        foreach (var file in files)
+        {
+            var extension = Path.GetExtension(file.Name).ToLower();
+            if (!new[] { ".mp3", ".wav", ".flac", ".aac" }.Contains(extension))
+            {
+                errorMessage = $"Unsupported file type: {file.Name}";
+                continue;
+            }
+            
+            if (file.Size > MaxFileSize)
+            {
+                errorMessage = $"File too large: {file.Name} (max 50MB)";
+                continue;
+            }
+            
+            selectedFiles.Add(new SelectedFile
+            {
+                Name = file.Name,
+                Length = file.Size,
+                Content = file.OpenReadStream(MaxFileSize)
+            });
+        }
+        
+        StateHasChanged();
+    }
+    
+    private void RemoveFile(SelectedFile file)
+    {
+        selectedFiles.Remove(file);
+        file.Content?.Dispose();
+    }
+    
+    private async Task ExtractMetadata()
+    {
+        errorMessage = null;
+        
+        try
+        {
+            var fileStreams = selectedFiles.Select(f => (f.Content, f.Name)).ToList();
+            extractedTracks = (await MetadataService.ExtractMetadataBatchAsync(
+                fileStreams.Select(f => (f.Content ?? Stream.Null, f.Name)))).ToList();
+            
+            // Auto-match existing entities
+            foreach (var track in extractedTracks)
+            {
+                // Match artist
+                if (track.Performers.Any())
+                {
+                    var matchedArtist = artists.FirstOrDefault(a => 
+                        a.Name.Equals(track.Performers.First(), StringComparison.OrdinalIgnoreCase));
+                    if (matchedArtist != null)
+                    {
+                        track.MatchedArtistId = matchedArtist.Id;
+                        track.MatchedArtistName = matchedArtist.Name;
+                    }
+                    else
+                    {
+                        track.MatchedArtistName = track.Performers.First();
+                    }
+                }
+                
+                // Match album
+                if (!string.IsNullOrWhiteSpace(track.Album))
+                {
+                    var matchedAlbum = albums.FirstOrDefault(a => 
+                        a.Title.Equals(track.Album, StringComparison.OrdinalIgnoreCase));
+                    if (matchedAlbum != null)
+                    {
+                        track.MatchedAlbumId = matchedAlbum.Id;
+                        track.MatchedAlbumName = matchedAlbum.Title;
+                    }
+                    else
+                    {
+                        track.MatchedAlbumName = track.Album;
+                    }
+                }
+                
+                // Match genres
+                if (track.Genres.Any())
+                {
+                    var matchedGenreIds = new List<Guid>();
+                    foreach (var genreName in track.Genres)
+                    {
+                        var matchedGenre = genres.FirstOrDefault(g => 
+                            g.Name.Equals(genreName, StringComparison.OrdinalIgnoreCase));
+                        if (matchedGenre != null)
+                        {
+                            matchedGenreIds.Add(matchedGenre.Id);
+                        }
+                    }
+                    track.MatchedGenreIds = matchedGenreIds.ToArray();
+                }
+            }
+            
+            showPreview = true;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to extract metadata: {ex.Message}";
+        }
+    }
+    
+    private async Task UploadTracks()
+    {
+        errorMessage = null;
+        
+        try
+        {
+            var uploadDtos = new List<TrackUploadDto>();
+            
+            foreach (var track in extractedTracks)
+            {
+                if (!track.IsValid) continue;
+                
+                uploadDtos.Add(new TrackUploadDto
+                {
+                    FileName = track.FileName,
+                    AudioData = track.AudioData,
+                    Title = track.Title,
+                    ArtistName = track.MatchedArtistName ?? track.Performers.FirstOrDefault() ?? "Unknown",
+                    ArtistId = track.MatchedArtistId,
+                    AlbumName = track.MatchedAlbumName,
+                    AlbumId = track.MatchedAlbumId,
+                    Genres = track.Genres.Any() ? track.Genres : 
+                            track.GenresString?.Split(',').Select(g => g.Trim()).Where(g => !string.IsNullOrWhiteSpace(g)).ToArray(),
+                    GenreIds = track.MatchedGenreIds.Any() ? track.MatchedGenreIds : null,
+                    Duration = track.Duration,
+                    TrackNumber = track.TrackNumber > 0 ? (int?)track.TrackNumber : null,
+                    Bitrate = track.Bitrate > 0 ? track.Bitrate : null,
+                    SampleRate = track.SampleRate > 0 ? track.SampleRate : null,
+                    FileSize = track.FileSize,
+                    AudioFormat = track.AudioFormat,
+                    Year = track.Year > 0 ? track.Year : null
+                });
+            }
+            
+            if (!uploadDtos.Any())
+            {
+                errorMessage = "No valid tracks to upload";
+                return;
+            }
+            
+            uploadResult = await MusicService.UploadTracksBatchAsync(uploadDtos);
+            uploadComplete = true;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Upload failed: {ex.Message}";
+        }
+    }
+    
+    private void ResetUpload()
+    {
+        selectedFiles.ForEach(f => f.Content?.Dispose());
+        selectedFiles.Clear();
+        extractedTracks.Clear();
+        showPreview = false;
+        uploadComplete = false;
+        errorMessage = null;
+        uploadResult = new BatchUploadResult();
+    }
+    
+    private string FormatFileSize(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB" };
+        double len = bytes;
+        int order = 0;
+        while (len >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            len = len / 1024;
+        }
+        return $"{len:0.##} {sizes[order]}";
+    }
+    
+    private class SelectedFile
+    {
+        public string Name { get; set; } = string.Empty;
+        public long Length { get; set; }
+        public Stream? Content { get; set; }
+    }
+}

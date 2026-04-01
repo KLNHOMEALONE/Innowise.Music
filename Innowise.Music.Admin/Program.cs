@@ -30,6 +30,7 @@ builder.Services.AddScoped(sp =>
 // Register authentication service
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAdminMusicService, AdminMusicService>();
+builder.Services.AddScoped<IMetadataExtractionService, MetadataExtractionService>();
 builder.Services.AddHttpContextAccessor();
 
 // Add session support for token storage

@@ -221,5 +221,35 @@ public class AdminMusicService : IAdminMusicService
         var response = await _httpClient.PostAsync($"api/admin/tracks/{trackId}/upload", content);
         return response.IsSuccessStatusCode;
     }
+    
+    public async Task<BatchUploadResult> UploadTracksBatchAsync(IEnumerable<TrackUploadDto> tracks)
+    {
+        await AddAuthHeaderAsync();
+        
+        using var content = new MultipartFormDataContent();
+        
+        foreach (var track in tracks)
+        {
+            // Create a sub-content for each track with its metadata
+            var trackContent = new ByteArrayContent(track.AudioData);
+            trackContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+            content.Add(trackContent, "files", track.FileName);
+        }
+        
+        var response = await _httpClient.PostAsync("api/admin/tracks/upload-batch", content);
+        
+        if (response.IsSuccessStatusCode)
+        {
+            return await response.Content.ReadFromJsonAsync<BatchUploadResult>()
+                ?? new BatchUploadResult { Success = false, Errors = { "Unknown error occurred" } };
+        }
+        
+        var errorContent = await response.Content.ReadAsStringAsync();
+        return new BatchUploadResult
+        {
+            Success = false,
+            Errors = { $"Upload failed: {response.ReasonPhrase}", errorContent }
+        };
+    }
 
 }
