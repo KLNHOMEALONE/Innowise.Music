@@ -5,8 +5,7 @@
 @inject IAuthService AuthService
 @layout MainLayout
 
-<AuthorizeView>
-    <div class="page-header">
+<div class="page-header">
         <h1>@(IsEditMode ? "Edit Album" : "Add New Album")</h1>
         <a href="/albums" class="btn-secondary">Back to List</a>
     </div>
@@ -69,7 +68,6 @@
             </div>
         </form>
     </div>
-</AuthorizeView>
 
 @code {
     [Parameter]

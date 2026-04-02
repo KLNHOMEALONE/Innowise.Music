@@ -1,4 +1,5 @@
 @page "/tracks/upload-multi"
+@rendermode InteractiveServer
 @inject IAdminMusicService MusicService
 @inject IMetadataExtractionService MetadataService
 @inject NavigationManager Navigation
@@ -6,14 +7,14 @@
 @layout MainLayout
 @using Innowise.Music.Admin.Models
 @using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Web
 
 <PageTitle>Upload Tracks - Admin Dashboard</PageTitle>
 
-<AuthorizeView>
-    <div class="page-header">
-        <h1>Upload Multiple Tracks</h1>
-        <a href="/tracks" class="btn-secondary">← Back to Tracks</a>
-    </div>
+<div class="page-header">
+            <h1>Upload Multiple Tracks</h1>
+            <a href="/tracks" class="btn-secondary">← Back to Tracks</a>
+        </div>
 
     @if (errorMessage != null)
     {
@@ -146,7 +147,7 @@
                 
                 <div class="upload-actions">
                     <button class="btn-secondary" @onclick="ResetUpload">Cancel</button>
-                    <button class="btn-primary" @onclick="UploadTracks" disabled="!CanUpload">
+                    <button class="btn-primary" @onclick="UploadTracks" disabled="@(!CanUpload)">
                         Upload @extractedTracks.Count Track(s)
                     </button>
                 </div>
@@ -160,9 +161,8 @@
                 <div class="upload-icon">🎵</div>
                 <h2>Drag & Drop Audio Files</h2>
                 <p>or click to browse</p>
-                <InputFile OnChange="HandleFileSelection" accept=".mp3,.wav,.flac,.aac" 
-                           multiple class="file-input" id="fileInput" />
-                <label for="fileInput" class="browse-button">Browse Files</label>
+                <InputFile OnChange="HandleFileSelection" accept=".mp3,.wav,.flac,.aac"
+                           multiple id="fileInput" />
                 
                 <div class="upload-info">
                     <p>Supported formats: MP3, WAV, FLAC, AAC</p>
@@ -185,15 +185,22 @@
                     </ul>
                     <div class="action-buttons">
                         <button class="btn-secondary" @onclick="ResetUpload">Clear All</button>
-                        <button class="btn-primary" @onclick="ExtractMetadata" disabled="!CanExtract">
-                            Extract Metadata
+                        <button class="btn-primary" @onclick="ExtractMetadata" disabled="@(!CanExtract)">
+                            @if (isExtracting)
+                            {
+                                <text>Extracting...</text>
+                            }
+                            else
+                            {
+                                <text>Extract Metadata</text>
+                            }
                         </button>
                     </div>
                 </div>
             }
         </div>
     }
-</AuthorizeView>
+
 
 <style>
     .upload-zone {
@@ -210,10 +217,6 @@
         margin-bottom: 16px;
     }
     
-    .file-input {
-        display: none;
-    }
-    
     .browse-button {
         display: inline-block;
         padding: 12px 24px;
@@ -223,10 +226,27 @@
         cursor: pointer;
         margin-top: 16px;
         transition: background 0.3s;
+        text-decoration: none;
+        font-size: 14px;
+        border: none;
     }
     
     .browse-button:hover {
         background: var(--primary-dark);
+    }
+    
+    /* Style the InputFile component */
+    ::deep input[type="file"] {
+        padding: 12px;
+        background: var(--card-bg);
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        cursor: pointer;
+        font-size: 14px;
+    }
+    
+    ::deep input[type="file"]:hover {
+        border-color: var(--primary-color);
     }
     
     .upload-info {
@@ -375,13 +395,14 @@
     private bool uploadComplete;
     private string? errorMessage;
     private BatchUploadResult uploadResult = new();
+    private bool isExtracting;
     
     // File selection
     private List<SelectedFile> selectedFiles = new();
     private const long MaxFileSize = 50 * 1024 * 1024; // 50MB
     private const int MaxFiles = 30;
     
-    private bool CanExtract => selectedFiles.Any();
+    private bool CanExtract => selectedFiles.Any() && !isExtracting;
     private bool CanUpload => extractedTracks.Any(t => t.IsValid);
     
     protected override async Task OnInitializedAsync()
@@ -419,6 +440,7 @@
         if (selectedFiles.Count + files.Count > MaxFiles)
         {
             errorMessage = $"Maximum {MaxFiles} files allowed per batch";
+            await InvokeAsync(StateHasChanged);
             return;
         }
         
@@ -446,24 +468,42 @@
             });
         }
         
-        StateHasChanged();
+        // Force UI refresh on the main thread
+        await InvokeAsync(StateHasChanged);
     }
     
-    private void RemoveFile(SelectedFile file)
+    private async Task RemoveFile(SelectedFile file)
     {
         selectedFiles.Remove(file);
         file.Content?.Dispose();
+        await InvokeAsync(StateHasChanged);
     }
     
     private async Task ExtractMetadata()
     {
+        Console.WriteLine("ExtractMetadata method called");
         errorMessage = null;
+        isExtracting = true;
+        await InvokeAsync(StateHasChanged);
         
         try
         {
+            Console.WriteLine($"Processing {selectedFiles.Count} files");
+            
+            // Reset stream positions before reading
+            foreach (var file in selectedFiles)
+            {
+                if (file.Content != null && file.Content.CanSeek)
+                {
+                    file.Content.Position = 0;
+                }
+            }
+            
             var fileStreams = selectedFiles.Select(f => (f.Content, f.Name)).ToList();
+            Console.WriteLine("Calling MetadataService.ExtractMetadataBatchAsync");
             extractedTracks = (await MetadataService.ExtractMetadataBatchAsync(
                 fileStreams.Select(f => (f.Content ?? Stream.Null, f.Name)))).ToList();
+            Console.WriteLine($"Extracted {extractedTracks.Count} tracks");
             
             // Auto-match existing entities
             foreach (var track in extractedTracks)
@@ -471,7 +511,7 @@
                 // Match artist
                 if (track.Performers.Any())
                 {
-                    var matchedArtist = artists.FirstOrDefault(a => 
+                    var matchedArtist = artists.FirstOrDefault(a =>
                         a.Name.Equals(track.Performers.First(), StringComparison.OrdinalIgnoreCase));
                     if (matchedArtist != null)
                     {
@@ -487,7 +527,7 @@
                 // Match album
                 if (!string.IsNullOrWhiteSpace(track.Album))
                 {
-                    var matchedAlbum = albums.FirstOrDefault(a => 
+                    var matchedAlbum = albums.FirstOrDefault(a =>
                         a.Title.Equals(track.Album, StringComparison.OrdinalIgnoreCase));
                     if (matchedAlbum != null)
                     {
@@ -506,7 +546,7 @@
                     var matchedGenreIds = new List<Guid>();
                     foreach (var genreName in track.Genres)
                     {
-                        var matchedGenre = genres.FirstOrDefault(g => 
+                        var matchedGenre = genres.FirstOrDefault(g =>
                             g.Name.Equals(genreName, StringComparison.OrdinalIgnoreCase));
                         if (matchedGenre != null)
                         {
@@ -518,10 +558,16 @@
             }
             
             showPreview = true;
+            isExtracting = false;
+            Console.WriteLine("Extraction complete, showPreview = true");
+            await InvokeAsync(StateHasChanged);
         }
         catch (Exception ex)
         {
+            isExtracting = false;
             errorMessage = $"Failed to extract metadata: {ex.Message}";
+            Console.WriteLine($"Error: {ex.Message}");
+            await InvokeAsync(StateHasChanged);
         }
     }
     
@@ -546,7 +592,7 @@
                     ArtistId = track.MatchedArtistId,
                     AlbumName = track.MatchedAlbumName,
                     AlbumId = track.MatchedAlbumId,
-                    Genres = track.Genres.Any() ? track.Genres : 
+                    Genres = track.Genres.Any() ? track.Genres :
                             track.GenresString?.Split(',').Select(g => g.Trim()).Where(g => !string.IsNullOrWhiteSpace(g)).ToArray(),
                     GenreIds = track.MatchedGenreIds.Any() ? track.MatchedGenreIds : null,
                     Duration = track.Duration,
@@ -562,19 +608,22 @@
             if (!uploadDtos.Any())
             {
                 errorMessage = "No valid tracks to upload";
+                await InvokeAsync(StateHasChanged);
                 return;
             }
             
             uploadResult = await MusicService.UploadTracksBatchAsync(uploadDtos);
             uploadComplete = true;
+            await InvokeAsync(StateHasChanged);
         }
         catch (Exception ex)
         {
             errorMessage = $"Upload failed: {ex.Message}";
+            await InvokeAsync(StateHasChanged);
         }
     }
     
-    private void ResetUpload()
+    private async Task ResetUpload()
     {
         selectedFiles.ForEach(f => f.Content?.Dispose());
         selectedFiles.Clear();
@@ -583,6 +632,7 @@
         uploadComplete = false;
         errorMessage = null;
         uploadResult = new BatchUploadResult();
+        await InvokeAsync(StateHasChanged);
     }
     
     private string FormatFileSize(long bytes)

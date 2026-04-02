@@ -5,8 +5,7 @@
 @inject IAuthService AuthService
 @layout MainLayout
 
-<AuthorizeView>
-    <div class="page-header">
+<div class="page-header">
         <h1>@(IsEditMode ? "Edit Genre" : "Add New Genre")</h1>
         <a href="/genres" class="btn-secondary">Back to List</a>
     </div>
@@ -50,7 +49,6 @@
             </div>
         </form>
     </div>
-</AuthorizeView>
 
 @code {
     [Parameter]

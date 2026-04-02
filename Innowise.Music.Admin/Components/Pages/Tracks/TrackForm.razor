@@ -5,88 +5,86 @@
 @inject IAuthService AuthService
 @layout MainLayout
 
-<AuthorizeView>
-    <div class="page-header">
-        <h1>@(IsEditMode ? "Edit Track" : "Add New Track")</h1>
-        <a href="/tracks" class="btn-secondary">Back to List</a>
-    </div>
+<div class="page-header">
+    <h1>@(IsEditMode ? "Edit Track" : "Add New Track")</h1>
+    <a href="/tracks" class="btn-secondary">Back to List</a>
+</div>
 
-    <div class="content-card">
-        <form @onsubmit="HandleSubmit" class="form">
+<div class="content-card">
+    <form @onsubmit="HandleSubmit" class="form">
+        <div class="form-group">
+            <label for="title">Title <span class="required">*</span></label>
+            <input type="text" id="title" @bind="track.Title" class="form-control" required />
+            @if (!string.IsNullOrEmpty(titleError))
+            {
+                <span class="error-text">@titleError</span>
+            }
+        </div>
+
+        <div class="form-row">
             <div class="form-group">
-                <label for="title">Title <span class="required">*</span></label>
-                <input type="text" id="title" @bind="track.Title" class="form-control" required />
-                @if (!string.IsNullOrEmpty(titleError))
+                <label for="artistId">Artist <span class="required">*</span></label>
+                <select id="artistId" @bind="track.ArtistId" class="form-control" required>
+                    <option value="">-- Select Artist --</option>
+                    @foreach (var artist in artists)
+                    {
+                        <option value="@artist.Id">@artist.Name</option>
+                    }
+                </select>
+                @if (!string.IsNullOrEmpty(artistError))
                 {
-                    <span class="error-text">@titleError</span>
+                    <span class="error-text">@artistError</span>
                 }
             </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="artistId">Artist <span class="required">*</span></label>
-                    <select id="artistId" @bind="track.ArtistId" class="form-control" required>
-                        <option value="">-- Select Artist --</option>
-                        @foreach (var artist in artists)
-                        {
-                            <option value="@artist.Id">@artist.Name</option>
-                        }
-                    </select>
-                    @if (!string.IsNullOrEmpty(artistError))
+            <div class="form-group">
+                <label for="albumId">Album</label>
+                <select id="albumId" @bind="track.AlbumId" class="form-control">
+                    <option value="">-- Select Album (Optional) --</option>
+                    @foreach (var album in albums)
                     {
-                        <span class="error-text">@artistError</span>
+                        <option value="@album.Id">@album.Title</option>
                     }
-                </div>
-                <div class="form-group">
-                    <label for="albumId">Album</label>
-                    <select id="albumId" @bind="track.AlbumId" class="form-control">
-                        <option value="">-- Select Album (Optional) --</option>
-                        @foreach (var album in albums)
-                        {
-                            <option value="@album.Id">@album.Title</option>
-                        }
-                    </select>
-                </div>
+                </select>
             </div>
+        </div>
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="trackNumber">Track Number</label>
-                    <input type="number" id="trackNumber" @bind="track.TrackNumber" class="form-control" min="1" />
-                </div>
-                <div class="form-group">
-                    <label for="duration">Duration (seconds)</label>
-                    <input type="number" id="duration" @bind="track.Duration" class="form-control" min="1" />
-                </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="trackNumber">Track Number</label>
+                <input type="number" id="trackNumber" @bind="track.TrackNumber" class="form-control" min="1" />
             </div>
+            <div class="form-group">
+                <label for="duration">Duration (seconds)</label>
+                <input type="number" id="duration" @bind="track.Duration" class="form-control" min="1" />
+            </div>
+        </div>
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="audioFormat">Audio Format</label>
-                    <select id="audioFormat" @bind="track.AudioFormat" class="form-control">
-                        <option value="MP3">MP3</option>
-                        <option value="WAV">WAV</option>
-                        <option value="FLAC">FLAC</option>
-                        <option value="AAC">AAC</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" @bind="track.Explicit" />
-                        Explicit Content
-                    </label>
-                </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="audioFormat">Audio Format</label>
+                <select id="audioFormat" @bind="track.AudioFormat" class="form-control">
+                    <option value="MP3">MP3</option>
+                    <option value="WAV">WAV</option>
+                    <option value="FLAC">FLAC</option>
+                    <option value="AAC">AAC</option>
+                </select>
             </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" @bind="track.Explicit" />
+                    Explicit Content
+                </label>
+            </div>
+        </div>
 
-            <div class="form-actions">
-                <button type="submit" class="btn-primary" disabled="@isSubmitting">
-                    @(isSubmitting ? "Saving..." : "Save")
-                </button>
-                <a href="/tracks" class="btn-secondary">Cancel</a>
-            </div>
-        </form>
-    </div>
-</AuthorizeView>
+        <div class="form-actions">
+            <button type="submit" class="btn-primary" disabled="@isSubmitting">
+                @(isSubmitting ? "Saving..." : "Save")
+            </button>
+            <a href="/tracks" class="btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
 
 @code {
     [Parameter]
