@@ -6,6 +6,6 @@ public interface IAuthService
     Task LogoutAsync();
     Task<bool> IsAuthenticatedAsync();
     Task<bool> IsAdminAsync();
+    Task<string?> GetTokenAsync();
     string? GetToken();
-    event Action? OnAuthenticationStateChanged;
 }

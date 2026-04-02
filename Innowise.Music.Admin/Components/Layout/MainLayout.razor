@@ -1,8 +1,6 @@
 @inherits LayoutComponentBase
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
-@inject Microsoft.Extensions.Logging.ILogger<MainLayout> Logger
-@inject IJSRuntime JS
 
 <div class="admin-layout">
     <NavMenu />
@@ -10,7 +8,7 @@
         <header class="admin-header">
             <h1 class="admin-title">Innowise.Music Admin</h1>
             <div class="header-actions">
-                <span class="user-info">@UserName</span>
+                <span class="user-info">@_userName</span>
                 <button class="btn-logout" @onclick="Logout">Logout</button>
             </div>
         </header>
@@ -21,18 +19,11 @@
 </div>
 
 @code {
-    private string UserName => _userName ?? "Admin";
-    private string? _userName;
+    private string _userName = "Admin";
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadUserInfo();
-    }
-
-    private async Task LoadUserInfo()
-    {
-        // Try to get user email from token claims
-        var token = AuthService.GetToken();
+        var token = await AuthService.GetTokenAsync();
         if (!string.IsNullOrEmpty(token))
         {
             try
@@ -42,7 +33,7 @@
                 var emailClaim = jwtToken.Claims.FirstOrDefault(c =>
                     c.Type == System.Security.Claims.ClaimTypes.Email ||
                     c.Type == "email")?.Value;
-                
+
                 _userName = emailClaim ?? "Admin";
             }
             catch
@@ -50,27 +41,11 @@
                 _userName = "Admin";
             }
         }
-        else
-        {
-            _userName = "Admin";
-        }
-        
-        StateHasChanged();
     }
 
     private async Task Logout()
     {
-        // Debug: Log to browser console to verify click is registered
-        await JS.InvokeVoidAsync("console.log", "Logout button clicked in Blazor!");
-        Logger.LogInformation("Logout button clicked, starting logout process");
-        
-        // Clear authentication state
         await AuthService.LogoutAsync();
-        Logger.LogInformation("AuthService.LogoutAsync completed");
-        
-        // Force full page navigation to login
-        // Using forceLoad: true ensures a full page reload which resets the Blazor circuit
-        Logger.LogInformation("Navigating to /login with forceLoad: true");
-        Navigation.NavigateTo("/login", forceLoad: true);
+        Navigation.NavigateTo("/login");
     }
 }

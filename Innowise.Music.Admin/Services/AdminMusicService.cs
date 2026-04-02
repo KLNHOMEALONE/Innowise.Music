@@ -18,7 +18,7 @@ public class AdminMusicService : IAdminMusicService
 
     private async Task AddAuthHeaderAsync()
     {
-        var token = _authService.GetToken();
+        var token = await _authService.GetTokenAsync();
         if (!string.IsNullOrEmpty(token))
         {
             _httpClient.DefaultRequestHeaders.Authorization = 

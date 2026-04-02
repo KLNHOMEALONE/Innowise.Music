@@ -1,16 +1,19 @@
+using Innowise.Music.Admin.Auth;
 using Innowise.Music.Admin.Components;
 using Innowise.Music.Admin.Services;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
+using Blazored.LocalStorage;
+using Microsoft.AspNetCore.Components.Authorization;
 using System.Net.Http;
 using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+
+// Add Blazored.LocalStorage for token persistence
+builder.Services.AddBlazoredLocalStorage();
 
 // Configure API settings
 var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"] ?? "http://music_identity_server:8080/api";
@@ -27,20 +30,16 @@ builder.Services.AddScoped(sp =>
     return httpClient;
 });
 
-// Register authentication service
+// Register AuthenticationStateProvider (dual registration pattern)
+builder.Services.AddScoped<ApiAuthenticationStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider>(p =>
+    p.GetRequiredService<ApiAuthenticationStateProvider>());
+
+// Register authentication and music services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAdminMusicService, AdminMusicService>();
 builder.Services.AddScoped<IMetadataExtractionService, MetadataExtractionService>();
 builder.Services.AddHttpContextAccessor();
-
-// Add session support for token storage
-builder.Services.AddDistributedMemoryCache();
-builder.Services.AddSession(options =>
-{
-    options.IdleTimeout = TimeSpan.FromHours(1);
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
-});
 
 var app = builder.Build();
 
@@ -54,7 +53,6 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAntiforgery();
-app.UseSession();
 
 app.UseRouting();
 
