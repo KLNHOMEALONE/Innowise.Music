@@ -1,5 +1,6 @@
 @using Microsoft.AspNetCore.Components.Web
 @page "/tracks"
+@attribute [Authorize]
 @inject IAdminMusicService MusicService
 @inject NavigationManager Navigation
 @inject IAuthService AuthService

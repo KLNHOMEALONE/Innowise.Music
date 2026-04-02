@@ -1,5 +1,27 @@
 # Task Tracker - Innowise.Music
 
+## Task: Admin Dashboard Authentication Refactor
+- **Status**: Completed
+- **Description**: Complete rewrite of the admin dashboard authentication system to follow the BookStore Blazor Server pattern. Replaced custom in-memory token storage with `Blazored.LocalStorage`, custom `AuthorizeRouteView`/`AuthorizeView` components with Blazor's built-in equivalents, and added proper `[Authorize]` attributes to all protected pages.
+- **Steps**:
+  - [x] Added `Blazored.LocalStorage` v4.3.0 NuGet package
+  - [x] Created `ApiAuthenticationStateProvider` with `LoggedIn()`/`LoggedOut()` calling `NotifyAuthenticationStateChanged()`
+  - [x] Deleted old `PersistentAuthenticationStateProvider`, custom `AuthorizeRouteView.razor`, custom `AuthorizeView.razor`
+  - [x] Updated `App.razor` with `<CascadingAuthenticationState>` + built-in `<AuthorizeRouteView>` + `<RedirectToLogin />`
+  - [x] Changed `_Host.cshtml` from `ServerPrerendered` to `Server` to avoid JS interop issues during prerendering
+  - [x] Updated `Program.cs` with dual registration pattern for `ApiAuthenticationStateProvider`
+  - [x] Rewrote `AuthService.cs` to use `Blazored.LocalStorage` and `ApiAuthenticationStateProvider`
+  - [x] Updated `Login.razor` to use `NavigateTo("/")` without `forceLoad`
+  - [x] Created `Logout.razor` page with async logout and navigation to `/login`
+  - [x] Updated `MainLayout.razor` with logout link and async `GetTokenAsync()`
+  - [x] Added `@attribute [Authorize]` to all 11 protected pages
+  - [x] Removed `@rendermode InteractiveServer` from 3 components (not applicable in Blazor Server)
+  - [x] Updated `AdminMusicService.cs` to use `GetTokenAsync()` for bearer token
+  - [x] Updated `_Imports.razor` with auth-related usings
+  - [x] Verified build succeeds with 0 errors
+  - [x] Updated changelog.md, tasktracker.md, admin-dashboard.md
+- **Dependencies**: Blazored.LocalStorage, Innowise.MusicIdentityServer
+
 ## Task: Fix Admin Dashboard Black Screen
 - **Status**: Completed
 - **Description**: The admin dashboard was showing a black screen when accessed. The root cause was the auto-generated `Routes` component in .NET 9 not using our custom `AuthorizeRouteView`, the authentication check happening after the page rendered (causing a black screen flash), and the login form submit not firing.

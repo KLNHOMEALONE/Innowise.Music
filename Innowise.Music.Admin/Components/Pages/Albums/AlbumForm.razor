@@ -1,5 +1,6 @@
 @page "/albums/new"
 @page "/albums/{id:guid}/edit"
+@attribute [Authorize]
 @inject IAdminMusicService MusicService
 @inject NavigationManager Navigation
 @inject IAuthService AuthService

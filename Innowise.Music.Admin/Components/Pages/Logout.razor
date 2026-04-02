@@ -1,14 +1,13 @@
 @page "/logout"
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
-@inject Microsoft.Extensions.Logging.ILogger<Logout> Logger
+
+<h3>Logging out...</h3>
 
 @code {
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        Logger.LogInformation("Logout page initialized");
-        AuthService.LogoutAsync().Wait();
-        Logger.LogInformation("AuthService.LogoutAsync completed");
-        Navigation.NavigateTo("/login", forceLoad: false);
+        await AuthService.LogoutAsync();
+        Navigation.NavigateTo("/login");
     }
 }

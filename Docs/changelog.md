@@ -2,6 +2,52 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-04-02] - Admin Dashboard Authentication Refactor
+
+### Changed
+- **Complete authentication system rewrite** following the proven BookStore Blazor Server pattern using `Blazored.LocalStorage` and Blazor's built-in `AuthorizeRouteView`
+
+### Added
+- **`Blazored.LocalStorage` (v4.3.0)**: Added NuGet package for browser `localStorage` access, replacing raw `IJSRuntime` calls
+- **`Auth/ApiAuthenticationStateProvider.cs`**: New JWT-based `AuthenticationStateProvider` using `Blazored.LocalStorage` with:
+  - `GetAuthenticationStateAsync()` — reads token from `localStorage`, validates expiry, extracts claims
+  - `LoggedIn()` — re-reads claims from stored token, calls `NotifyAuthenticationStateChanged()`
+  - `LoggedOut()` — removes token from `localStorage`, notifies anonymous auth state
+  - `GetTokenAsync()` — async token retrieval for bearer header injection
+- **`Components/Pages/Logout.razor`**: Dedicated logout page that calls `AuthService.LogoutAsync()` then navigates to `/login`
+- **`@attribute [Authorize]`**: Added to all 11 protected pages (Dashboard, Artists, Albums, Tracks, Genres and their forms) so `AuthorizeRouteView` enforces authentication
+
+### Changed
+- **`Components/App.razor`**: Wrapped router in `<CascadingAuthenticationState>`, replaced `<RouteView>` with `<AuthorizeRouteView>` containing `<NotAuthorized>` template that renders `<RedirectToLogin />` for unauthenticated users
+- **`Pages/_Host.cshtml`**: Changed `render-mode` from `ServerPrerendered` to `Server` to ensure Blazor circuit is established before JS interop calls (required for `Blazored.LocalStorage`)
+- **`Program.cs`**: Dual registration pattern for `ApiAuthenticationStateProvider` — registered as both concrete type and as `AuthenticationStateProvider` interface so both Blazor infrastructure and `AuthService` resolve the same scoped instance. Added `AddBlazoredLocalStorage()`. Removed unused session/distributed cache configuration
+- **`Services/AuthService.cs`**: Rewritten to use `Blazored.LocalStorage` and `ApiAuthenticationStateProvider`. Login stores token via `localStorage.SetItemAsync()` then calls `LoggedIn()`. Logout delegates to `LoggedOut()`. Removed in-memory `ConcurrentDictionary` token cache and `IHttpContextAccessor` dependency
+- **`Services/IAuthService.cs`**: Added `GetTokenAsync()` method, removed `OnAuthenticationStateChanged` event (replaced by `NotifyAuthenticationStateChanged`)
+- **`Services/AdminMusicService.cs`**: `AddAuthHeaderAsync()` now uses `await GetTokenAsync()` instead of synchronous `GetToken()`
+- **`Components/Pages/Login.razor`**: Simplified — uses `NavigateTo("/")` without `forceLoad` since `NotifyAuthenticationStateChanged` triggers `AuthorizeRouteView` re-evaluation automatically
+- **`Components/Layout/MainLayout.razor`**: Logout is now an `<a href="/logout">` link navigating to the Logout page. Uses `GetTokenAsync()` for user info
+- **`Components/_Imports.razor`**: Added `@using Microsoft.AspNetCore.Components.Authorization` and `@using Innowise.Music.Admin.Auth`
+
+### Removed
+- **`Auth/PersistentAuthenticationStateProvider.cs`**: Deleted — replaced by `ApiAuthenticationStateProvider`
+- **`Components/AuthorizeRouteView.razor`**: Deleted custom component — replaced by Blazor's built-in `AuthorizeRouteView`
+- **`Components/Shared/AuthorizeView.razor`**: Deleted custom component — replaced by Blazor's built-in `AuthorizeView`
+- **`@rendermode InteractiveServer`**: Removed from `LoginForm.razor`, `LogoutButton.razor`, `MultiTrackUpload.razor` — not applicable in Blazor Server (all components are already interactive)
+- **Session/distributed cache services**: Removed from `Program.cs` — no longer needed with `localStorage` persistence
+
+### Fixed
+- **Token not persisting across app restarts**: Previously tokens were stored in server-side memory (`ConcurrentDictionary`) tied to HTTP session IDs, which were lost on app restart. Now stored in browser `localStorage` via `Blazored.LocalStorage`
+- **Logout not clearing token**: Previously `forceLoad: true` navigation killed the SignalR circuit before `RemoveItemAsync` could complete. Now logout navigates within the Blazor circuit, ensuring the token removal completes before any page transition
+- **Dashboard accessible without login after restart**: Pages lacked `@attribute [Authorize]`, so `AuthorizeRouteView` treated them as public. Added `[Authorize]` to all 11 protected pages
+- **Prerendering JS interop failures**: Changed `_Host.cshtml` from `ServerPrerendered` to `Server` to avoid `localStorage` access during prerendering when JS interop is unavailable
+
+### Authentication Flow (Final)
+1. User navigates to `/` → `AuthorizeRouteView` checks auth → `GetAuthenticationStateAsync()` reads `localStorage` → no token → renders `<RedirectToLogin />` → navigates to `/login`
+2. User enters credentials → `AuthService.LoginAsync()` → POST to Identity Server → stores JWT in `localStorage` → calls `LoggedIn()` → `NotifyAuthenticationStateChanged()` → `NavigateTo("/")`
+3. `AuthorizeRouteView` re-evaluates → user authenticated → renders Dashboard
+4. User clicks Logout → navigates to `/logout` page → `LogoutAsync()` → `LoggedOut()` removes token from `localStorage` → `NotifyAuthenticationStateChanged()` → `NavigateTo("/login")`
+5. App restart → fresh request → `GetAuthenticationStateAsync()` → no token in `localStorage` → redirected to `/login`
+
 ## [2026-04-01] - Fixed Admin Dashboard Black Screen Issue
 
 ### Fixed

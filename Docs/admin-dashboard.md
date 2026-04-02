@@ -82,63 +82,107 @@ graph TB
 
 ## Authentication & Authorization Flow
 
-### Workflow Overview
+### Architecture
 
-When starting the Admin Dashboard, the following workflow is enforced:
+The admin dashboard uses Blazor Server's built-in authentication infrastructure with `Blazored.LocalStorage` for token persistence, following the same pattern as the BookStore reference project.
 
-1. **Initial Load**: User navigates to the admin dashboard URL
-2. **Authentication Check**: [`Routes.razor`](../Innowise.Music.Admin/Components/Routes.razor:1) checks if user is authenticated via [`IAuthService.IsAuthenticatedAsync()`](../Innowise.Music.Admin/Services/IAuthService.cs:7)
-3. **Redirect to Login**: If not authenticated, user is redirected to `/login` page
-4. **Login Process**: User enters credentials on [`Login.razor`](../Innowise.Music.Admin/Components/Pages/Login.razor:1)
-5. **Admin Verification**: After successful login, [`IsAdminAsync()`](../Innowise.Music.Admin/Services/IAuthService.cs:8) checks if user has "Administrator" role
-6. **Dashboard Access**: Only admin users are navigated to the dashboard (`/` or `/dashboard`)
-7. **Access Denied**: Non-admin users see an error message and remain on login page
-
-```mermaid
-sequenceDiagram
-    participant Admin
-    participant Routes
-    participant Login
-    participant AuthService
-    participant IdentityServer
-    participant Database
-    
-    Admin->>Routes: Navigate to /
-    Routes->>AuthService: IsAuthenticatedAsync()
-    AuthService-->>Routes: false
-    Routes->>Login: Navigate to /login
-    Login->>Admin: Show Login Form
-    Admin->>Login: Enter credentials
-    Login->>AuthService: LoginAsync(email, password)
-    AuthService->>IdentityServer: POST /api/authentication/login
-    IdentityServer->>Database: Validate credentials
-    Database-->>IdentityServer: User data
-    IdentityServer-->>AuthService: JWT Token
-    AuthService->>AuthService: SaveToken() + ParseToken()
-    AuthService-->>Login: true
-    Login->>AuthService: IsAdminAsync()
-    AuthService->>AuthService: Check ClaimsPrincipal.IsInRole("Administrator")
-    AuthService-->>Login: isAdmin
-    alt User is Admin
-        Login->>Routes: Navigate to / (forceLoad)
-        Routes->>AuthService: IsAuthenticatedAsync()
-        AuthService-->>Routes: true
-        Routes->>Dashboard: Render Dashboard
-    else User is Not Admin
-        Login->>AuthService: LogoutAsync()
-        Login->>Admin: Show "Access Denied" error
-    end
-```
-
-### Key Components
+**Key components:**
 
 | Component | File | Purpose |
 |-----------|------|---------|
-| Routes | [`Routes.razor`](../Innowise.Music.Admin/Components/Routes.razor:1) | Initial auth check, redirects to login if not authenticated |
-| Login Page | [`Login.razor`](../Innowise.Music.Admin/Components/Pages/Login.razor:1) | Handles credential input and login logic |
-| Auth Service | [`AuthService.cs`](../Innowise.Music.Admin/Services/AuthService.cs:10) | Manages JWT token, authentication state, and admin role check |
-| Authorize View | [`AuthorizeView.razor`](../Innowise.Music.Admin/Components/Shared/AuthorizeView.razor:1) | Protects dashboard pages, shows access denied for non-admins |
-| Dashboard | [`Dashboard.razor`](../Innowise.Music.Admin/Components/Pages/Dashboard.razor:1) | Main admin page, wrapped in AuthorizeView |
+| Auth State Provider | [`Auth/ApiAuthenticationStateProvider.cs`](../Innowise.Music.Admin/Auth/ApiAuthenticationStateProvider.cs) | JWT-based `AuthenticationStateProvider` with `localStorage` persistence |
+| Auth Service | [`Services/AuthService.cs`](../Innowise.Music.Admin/Services/AuthService.cs) | Login/logout orchestration, token storage, admin role check |
+| App Router | [`Components/App.razor`](../Innowise.Music.Admin/Components/App.razor) | `CascadingAuthenticationState` + `AuthorizeRouteView` with `RedirectToLogin` |
+| Login Page | [`Components/Pages/Login.razor`](../Innowise.Music.Admin/Components/Pages/Login.razor) | Credential input and admin verification |
+| Logout Page | [`Components/Pages/Logout.razor`](../Innowise.Music.Admin/Components/Pages/Logout.razor) | Token removal and auth state notification |
+| Redirect | [`Components/Shared/RedirectToLogin.razor`](../Innowise.Music.Admin/Components/Shared/RedirectToLogin.razor) | Navigates unauthenticated users to `/login` |
+| Host Page | [`Pages/_Host.cshtml`](../Innowise.Music.Admin/Pages/_Host.cshtml) | Entry point with `render-mode="Server"` (not `ServerPrerendered`) |
+
+### Token Storage
+
+Tokens are stored in the browser's `localStorage` via **Blazored.LocalStorage** (`ILocalStorageService`):
+
+- **Key**: `"accessToken"`
+- **Write**: `AuthService.LoginAsync()` stores JWT after successful API login
+- **Read**: `ApiAuthenticationStateProvider.GetAuthenticationStateAsync()` reads and validates on each auth check
+- **Delete**: `ApiAuthenticationStateProvider.LoggedOut()` removes token on logout
+- **Bearer injection**: `AdminMusicService.AddAuthHeaderAsync()` reads token for API calls
+
+### DI Registration (Program.cs)
+
+```csharp
+// Blazored.LocalStorage for browser localStorage access
+builder.Services.AddBlazoredLocalStorage();
+
+// Dual registration pattern - both resolve to same scoped instance
+builder.Services.AddScoped<ApiAuthenticationStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider>(p =>
+    p.GetRequiredService<ApiAuthenticationStateProvider>());
+```
+
+The dual registration is critical: Blazor's infrastructure resolves `AuthenticationStateProvider` (abstract base), while `AuthService` casts to `ApiAuthenticationStateProvider` to call `LoggedIn()`/`LoggedOut()`.
+
+### Route Protection
+
+Routes are protected at two levels:
+
+1. **`App.razor`** wraps the router in `<CascadingAuthenticationState>` and uses `<AuthorizeRouteView>`. Its `<NotAuthorized>` template renders `<RedirectToLogin />` for unauthenticated users.
+2. **`@attribute [Authorize]`** on all protected pages (Dashboard, Artists, Albums, Tracks, Genres and their forms). Without this attribute, `AuthorizeRouteView` treats pages as public.
+
+Login and Logout pages do NOT have `[Authorize]` — they are accessible to everyone.
+
+### Workflow
+
+```mermaid
+sequenceDiagram
+    participant Browser
+    participant App.razor
+    participant AuthStateProvider
+    participant localStorage
+    participant Login
+    participant AuthService
+    participant IdentityServer
+
+    Browser->>App.razor: Navigate to /
+    App.razor->>AuthStateProvider: GetAuthenticationStateAsync()
+    AuthStateProvider->>localStorage: GetItemAsync("accessToken")
+    localStorage-->>AuthStateProvider: null (no token)
+    AuthStateProvider-->>App.razor: Unauthenticated
+    App.razor->>Browser: Render RedirectToLogin → /login
+
+    Browser->>Login: Show login form
+    Login->>AuthService: LoginAsync(email, password)
+    AuthService->>IdentityServer: POST /api/authentication/login
+    IdentityServer-->>AuthService: JWT Token
+    AuthService->>localStorage: SetItemAsync("accessToken", token)
+    AuthService->>AuthStateProvider: LoggedIn()
+    AuthStateProvider->>localStorage: GetItemAsync("accessToken")
+    AuthStateProvider->>AuthStateProvider: NotifyAuthenticationStateChanged()
+    Login->>Browser: NavigateTo("/")
+    App.razor->>AuthStateProvider: GetAuthenticationStateAsync()
+    AuthStateProvider-->>App.razor: Authenticated
+    App.razor->>Browser: Render Dashboard
+
+    Note over Browser,IdentityServer: Logout Flow
+    Browser->>App.razor: Navigate to /logout
+    App.razor->>AuthService: LogoutAsync()
+    AuthService->>AuthStateProvider: LoggedOut()
+    AuthStateProvider->>localStorage: RemoveItemAsync("accessToken")
+    AuthStateProvider->>AuthStateProvider: NotifyAuthenticationStateChanged()
+    App.razor->>Browser: NavigateTo("/login")
+
+    Note over Browser,IdentityServer: App Restart
+    Browser->>App.razor: Navigate to /
+    App.razor->>AuthStateProvider: GetAuthenticationStateAsync()
+    AuthStateProvider->>localStorage: GetItemAsync("accessToken")
+    localStorage-->>AuthStateProvider: null (token was removed)
+    AuthStateProvider-->>App.razor: Unauthenticated
+    App.razor->>Browser: Render RedirectToLogin → /login
+```
+
+### Prerendering
+
+The `_Host.cshtml` uses `render-mode="Server"` (NOT `ServerPrerendered`). This ensures the Blazor SignalR circuit is established before any component code runs, which is required because `Blazored.LocalStorage` uses JS interop to access `localStorage` — unavailable during prerendering.
 
 ## Project Structure
 
