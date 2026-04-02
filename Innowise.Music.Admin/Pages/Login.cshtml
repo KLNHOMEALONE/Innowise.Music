@@ -1,0 +1,100 @@
+@page "/login"
+@model Innowise.Music.Admin.Pages.LoginModel
+@{
+    ViewData["Title"] = "Log in";
+}
+
+<style>
+    .login-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f5f5f5;
+    }
+
+    .login-card {
+        background-color: white;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 400px;
+        text-align: center;
+    }
+
+    .login-header {
+        margin-bottom: 1.5rem;
+    }
+
+    .login-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .login-subtitle {
+        color: #666;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+        text-align: left;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+
+    .btn-login {
+        width: 100%;
+        padding: 0.75rem;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1rem;
+    }
+
+    .error-message {
+        color: red;
+        margin-bottom: 1rem;
+    }
+</style>
+
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <h1 class="login-title">🎵 Innowise.Music</h1>
+            <p class="login-subtitle">Admin Dashboard</p>
+        </div>
+
+        <form method="post" class="login-form">
+            <input type="hidden" name="ReturnUrl" value="@Model.ReturnUrl" />
+            
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="error-message">@Model.ErrorMessage</div>
+            }
+            
+            <div asp-validation-summary="ModelOnly" class="error-message"></div>
+
+            <div class="form-group">
+                <label asp-for="Input.Email"></label>
+                <input asp-for="Input.Email" class="form-control" placeholder="Enter your email" required />
+                <span asp-validation-for="Input.Email" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Input.Password"></label>
+                <input asp-for="Input.Password" class="form-control" placeholder="Enter your password" required />
+                <span asp-validation-for="Input.Password" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn-login">Login</button>
+        </form>
+    </div>
+</div>

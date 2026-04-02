@@ -1,10 +1,6 @@
-using Innowise.Music.Admin.Auth;
-using Innowise.Music.Admin.Components;
 using Innowise.Music.Admin.Services;
-using Blazored.LocalStorage;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
-using System.Net.Http;
-using System.Net.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,32 +8,32 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
-// Add Blazored.LocalStorage for token persistence
-builder.Services.AddBlazoredLocalStorage();
+// Add Authentication services
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.Cookie.HttpOnly = true;
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+        options.LoginPath = "/login";
+        options.AccessDeniedPath = "/";
+    });
+
+builder.Services.AddCascadingAuthenticationState();
+
 
 // Configure API settings
 var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"] ?? "http://music_identity_server:8080/api";
-builder.Services.AddScoped(sp =>
+builder.Services.AddHttpClient<IAuthService, AuthService>(client =>
 {
-    var handler = new SocketsHttpHandler
-    {
-        SslOptions = new SslClientAuthenticationOptions
-        {
-            RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true
-        }
-    };
-    var httpClient = new HttpClient(handler) { BaseAddress = new Uri(apiBaseUrl) };
-    return httpClient;
+    client.BaseAddress = new Uri(apiBaseUrl);
+});
+builder.Services.AddHttpClient<IAdminMusicService, AdminMusicService>(client =>
+{
+    client.BaseAddress = new Uri(apiBaseUrl);
 });
 
-// Register AuthenticationStateProvider (dual registration pattern)
-builder.Services.AddScoped<ApiAuthenticationStateProvider>();
-builder.Services.AddScoped<AuthenticationStateProvider>(p =>
-    p.GetRequiredService<ApiAuthenticationStateProvider>());
-
-// Register authentication and music services
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IAdminMusicService, AdminMusicService>();
+// Register application services
+builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IMetadataExtractionService, MetadataExtractionService>();
 builder.Services.AddHttpContextAccessor();
 
@@ -52,11 +48,16 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.UseAntiforgery();
 
 app.UseRouting();
 
+app.UseAuthentication();
+app.UseAuthorization();
+
+
+app.MapRazorPages();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 
 app.Run();
+

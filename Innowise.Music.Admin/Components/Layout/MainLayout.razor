@@ -1,5 +1,4 @@
 @inherits LayoutComponentBase
-@inject IAuthService AuthService
 @inject NavigationManager Navigation
 
 <div class="admin-layout">
@@ -9,7 +8,7 @@
             <h1 class="admin-title">Innowise.Music Admin</h1>
             <div class="header-actions">
                 <span class="user-info">@_userName</span>
-                <a href="/logout" class="btn-logout">Logout</a>
+                <button class="btn-logout" @onclick="Logout">Logout</button>
             </div>
         </header>
         <div class="page-content">
@@ -19,27 +18,30 @@
 </div>
 
 @code {
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
     private string _userName = "Admin";
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
-        var token = await AuthService.GetTokenAsync();
-        if (!string.IsNullOrEmpty(token))
-        {
-            try
-            {
-                var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
-                var jwtToken = handler.ReadJwtToken(token);
-                var emailClaim = jwtToken.Claims.FirstOrDefault(c =>
-                    c.Type == System.Security.Claims.ClaimTypes.Email ||
-                    c.Type == "email")?.Value;
+        var authState = await AuthenticationStateTask;
+        var user = authState.User;
 
-                _userName = emailClaim ?? "Admin";
-            }
-            catch
-            {
-                _userName = "Admin";
-            }
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            _userName = user.Identity.Name ?? "Admin";
         }
+    }
+
+    private void Logout()
+    {
+        Navigation.NavigateTo("/logout", forceLoad: true);
+    }
+}
+    }
+
+    private void Logout()
+    {
+        Navigation.NavigateTo("/logout", forceLoad: true);
     }
 }

@@ -1,7 +1,10 @@
 @inject NavigationManager Navigation
+
 @code {
     protected override void OnInitialized()
     {
-        Navigation.NavigateTo("/login", forceLoad: false);
+        // We must force a full page load here to break out of the Blazor
+        // app and into the Razor Page world for the login.
+        Navigation.NavigateTo("login", forceLoad: true);
     }
 }
