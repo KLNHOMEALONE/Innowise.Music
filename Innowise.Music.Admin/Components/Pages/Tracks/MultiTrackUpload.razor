@@ -464,7 +464,7 @@
             {
                 Name = file.Name,
                 Length = file.Size,
-                Content = file.OpenReadStream(MaxFileSize)
+                BrowserFile = file
             });
         }
         
@@ -475,7 +475,6 @@
     private async Task RemoveFile(SelectedFile file)
     {
         selectedFiles.Remove(file);
-        file.Content?.Dispose();
         await InvokeAsync(StateHasChanged);
     }
     
@@ -490,19 +489,20 @@
         {
             Console.WriteLine($"Processing {selectedFiles.Count} files");
             
-            // Reset stream positions before reading
+            // Open streams only now, when actually needed for extraction
+            var fileStreams = new List<(Stream stream, string name)>();
             foreach (var file in selectedFiles)
             {
-                if (file.Content != null && file.Content.CanSeek)
+                if (file.BrowserFile != null)
                 {
-                    file.Content.Position = 0;
+                    var stream = file.BrowserFile.OpenReadStream(MaxFileSize);
+                    fileStreams.Add((stream, file.Name));
                 }
             }
             
-            var fileStreams = selectedFiles.Select(f => (f.Content, f.Name)).ToList();
             Console.WriteLine("Calling MetadataService.ExtractMetadataBatchAsync");
             extractedTracks = (await MetadataService.ExtractMetadataBatchAsync(
-                fileStreams.Select(f => (f.Content ?? Stream.Null, f.Name)))).ToList();
+                fileStreams.Select(f => (f.stream, f.name)))).ToList();
             Console.WriteLine($"Extracted {extractedTracks.Count} tracks");
             
             // Auto-match existing entities
@@ -625,7 +625,6 @@
     
     private async Task ResetUpload()
     {
-        selectedFiles.ForEach(f => f.Content?.Dispose());
         selectedFiles.Clear();
         extractedTracks.Clear();
         showPreview = false;
@@ -652,6 +651,6 @@
     {
         public string Name { get; set; } = string.Empty;
         public long Length { get; set; }
-        public Stream? Content { get; set; }
+        public IBrowserFile? BrowserFile { get; set; }
     }
 }
