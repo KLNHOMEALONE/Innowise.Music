@@ -32,7 +32,7 @@ public class AuthService : IAuthService
         _httpClient.DefaultRequestHeaders.Clear();
     }
 
-    public async Task<(bool, ClaimsPrincipal?)> LoginAndGetPrincipalAsync(string email, string password)
+    public async Task<(bool Success, ClaimsPrincipal? Principal, string? ErrorMessage)> LoginAndGetPrincipalAsync(string email, string password)
     {
         try
         {
@@ -45,7 +45,7 @@ public class AuthService : IAuthService
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
                 _logger.LogWarning("Login failed. Status: {StatusCode}, Content: {Content}", response.StatusCode, errorContent);
-                return (false, null);
+                return (false, null, null);
             }
 
             var content = await response.Content.ReadAsStringAsync();
@@ -54,10 +54,17 @@ public class AuthService : IAuthService
             if (string.IsNullOrWhiteSpace(authResponse?.Token))
             {
                 _logger.LogError("Login response did not contain a token.");
-                return (false, null);
+                return (false, null, null);
             }
 
             var claimsPrincipal = CreateClaimsPrincipalFromToken(authResponse.Token);
+
+            if (!claimsPrincipal.IsInRole("Administrator"))
+            {
+                _logger.LogWarning("User {Email} attempted to log in but is not an administrator.", email);
+                return (false, null, "Access denied. Admin privileges required.");
+            }
+
             var userId = claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier);
             
             if (!string.IsNullOrEmpty(userId))
@@ -68,12 +75,12 @@ public class AuthService : IAuthService
                  _logger.LogInformation("Token for user {userId} cached successfully.", userId);
             }
 
-            return (true, claimsPrincipal);
+            return (true, claimsPrincipal, null);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "An exception occurred during login.");
-            return (false, null);
+            return (false, null, null);
         }
     }
 

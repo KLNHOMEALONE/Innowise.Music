@@ -61,17 +61,10 @@ public class LoginModel : PageModel
 
         try
         {
-            var (success, claimsPrincipal) = await _authService.LoginAndGetPrincipalAsync(Input.Email, Input.Password);
+            var (success, claimsPrincipal, errorMessage) = await _authService.LoginAndGetPrincipalAsync(Input.Email, Input.Password);
 
             if (success && claimsPrincipal != null)
             {
-                 if (!claimsPrincipal.IsInRole("Administrator"))
-                 {
-                    _logger.LogWarning("User {Email} attempted to log in but is not an administrator.", Input.Email);
-                    ErrorMessage = "Access denied. Admin privileges required.";
-                    return Page();
-                 }
-
                 _logger.LogInformation("User {Email} logged in successfully.", Input.Email);
                 
                 await HttpContext.SignInAsync(
@@ -83,7 +76,7 @@ public class LoginModel : PageModel
             }
             else
             {
-                ErrorMessage = "Invalid email or password.";
+                ErrorMessage = errorMessage ?? "Invalid email or password.";
                 return Page();
             }
         }
