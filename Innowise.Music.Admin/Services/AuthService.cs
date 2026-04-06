@@ -39,7 +39,7 @@ public class AuthService : IAuthService
             _logger.LogInformation("Attempting to log in user with email {Email}", email);
 
             var payload = new { Email = email, Password = password };
-            var response = await _httpClient.PostAsJsonAsync("authentication/login", payload);
+            var response = await _httpClient.PostAsJsonAsync("Authentication/login", payload);
 
             if (!response.IsSuccessStatusCode)
             {

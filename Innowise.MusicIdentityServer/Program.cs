@@ -16,9 +16,11 @@ var builder = WebApplication.CreateBuilder(args);
 var connString = builder.Configuration.GetConnectionString("PostgresAppDbConnection");
 builder.Services.AddDbContext<MusicIdentityDbContext>(options => options.UseNpgsql(connString));
 
-builder.Services.AddIdentityCore<ApiUser>()
-    .AddRoles<IdentityRole>()
-    .AddEntityFrameworkStores<MusicIdentityDbContext>();
+builder.Services.AddIdentity<ApiUser, IdentityRole>()
+    .AddEntityFrameworkStores<MusicIdentityDbContext>()
+    .AddDefaultTokenProviders();
+
+builder.Services.AddDataProtection();
 
 builder.Services.AddAutoMapper(cfg => { }, typeof(Program));
 
@@ -100,8 +102,10 @@ if (app.Environment.IsDevelopment())
     //app.UseSwagger();
     //app.UseSwaggerUI();
 }
-
-app.UseHttpsRedirection();
+else
+{
+    app.UseHttpsRedirection();
+}
 app.UseStaticFiles();
 
 app.UseCors("AllowAll");
