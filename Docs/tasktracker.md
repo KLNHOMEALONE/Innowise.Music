@@ -1,5 +1,17 @@
 # Task Tracker - Innowise.Music
 
+## Task: Fix Dashboard Statistics, JSON Serialization & Login Styling
+- **Status**: Completed
+- **Description**: Fixed three issues: (1) claim type mismatch causing 401 errors, (2) JSON circular reference in Albums API, (3) login page styling inconsistent with dashboard dark theme.
+- **Steps**:
+  - [x] Fixed claim type mismatch - changed from `ClaimTypes.NameIdentifier` to `"uid"` in `AuthService`
+  - [x] Added error handling in `AdminMusicService` methods
+  - [x] Added `ILogger<Dashboard>` to `Dashboard.razor`
+  - [x] Fixed JSON serialization cycle by adding `ReferenceHandler.IgnoreCycles` to `Program.cs` in Identity Server
+  - [x] Updated `Login.cshtml` to remove inline styles and use dark theme CSS classes from `app.css`
+  - [x] Rebuilt Docker containers and verified deployment
+- **Dependencies**: Innowise.MusicIdentityServer
+
 ## Task: Fix Dashboard Statistics & JSON Serialization
 - **Status**: Completed
 - **Description**: Fixed two issues with the dashboard: (1) claim type mismatch causing 401 errors and (2) JSON circular reference in Albums API.
