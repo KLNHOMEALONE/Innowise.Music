@@ -2,6 +2,7 @@
 @page "/dashboard"
 @attribute [Authorize]
 @inject IAdminMusicService MusicService
+@inject ILogger<Dashboard> Logger
 @layout MainLayout
 
 <div class="dashboard-page">
@@ -81,19 +82,23 @@
         {
             var artistsResponse = await MusicService.GetAllArtistsAsync(page: 1, pageSize: 1);
             artistCount = artistsResponse.TotalCount;
+            Logger.LogInformation("Loaded artist count: {Count}", artistCount);
 
             var albumsResponse = await MusicService.GetAllAlbumsAsync(page: 1, pageSize: 1);
             albumCount = albumsResponse.TotalCount;
+            Logger.LogInformation("Loaded album count: {Count}", albumCount);
 
             var tracksResponse = await MusicService.GetAllTracksAsync(page: 1, pageSize: 1);
             trackCount = tracksResponse.TotalCount;
+            Logger.LogInformation("Loaded track count: {Count}", trackCount);
 
             var genres = await MusicService.GetAllGenresAsync();
             genreCount = genres.Count;
+            Logger.LogInformation("Loaded genre count: {Count}", genreCount);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading dashboard stats: {ex.Message}");
+            Logger.LogError(ex, "Error loading dashboard stats");
         }
     }
 }

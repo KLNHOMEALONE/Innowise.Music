@@ -65,7 +65,7 @@ public class AuthService : IAuthService
                 return (false, null, "Access denied. Admin privileges required.");
             }
 
-            var userId = claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = claimsPrincipal.FindFirst("uid")?.Value;
             
             if (!string.IsNullOrEmpty(userId))
             {
@@ -111,7 +111,7 @@ public class AuthService : IAuthService
     {
         var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-        var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = user.FindFirst("uid")?.Value;
 
         if (string.IsNullOrEmpty(userId))
         {

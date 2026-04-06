@@ -1,5 +1,17 @@
 # Task Tracker - Innowise.Music
 
+## Task: Fix Dashboard Statistics Authentication Issue
+- **Status**: Completed
+- **Description**: Fixed the dashboard showing incorrect counts (0) for Artists, Genres, Albums, and Tracks. The root cause was a claim type mismatch - the Identity Server uses `"uid"` for user ID but the Admin Dashboard was looking for `ClaimTypes.NameIdentifier`, causing the token to never be cached and API calls to fail with 401.
+- **Steps**:
+  - [x] Identified claim type mismatch between Identity Server (`"uid"`) and Admin Dashboard (`ClaimTypes.NameIdentifier`)
+  - [x] Updated `AuthService.LoginAndGetPrincipalAsync()` to extract user ID using `FindFirst("uid")`
+  - [x] Updated `AuthService.GetTokenAsync()` to use `FindFirst("uid")` for consistent claim extraction
+  - [x] Added try-catch error handling in `AdminMusicService` methods for graceful API failure handling
+  - [x] Added `ILogger<Dashboard>` to `Dashboard.razor` for proper logging
+  - [x] Rebuilt Docker containers and verified deployment
+- **Dependencies**: Innowise.MusicIdentityServer
+
 ## Task: Admin Dashboard Authentication Refactor
 - **Status**: Completed
 - **Description**: Complete rewrite of the admin dashboard authentication system to follow the BookStore Blazor Server pattern. Replaced custom in-memory token storage with `Blazored.LocalStorage`, custom `AuthorizeRouteView`/`AuthorizeView` components with Blazor's built-in equivalents, and added proper `[Authorize]` attributes to all protected pages.

@@ -20,13 +20,16 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 builder.Services.AddCascadingAuthenticationState();
 
-
 // Configure API settings
 var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"] ?? "http://music_identity_server:8080/api/";
+
+// Register AuthService as scoped to properly access scoped dependencies
 builder.Services.AddHttpClient<IAuthService, AuthService>(client =>
 {
     client.BaseAddress = new Uri(apiBaseUrl);
 });
+
+// Register AdminMusicService as scoped to properly access scoped dependencies
 builder.Services.AddHttpClient<IAdminMusicService, AdminMusicService>(client =>
 {
     client.BaseAddress = new Uri(apiBaseUrl);

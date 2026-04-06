@@ -25,6 +25,10 @@ public class AdminMusicService : IAdminMusicService
             _httpClient.DefaultRequestHeaders.Authorization = 
                 new AuthenticationHeaderValue("Bearer", token);
         }
+        else
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = null;
+        }
     }
 
     // ==================== Genre Operations ====================
@@ -32,8 +36,15 @@ public class AdminMusicService : IAdminMusicService
     public async Task<List<Genre>> GetAllGenresAsync()
     {
         await AddAuthHeaderAsync();
-        var response = await _httpClient.GetFromJsonAsync<List<Genre>>("admin/genres");
-        return response ?? new List<Genre>();
+        try
+        {
+            var response = await _httpClient.GetFromJsonAsync<List<Genre>>("admin/genres");
+            return response ?? new List<Genre>();
+        }
+        catch (Exception)
+        {
+            return new List<Genre>();
+        }
     }
 
     public async Task<Genre?> GetGenreAsync(Guid id)
@@ -77,9 +88,16 @@ public class AdminMusicService : IAdminMusicService
     public async Task<PagedResponse<Artist>> GetAllArtistsAsync(int page = 1, int pageSize = 20)
     {
         await AddAuthHeaderAsync();
-        var response = await _httpClient.GetFromJsonAsync<PagedResponse<Artist>>(
-            $"admin/artists?page={page}&pageSize={pageSize}");
-        return response ?? new PagedResponse<Artist>();
+        try
+        {
+            var response = await _httpClient.GetFromJsonAsync<PagedResponse<Artist>>(
+                $"admin/artists?page={page}&pageSize={pageSize}");
+            return response ?? new PagedResponse<Artist>();
+        }
+        catch (Exception)
+        {
+            return new PagedResponse<Artist>();
+        }
     }
 
     public async Task<Artist?> GetArtistAsync(Guid id)
@@ -123,9 +141,16 @@ public class AdminMusicService : IAdminMusicService
     public async Task<PagedResponse<Album>> GetAllAlbumsAsync(int page = 1, int pageSize = 20)
     {
         await AddAuthHeaderAsync();
-        var response = await _httpClient.GetFromJsonAsync<PagedResponse<Album>>(
-            $"admin/albums?page={page}&pageSize={pageSize}");
-        return response ?? new PagedResponse<Album>();
+        try
+        {
+            var response = await _httpClient.GetFromJsonAsync<PagedResponse<Album>>(
+                $"admin/albums?page={page}&pageSize={pageSize}");
+            return response ?? new PagedResponse<Album>();
+        }
+        catch (Exception)
+        {
+            return new PagedResponse<Album>();
+        }
     }
 
     public async Task<Album?> GetAlbumAsync(Guid id)
@@ -169,9 +194,16 @@ public class AdminMusicService : IAdminMusicService
     public async Task<PagedResponse<Track>> GetAllTracksAsync(int page = 1, int pageSize = 20)
     {
         await AddAuthHeaderAsync();
-        var response = await _httpClient.GetFromJsonAsync<PagedResponse<Track>>(
-            $"admin/tracks?page={page}&pageSize={pageSize}");
-        return response ?? new PagedResponse<Track>();
+        try
+        {
+            var response = await _httpClient.GetFromJsonAsync<PagedResponse<Track>>(
+                $"admin/tracks?page={page}&pageSize={pageSize}");
+            return response ?? new PagedResponse<Track>();
+        }
+        catch (Exception)
+        {
+            return new PagedResponse<Track>();
+        }
     }
 
     public async Task<Track?> GetTrackAsync(Guid id)
