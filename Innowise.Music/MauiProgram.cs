@@ -25,14 +25,7 @@ namespace Innowise.Music
             }
             
             builder
-                .UseMauiApp<App>((context, window) =>
-                {
-#if WINDOWS
-                    window.Width = 420;
-                    window.Height = 900;
-#endif
-                    return window;
-                })
+                .UseMauiApp<App>()
                 .UseMauiCommunityToolkit()
                 .UseMauiCommunityToolkitMediaElement()
                 .ConfigureFonts(fonts =>

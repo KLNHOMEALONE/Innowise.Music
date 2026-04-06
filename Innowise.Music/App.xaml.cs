@@ -16,6 +16,11 @@ namespace Innowise.Music
         protected override Window CreateWindow(IActivationState? activationState)
         {
             var appShell = _serviceProvider.GetRequiredService<AppShell>();
-            return new Window(appShell);
+            var window = new Window(appShell);
+#if WINDOWS
+            window.Width = 420;
+            window.Height = 900;
+#endif
+            return window;
         }
     }}
