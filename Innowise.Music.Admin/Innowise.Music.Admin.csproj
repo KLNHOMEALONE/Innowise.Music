@@ -14,13 +14,4 @@
     <PackageReference Include="TagLibSharp" Version="2.3.0" />
   </ItemGroup>
 
-
-
-  <!-- Exclude IdentityServer appsettings from Admin publish to avoid conflicts -->
-  <Target Name="ExcludeIdentityServerAppSettings" BeforeTargets="ComputeFilesToPublish">
-    <ItemGroup>
-      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(Filename)' == 'appsettings' AND %(Extension) == '.json' AND !$([System.String]::new('%(FullPath)').Contains('Innowise.Music.Admin'))" />
-    </ItemGroup>
-  </Target>
-
 </Project>
