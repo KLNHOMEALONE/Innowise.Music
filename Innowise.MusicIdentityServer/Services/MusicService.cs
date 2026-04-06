@@ -379,6 +379,14 @@ public class MusicService : IMusicService
 
     public async Task<Genre?> CreateGenreAsync(Genre genre)
     {
+        // Check if genre with same name already exists
+        var existing = await _context.Genres
+            .FirstOrDefaultAsync(g => g.Name.ToLower() == genre.Name.ToLower());
+        if (existing != null)
+        {
+            return null;
+        }
+
         genre.Id = Guid.NewGuid();
 
         _context.Genres.Add(genre);
@@ -391,6 +399,14 @@ public class MusicService : IMusicService
     {
         var existingGenre = await _context.Genres.FindAsync(id);
         if (existingGenre == null)
+        {
+            return null;
+        }
+
+        // Check if another genre with same name already exists
+        var duplicate = await _context.Genres
+            .FirstOrDefaultAsync(g => g.Name.ToLower() == genre.Name.ToLower() && g.Id != id);
+        if (duplicate != null)
         {
             return null;
         }

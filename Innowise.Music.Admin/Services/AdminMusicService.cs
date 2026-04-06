@@ -56,11 +56,19 @@ public class AdminMusicService : IAdminMusicService
     public async Task<Genre?> CreateGenreAsync(Genre genre)
     {
         await AddAuthHeaderAsync();
+        
+        // Log the genre data being sent
+        Console.WriteLine($"Creating genre: Name={genre.Name}, Color={genre.Color}, Description={genre.Description}");
+        
         var response = await _httpClient.PostAsJsonAsync("admin/genres", genre);
         if (response.IsSuccessStatusCode)
         {
             return await response.Content.ReadFromJsonAsync<Genre>();
         }
+        
+        // Try to read error message from response
+        var errorContent = await response.Content.ReadAsStringAsync();
+        Console.WriteLine($"CreateGenre error ({response.StatusCode}): {errorContent}");
         return null;
     }
 
