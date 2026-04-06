@@ -471,4 +471,3 @@ This allows the same `appsettings.json` to be used across different environments
 
 1. **Container startup order** - The Admin container may start before Identity Server is ready. Add a health check dependency.
 2. **CORS configuration** - Ensure Identity Server allows requests from the Admin origin.
-3. **SSL certificate validation** - The Admin uses `SocketsHttpHandler` with `RemoteCertificateValidationCallback` to accept self-signed certificates.
