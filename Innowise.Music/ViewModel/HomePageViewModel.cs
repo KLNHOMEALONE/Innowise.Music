@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Innowise.Music.Model;
+using Innowise.Music.Services;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
@@ -9,6 +10,9 @@ namespace Innowise.Music.ViewModel;
 public partial class HomePageViewModel : ObservableObject
 {
     private readonly MiniPlayerViewModel _miniPlayerViewModel;
+    private readonly IAuthenticationService _authenticationService;
+    private readonly IGoogleAuthService _googleAuthService;
+    private readonly INavigationService _navigationService;
 
     [ObservableProperty]
     private string _userName = "John Doe";
@@ -18,10 +22,18 @@ public partial class HomePageViewModel : ObservableObject
     public ObservableCollection<HomeItem> FeaturedSongs { get; } = new();
     public ObservableCollection<HomeItem> RecentItems { get; } = new();
 
-    public HomePageViewModel(MiniPlayerViewModel miniPlayerViewModel)
+    public HomePageViewModel(
+        MiniPlayerViewModel miniPlayerViewModel,
+        IAuthenticationService authenticationService,
+        IGoogleAuthService googleAuthService,
+        INavigationService navigationService)
     {
         _miniPlayerViewModel = miniPlayerViewModel;
+        _authenticationService = authenticationService;
+        _googleAuthService = googleAuthService;
+        _navigationService = navigationService;
         LoadMockData();
+        LoadUserName();
     }
 
     [RelayCommand]
@@ -34,11 +46,29 @@ public partial class HomePageViewModel : ObservableObject
             Title = song.Title,
             ArtistName = song.Subtitle,
             ImageUrl = song.ImageUrl,
-            // Using a sample public domain audio file for testing
             FileUri = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
         };
 
         await _miniPlayerViewModel.PlayTrack(track);
+    }
+
+    [RelayCommand]
+    private async Task Logout()
+    {
+        try
+        {
+            if (_googleAuthService.IsSignedIn)
+            {
+                await _googleAuthService.SignOut();
+            }
+
+            await _authenticationService.LogoutAsync();
+        }
+        catch
+        {
+        }
+
+        await _navigationService.NavigateAndClearStackAsync("LoginPage");
     }
 
     private void LoadMockData()
@@ -63,6 +93,20 @@ public partial class HomePageViewModel : ObservableObject
         RecentItems.Add(new HomeItem(this) { Title = "Heavener", ImageUrl = "shade_astray.png", Subtitle = "Invent Animate" });
         RecentItems.Add(new HomeItem(this) { Title = "Return to forever", ImageUrl = "return_to_forever.png", Subtitle = "Chick Corea" });
         RecentItems.Add(new HomeItem(this) { Title = "Ambient", ImageUrl = "playlist_big.png", Subtitle = "Various Artists" });
+    }
+
+    private void LoadUserName()
+    {
+        var userName = _authenticationService.GetUserName();
+        if (!string.IsNullOrEmpty(userName))
+        {
+            UserName = userName;
+        }
+    }
+
+    public void RefreshUserName()
+    {
+        LoadUserName();
     }
 }
 

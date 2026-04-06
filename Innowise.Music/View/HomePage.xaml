@@ -15,7 +15,7 @@
             <VerticalStackLayout Spacing="25" Padding="20">
                 
                 <!-- Header -->
-                <Grid ColumnDefinitions="Auto, *">
+                <Grid ColumnDefinitions="Auto, *, Auto">
                     <Border Grid.Column="0" WidthRequest="40" HeightRequest="40" StrokeShape="RoundRectangle 20" BackgroundColor="{StaticResource Magenta}" StrokeThickness="0">
                         <Label Text="J" HorizontalOptions="Center" VerticalOptions="Center" FontAttributes="Bold" TextColor="White" />
                     </Border>
@@ -25,6 +25,16 @@
                            FontAttributes="Bold" 
                            Margin="15,0,0,0" 
                            VerticalOptions="Center" />
+                    <Button Grid.Column="2" 
+                            Text="Logout"
+                            Command="{Binding LogoutCommand}"
+                            BackgroundColor="Transparent"
+                            TextColor="{StaticResource PrimaryRed}"
+                            FontSize="14"
+                            FontAttributes="Bold"
+                            HorizontalOptions="End"
+                            VerticalOptions="Center"
+                            Padding="10,0" />
                 </Grid>
 
                 <!-- Quick Access Grid -->

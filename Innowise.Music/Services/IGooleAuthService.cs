@@ -11,6 +11,7 @@ namespace Innowise.Music.Services
 {
     public interface IGoogleAuthService
     {
+        bool IsSignedIn { get; }
         Task<UserInfoDto> AcquireTokenAsync();
         Task SignOut();
 

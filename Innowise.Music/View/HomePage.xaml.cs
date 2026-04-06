@@ -7,4 +7,13 @@ public partial class HomePage : ContentPage
 		InitializeComponent();
 		BindingContext = viewModel;
 	}
+
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        if (BindingContext is ViewModel.HomePageViewModel viewModel)
+        {
+            viewModel.RefreshUserName();
+        }
+    }
 }

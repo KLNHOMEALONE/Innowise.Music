@@ -17,4 +17,5 @@ public interface IAuthenticationService
     Task LogoutAsync();
     Task<string?> GetTokenAsync();
     Task<bool> IsAuthenticatedAsync();
+    string? GetUserName();
 }

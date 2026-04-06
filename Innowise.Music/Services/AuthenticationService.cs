@@ -19,6 +19,7 @@ public class AuthenticationService : IAuthenticationService
     private readonly ApiSettings _apiSettings;
     private const string AuthTokenKey = "auth_token";
     private const string RefreshTokenKey = "refresh_token";
+    private const string UserNameKey = "user_name";
 
     public AuthenticationService(HttpClient httpClient, IOptions<ApiSettings> apiSettings)
     {
@@ -56,6 +57,8 @@ public class AuthenticationService : IAuthenticationService
                     {
                         await SecureStorage.Default.SetAsync(RefreshTokenKey, authResponse.RefreshToken);
                     }
+                    var userName = $"{authResponse.FirstName} {authResponse.LastName}".Trim();
+                    Preferences.Set(UserNameKey, userName);
                     return true;
                 }
             }
@@ -111,6 +114,8 @@ public class AuthenticationService : IAuthenticationService
                     {
                         await SecureStorage.Default.SetAsync(RefreshTokenKey, authResponse.RefreshToken);
                     }
+                    var userName = $"{authResponse.FirstName} {authResponse.LastName}".Trim();
+                    Preferences.Set(UserNameKey, userName);
                     return true;
                 }
             }
@@ -143,6 +148,7 @@ public class AuthenticationService : IAuthenticationService
     {
         SecureStorage.Default.Remove(AuthTokenKey);
         SecureStorage.Default.Remove(RefreshTokenKey);
+        Preferences.Remove(UserNameKey);
         return Task.CompletedTask;
     }
 
@@ -154,6 +160,11 @@ public class AuthenticationService : IAuthenticationService
     public async Task<string?> GetRefreshTokenAsync()
     {
         return await SecureStorage.Default.GetAsync(RefreshTokenKey);
+    }
+
+    public string? GetUserName()
+    {
+        return Preferences.Get(UserNameKey, null);
     }
 
     public async Task<bool> IsAuthenticatedAsync()
@@ -200,6 +211,8 @@ public class AuthenticationService : IAuthenticationService
                     {
                         await SecureStorage.Default.SetAsync(RefreshTokenKey, authResponse.RefreshToken);
                     }
+                    var userName = $"{authResponse.FirstName} {authResponse.LastName}".Trim();
+                    Preferences.Set(UserNameKey, userName);
                     return true;
                 }
             }

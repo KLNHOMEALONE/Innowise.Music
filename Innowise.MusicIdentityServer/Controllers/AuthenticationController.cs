@@ -90,6 +90,12 @@ public class AuthenticationController : ControllerBase
                 }
                 await _userManager.AddToRoleAsync(user, "User");
             }
+            else
+            {
+                user.FirstName = userInfoDto.UserInfo.GivenName;
+                user.LastName = userInfoDto.UserInfo.FamilyName;
+                await _userManager.UpdateAsync(user);
+            }
 
             string tokenString = await GenerateToken(user);
             string refreshToken = GenerateRefreshToken();
@@ -104,14 +110,16 @@ public class AuthenticationController : ControllerBase
                 Token = tokenString,
                 RefreshToken = refreshToken,
                 UserId = user.Id,
+                FirstName = user.FirstName,
+                LastName = user.LastName
             };
 
             return response;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Something Went Wrong in the {nameof(GoogleLogin)}");
-            return Problem($"Something Went Wrong in the {nameof(GoogleLogin)}", statusCode: 500);
+            _logger.LogError(ex, $"Something Went Wrong in the {nameof(Register)}");
+            return Problem($"Something Went Wrong in the {nameof(Register)}", statusCode: 500);
         }
     }
 
@@ -161,6 +169,8 @@ public class AuthenticationController : ControllerBase
                 Token = tokenString,
                 RefreshToken = refreshToken,
                 UserId = user.Id,
+                FirstName = user.FirstName,
+                LastName = user.LastName
             };
 
             return response;
@@ -216,7 +226,9 @@ public class AuthenticationController : ControllerBase
             Token = newAccessToken,
             RefreshToken = newRefreshToken,
             Email = user.Email,
-            UserId = user.Id
+            UserId = user.Id,
+            FirstName = user.FirstName,
+            LastName = user.LastName
         };
     }
 
