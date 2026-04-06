@@ -2,6 +2,7 @@ using Innowise.MusicIdentityServer.Models.Music;
 using Innowise.MusicIdentityServer.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace Innowise.MusicIdentityServer.Controllers;
 
@@ -419,7 +420,9 @@ public class AdminMusicController : ControllerBase
     /// </summary>
     [HttpPost("tracks/upload-batch")]
     [RequestSizeLimit(500 * 1024 * 1024)] // 500MB for batch
-    public async Task<ActionResult<BatchUploadResult>> UploadTracksBatch(IList<IFormFile> files)
+    public async Task<ActionResult<BatchUploadResult>> UploadTracksBatch(
+        [FromForm] IList<IFormFile> files,
+        [FromForm] string? metadata)
     {
         if (files == null || files.Count == 0)
         {
@@ -432,12 +435,22 @@ public class AdminMusicController : ControllerBase
             return BadRequest(new { message = "Maximum 30 files per batch allowed" });
         }
         
+        // Parse metadata if provided
+        var metadataDtos = new List<TrackUploadDto>();
+        if (!string.IsNullOrWhiteSpace(metadata))
+        {
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            metadataDtos = JsonSerializer.Deserialize<List<TrackUploadDto>>(metadata, options) 
+                ?? new List<TrackUploadDto>();
+        }
+        
         // Validate file types and sizes
         var allowedExtensions = new[] { ".mp3", ".wav", ".flac", ".aac" };
         var uploadDtos = new List<TrackUploadDto>();
         
-        foreach (var file in files)
+        for (int i = 0; i < files.Count; i++)
         {
+            var file = files[i];
             var extension = Path.GetExtension(file.FileName).ToLower();
             if (!allowedExtensions.Contains(extension))
             {
@@ -464,15 +477,27 @@ public class AdminMusicController : ControllerBase
                 _ => "UNKNOWN"
             };
             
-            // Create upload DTO with filename as title (will be extracted by client)
+            // Get metadata from parsed DTO if available, otherwise use defaults
+            var trackMetadata = i < metadataDtos.Count ? metadataDtos[i] : null;
+            
             uploadDtos.Add(new TrackUploadDto
             {
                 FileName = file.FileName,
                 AudioData = audioData,
-                Title = Path.GetFileNameWithoutExtension(file.FileName), // Default title from filename
-                ArtistName = "Unknown Artist", // Will be provided by client
+                Title = trackMetadata?.Title ?? Path.GetFileNameWithoutExtension(file.FileName),
+                ArtistName = trackMetadata?.ArtistName ?? "Unknown",
+                ArtistId = trackMetadata?.ArtistId,
+                AlbumName = trackMetadata?.AlbumName,
+                AlbumId = trackMetadata?.AlbumId,
+                Genres = trackMetadata?.Genres,
+                GenreIds = trackMetadata?.GenreIds,
+                Duration = trackMetadata?.Duration ?? 0,
+                TrackNumber = trackMetadata?.TrackNumber,
+                Bitrate = trackMetadata?.Bitrate,
+                SampleRate = trackMetadata?.SampleRate,
+                FileSize = trackMetadata?.FileSize ?? audioData.Length,
                 AudioFormat = audioFormat,
-                FileSize = audioData.Length
+                Year = trackMetadata?.Year
             });
         }
         

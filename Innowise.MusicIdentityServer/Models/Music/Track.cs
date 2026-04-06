@@ -53,6 +53,5 @@ public class Track
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     
     // Many-to-many relationship with Genres
-    [JsonIgnore]
     public virtual ICollection<Genre> Genres { get; set; } = new List<Genre>();
 }

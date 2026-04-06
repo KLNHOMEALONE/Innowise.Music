@@ -13,8 +13,11 @@ public class TrackUploadDto
     public byte[] AudioData { get; set; } = Array.Empty<byte>();
     public string Title { get; set; } = string.Empty;
     public string ArtistName { get; set; } = string.Empty;
+    public Guid? ArtistId { get; set; }
     public string? AlbumName { get; set; }
+    public Guid? AlbumId { get; set; }
     public string[]? Genres { get; set; }
+    public Guid[]? GenreIds { get; set; }
     public int Duration { get; set; }
     public int? TrackNumber { get; set; }
     public int? Bitrate { get; set; }

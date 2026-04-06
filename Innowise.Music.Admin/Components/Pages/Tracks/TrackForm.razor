@@ -60,6 +60,19 @@
             </div>
         </div>
 
+        <div class="form-group">
+            <label>Genres</label>
+            <div class="checkbox-group">
+                @foreach (var genre in genres)
+                {
+                    <label class="checkbox-label">
+                        <input type="checkbox" value="@genre.Id" checked="@(selectedGenreIds.Contains(genre.Id))" @onchange="e => OnGenreChanged(genre.Id, e)" />
+                        @genre.Name
+                    </label>
+                }
+            </div>
+        </div>
+
         <div class="form-row">
             <div class="form-group">
                 <label for="audioFormat">Audio Format</label>
@@ -94,6 +107,8 @@
     private Track track = new();
     private List<Artist> artists = new();
     private List<Album> albums = new();
+    private List<Genre> genres = new();
+    private Guid[] selectedGenreIds = Array.Empty<Guid>();
     private bool isSubmitting;
     private string titleError = string.Empty;
     private string artistError = string.Empty;
@@ -107,10 +122,12 @@
         {
             var artistsTask = MusicService.GetAllArtistsAsync();
             var albumsTask = MusicService.GetAllAlbumsAsync();
-            await Task.WhenAll(artistsTask, albumsTask);
+            var genresTask = MusicService.GetAllGenresAsync();
+            await Task.WhenAll(artistsTask, albumsTask, genresTask);
             
             artists = artistsTask.Result.Items.ToList();
             albums = albumsTask.Result.Items.ToList();
+            genres = genresTask.Result;
         }
         catch (Exception ex)
         {
@@ -123,6 +140,7 @@
             if (fetchedTrack != null)
             {
                 track = fetchedTrack;
+                selectedGenreIds = track.Genres?.Select(g => g.Id).Where(g => g != Guid.Empty).ToArray() ?? Array.Empty<Guid>();
             }
             else
             {
@@ -153,6 +171,8 @@
             track.Duration = 180; // Default 3 minutes
         }
 
+        track.Genres = genres.Where(g => selectedGenreIds.Contains(g.Id)).ToList();
+
         isSubmitting = true;
 
         try
@@ -176,4 +196,37 @@
             isSubmitting = false;
         }
     }
+
+    private void OnGenreChanged(Guid genreId, ChangeEventArgs e)
+    {
+        if (e.Value is bool isChecked && isChecked)
+        {
+            if (!selectedGenreIds.Contains(genreId))
+            {
+                selectedGenreIds = selectedGenreIds.Append(genreId).ToArray();
+            }
+        }
+        else
+        {
+            if (selectedGenreIds.Contains(genreId))
+            {
+                selectedGenreIds = selectedGenreIds.Except(new[] { genreId }).ToArray();
+            }
+        }
+    }
 }
+
+<style>
+    .checkbox-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    
+    .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+    }
+</style>

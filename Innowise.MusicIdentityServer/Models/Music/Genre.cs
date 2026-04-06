@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Innowise.MusicIdentityServer.Models.Music;
 
@@ -21,5 +22,6 @@ public class Genre
     public string? Color { get; set; } // Hex color for UI
     
     // Navigation properties
+    [JsonIgnore]
     public virtual ICollection<Track> Tracks { get; set; } = new List<Track>();
 }

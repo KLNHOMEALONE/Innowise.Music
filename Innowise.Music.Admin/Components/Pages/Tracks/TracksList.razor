@@ -61,16 +61,25 @@ else
                         <td>@(string.IsNullOrEmpty(track.AlbumName) ? "—" : track.AlbumName)</td>
                         <td>@FormatDuration(track.Duration)</td>
                         <td>
+                            @if (track.Genres.Any())
+                            {
+                                <span>@string.Join(", ", track.Genres.Select(g => g.Name))</span>
+                            }
+                            else
+                            {
+                                <span class="status-badge status-warning">No genre</span>
+                            }
+                        </td>
+                        <td>
                             @if (!string.IsNullOrEmpty(track.AudioFormat))
                             {
-                                <span class="status-badge status-success">✓ @track.AudioFormat</span>
+                                <span class="status-badge status-success">@track.AudioFormat</span>
                             }
                             else
                             {
                                 <span class="status-badge status-warning">No audio</span>
                             }
                         </td>
-                        <td>@(track.Explicit ? "E" : "—")</td>
                         <td>
                             <div class="actions">
                                 <a href="/tracks/@track.Id/edit" class="btn-action">Edit</a>
@@ -131,6 +140,7 @@ else
                 Duration = t.Duration,
                 TrackNumber = t.TrackNumber,
                 AudioFormat = t.AudioFormat,
+                Genres = t.Genres?.ToList() ?? new List<Genre>(),
                 Explicit = t.Explicit
             }).ToList();
         }
@@ -194,6 +204,7 @@ else
         public int Duration { get; set; }
         public int? TrackNumber { get; set; }
         public string AudioFormat { get; set; } = string.Empty;
+        public List<Genre> Genres { get; set; } = new();
         public bool Explicit { get; set; }
     }
 }

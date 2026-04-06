@@ -102,7 +102,8 @@
                                         {
                                             <label class="checkbox-label">
                                                 <input type="checkbox" value="@genre.Id" 
-                                                       @bind="track.MatchedGenreIds" />
+                                                       checked="@(track.MatchedGenreIds.Contains(genre.Id))"
+                                                       @onchange="e => OnTrackGenreChanged(track, genre.Id, e)" />
                                                 @genre.Name
                                             </label>
                                         }
@@ -501,8 +502,12 @@
             }
             
             Console.WriteLine("Calling MetadataService.ExtractMetadataBatchAsync");
-            extractedTracks = (await MetadataService.ExtractMetadataBatchAsync(
-                fileStreams.Select(f => (f.stream, f.name)))).ToList();
+            
+            // Run extraction on a background thread to avoid UI freezing
+            extractedTracks = await Task.Run(async () => 
+                (await MetadataService.ExtractMetadataBatchAsync(
+                    fileStreams.Select(f => (f.stream, f.name)))).ToList());
+            
             Console.WriteLine($"Extracted {extractedTracks.Count} tracks");
             
             // Auto-match existing entities
@@ -571,6 +576,24 @@
         }
     }
     
+    private void OnTrackGenreChanged(ExtractedTrackMetadata track, Guid genreId, ChangeEventArgs e)
+    {
+        if (e.Value is bool isChecked && isChecked)
+        {
+            if (!track.MatchedGenreIds.Contains(genreId))
+            {
+                track.MatchedGenreIds = track.MatchedGenreIds.Append(genreId).ToArray();
+            }
+        }
+        else
+        {
+            if (track.MatchedGenreIds.Contains(genreId))
+            {
+                track.MatchedGenreIds = track.MatchedGenreIds.Except(new[] { genreId }).ToArray();
+            }
+        }
+    }
+    
     private async Task UploadTracks()
     {
         errorMessage = null;
@@ -592,7 +615,8 @@
                     ArtistId = track.MatchedArtistId,
                     AlbumName = track.MatchedAlbumName,
                     AlbumId = track.MatchedAlbumId,
-                    Genres = track.Genres.Any() ? track.Genres :
+                    Genres = track.MatchedGenreIds.Any() ? null :
+                            track.Genres.Any() ? track.Genres :
                             track.GenresString?.Split(',').Select(g => g.Trim()).Where(g => !string.IsNullOrWhiteSpace(g)).ToArray(),
                     GenreIds = track.MatchedGenreIds.Any() ? track.MatchedGenreIds : null,
                     Duration = track.Duration,

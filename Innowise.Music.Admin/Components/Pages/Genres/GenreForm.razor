@@ -12,6 +12,12 @@
     </div>
 
     <div class="content-card">
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="error-message" style="background-color: #fee2e2; border: 1px solid #fecaca; color: #dc2626; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                ⚠️ @errorMessage
+            </div>
+        }
         <form @onsubmit="HandleSubmit" class="form">
             <div class="form-group">
                 <label for="name">Name <span class="required">*</span></label>
@@ -58,6 +64,7 @@
     private Genre genre = new();
     private bool isSubmitting;
     private string nameError = string.Empty;
+    private string? errorMessage;
     private string colorPreview = "#000000";
 
     private bool IsEditMode => id.HasValue;
@@ -91,6 +98,7 @@
     private async Task HandleSubmit()
     {
         nameError = string.Empty;
+        errorMessage = null;
 
         if (string.IsNullOrWhiteSpace(genre.Name))
         {
@@ -104,17 +112,27 @@
         {
             if (IsEditMode)
             {
-                await MusicService.UpdateGenreAsync(id!.Value, genre);
+                var result = await MusicService.UpdateGenreAsync(id!.Value, genre);
+                if (result == null)
+                {
+                    errorMessage = "Failed to update genre. A genre with this name may already exist.";
+                    return;
+                }
             }
             else
             {
-                await MusicService.CreateGenreAsync(genre);
+                var result = await MusicService.CreateGenreAsync(genre);
+                if (result == null)
+                {
+                    errorMessage = "Failed to create genre. A genre with this name may already exist.";
+                    return;
+                }
             }
             Navigation.NavigateTo("/genres");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error saving genre: {ex.Message}");
+            errorMessage = $"Error saving genre: {ex.Message}";
         }
         finally
         {

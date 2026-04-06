@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Innowise.MusicIdentityServer.Models.Music;
 
@@ -26,6 +27,8 @@ public class Artist
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     
     // Navigation properties
+    [JsonIgnore]
     public virtual ICollection<Album> Albums { get; set; } = new List<Album>();
+    [JsonIgnore]
     public virtual ICollection<Track> Tracks { get; set; } = new List<Track>();
 }

@@ -262,9 +262,12 @@ public class AdminMusicService : IAdminMusicService
         
         using var content = new MultipartFormDataContent();
         
-        foreach (var track in tracks)
+        var trackDtos = tracks.ToList();
+        var metadataJson = JsonSerializer.Serialize(trackDtos);
+        content.Add(new StringContent(metadataJson, Encoding.UTF8, "application/json"), "metadata");
+        
+        foreach (var track in trackDtos)
         {
-            // Create a sub-content for each track with its metadata
             var trackContent = new ByteArrayContent(track.AudioData);
             trackContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
             content.Add(trackContent, "files", track.FileName);

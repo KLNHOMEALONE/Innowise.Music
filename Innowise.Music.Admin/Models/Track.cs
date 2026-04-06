@@ -19,6 +19,5 @@ public class Track
     public long PlayCount { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
-    // ICollection<Genre> Genres is commented out to avoid circular dependency and simplify for client.
-    // public ICollection<Genre> Genres { get; set; } = new List<Genre>();
+    public ICollection<Genre> Genres { get; set; } = new List<Genre>();
 }

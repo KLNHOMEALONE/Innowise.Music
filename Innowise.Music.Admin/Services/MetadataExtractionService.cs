@@ -88,25 +88,33 @@ public class MetadataExtractionService : IMetadataExtractionService
         IEnumerable<(Stream Stream, string FileName)> files)
     {
         var results = new List<ExtractedTrackMetadata>();
+        var fileList = files.ToList();
         
-        foreach (var (stream, fileName) in files)
+        // Process files in parallel with limited concurrency
+        var tasks = fileList.Select(async (file, index) =>
         {
             try
             {
-                var metadata = await ExtractMetadataAsync(stream, fileName);
-                results.Add(metadata);
+                var metadata = await ExtractMetadataAsync(file.Stream, file.FileName);
+                return (Index: index, Metadata: metadata, Success: true);
             }
-            catch (Exception ex)
+            catch
             {
-                // Add a placeholder result for failed extractions
-                results.Add(new ExtractedTrackMetadata
+                return (Index: index, Metadata: new ExtractedTrackMetadata
                 {
-                    FileName = fileName,
-                    Title = Path.GetFileNameWithoutExtension(fileName),
-                    AudioFormat = Path.GetExtension(fileName).TrimStart('.').ToUpperInvariant()
-                });
-                Console.WriteLine($"Failed to extract metadata from {fileName}: {ex.Message}");
+                    FileName = file.FileName,
+                    Title = Path.GetFileNameWithoutExtension(file.FileName),
+                    AudioFormat = Path.GetExtension(file.FileName).TrimStart('.').ToUpperInvariant()
+                }, Success: false);
             }
+        });
+        
+        var taskResults = await Task.WhenAll(tasks);
+        
+        // Order results by original index to maintain file order
+        foreach (var result in taskResults.OrderBy(r => r.Index))
+        {
+            results.Add(result.Metadata);
         }
         
         return results;

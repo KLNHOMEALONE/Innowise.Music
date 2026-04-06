@@ -262,6 +262,17 @@ public class MusicService : IMusicService
         track.CreatedAt = DateTime.UtcNow;
         track.UpdatedAt = DateTime.UtcNow;
 
+        if (track.Genres != null && track.Genres.Any())
+        {
+            var genreIds = track.Genres.Select(g => g.Id).Where(g => g != Guid.Empty).ToList();
+            var genres = await _context.Genres.Where(g => genreIds.Contains(g.Id)).ToListAsync();
+            track.Genres = genres;
+        }
+        else
+        {
+            track.Genres = new List<Genre>();
+        }
+
         _context.Tracks.Add(track);
         await _context.SaveChangesAsync();
 
@@ -270,7 +281,9 @@ public class MusicService : IMusicService
 
     public async Task<Track?> UpdateTrackAsync(Guid id, Track track)
     {
-        var existingTrack = await _context.Tracks.FindAsync(id);
+        var existingTrack = await _context.Tracks
+            .Include(t => t.Genres)
+            .FirstOrDefaultAsync(t => t.Id == id);
         if (existingTrack == null)
         {
             return null;
@@ -288,6 +301,17 @@ public class MusicService : IMusicService
         existingTrack.ISRC = track.ISRC;
         existingTrack.Explicit = track.Explicit;
         existingTrack.UpdatedAt = DateTime.UtcNow;
+
+        if (track.Genres != null && track.Genres.Any())
+        {
+            var genreIds = track.Genres.Select(g => g.Id).Where(g => g != Guid.Empty).ToList();
+            var genres = await _context.Genres.Where(g => genreIds.Contains(g.Id)).ToListAsync();
+            existingTrack.Genres = genres;
+        }
+        else
+        {
+            existingTrack.Genres = new List<Genre>();
+        }
 
         await _context.SaveChangesAsync();
 
@@ -406,7 +430,17 @@ public class MusicService : IMusicService
             try
             {
                 // Get or create artist
-                var artist = await GetOrCreateArtistAsync(trackDto.ArtistName);
+                Artist? artist = null;
+                if (trackDto.ArtistId.HasValue)
+                {
+                    artist = await _context.Artists.FindAsync(trackDto.ArtistId.Value);
+                }
+                
+                if (artist == null && !string.IsNullOrWhiteSpace(trackDto.ArtistName))
+                {
+                    artist = await GetOrCreateArtistAsync(trackDto.ArtistName);
+                }
+                
                 if (artist == null)
                 {
                     result.Errors.Add($"Failed to create artist: {trackDto.ArtistName}");
@@ -422,14 +456,25 @@ public class MusicService : IMusicService
                 
                 // Get or create album (if specified)
                 Album? album = null;
-                if (!string.IsNullOrWhiteSpace(trackDto.AlbumName))
+                if (trackDto.AlbumId.HasValue)
+                {
+                    album = await _context.Albums.FindAsync(trackDto.AlbumId.Value);
+                }
+                
+                if (album == null && !string.IsNullOrWhiteSpace(trackDto.AlbumName))
                 {
                     album = await GetOrCreateAlbumAsync(trackDto.AlbumName, artist.Id, trackDto.Year);
                 }
                 
                 // Get or create genres
                 var genreList = new List<Genre>();
-                if (trackDto.Genres != null && trackDto.Genres.Any())
+                if (trackDto.GenreIds != null && trackDto.GenreIds.Any())
+                {
+                    genreList = await _context.Genres
+                        .Where(g => trackDto.GenreIds.Contains(g.Id))
+                        .ToListAsync();
+                }
+                else if (trackDto.Genres != null && trackDto.Genres.Any())
                 {
                     var genres = await GetOrCreateGenresAsync(trackDto.Genres);
                     genreList.AddRange(genres);
