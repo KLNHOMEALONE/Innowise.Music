@@ -36,10 +36,10 @@
                        HeightRequest="50"
                        FontSize="16"
                        BackgroundColor="Transparent">
-                    <Entry.Behaviors>
-                        <toolkit:EventToCommandBehavior EventName="TextChanged"
-                                                        Command="{Binding Source={x:Reference this}, Path=TextChangedCommand}" />
-                    </Entry.Behaviors>
+                     <Entry.Behaviors>
+                         <toolkit:EventToCommandBehavior EventName="Unfocused"
+                                                         Command="{Binding Source={x:Reference this}, Path=TextChangedCommand}" />
+                     </Entry.Behaviors>
                 </Entry>
             <Label Grid.Row="1" Text="{Binding ErrorText, Source={x:Reference this}}"
                    TextColor="{StaticResource PrimaryRed}"

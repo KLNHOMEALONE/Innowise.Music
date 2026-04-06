@@ -4,7 +4,7 @@ namespace Innowise.Music.Validations.Rules;
 
 public class EmailRule<T> : IValidationRule<T>
 {
-    private readonly Regex _regex = new(@"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,})+)$""");
+    private readonly Regex _regex = new(@"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,})+)$");
 
     public string ValidationMessage { get; set; }
 

@@ -50,10 +50,10 @@ public partial class LoginPageViewModel : ObservableObject
     [RelayCommand]
     private async Task Login()
     {
-        //if (!Validate())
-        //{
-        //    return;
-        //}
+        if (!Validate())
+        {
+            return;
+        }
 
         var success = await _authenticationService.LoginAsync(new Model.LoginUserDto
         {
