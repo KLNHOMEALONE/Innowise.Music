@@ -1,5 +1,16 @@
 # Task Tracker - Innowise.Music
 
+## Task: Fix Dashboard Statistics & JSON Serialization
+- **Status**: Completed
+- **Description**: Fixed two issues with the dashboard: (1) claim type mismatch causing 401 errors and (2) JSON circular reference in Albums API.
+- **Steps**:
+  - [x] Fixed claim type mismatch - changed from `ClaimTypes.NameIdentifier` to `"uid"` in `AuthService`
+  - [x] Added error handling in `AdminMusicService` methods
+  - [x] Added `ILogger<Dashboard>` to `Dashboard.razor`
+  - [x] Fixed JSON serialization cycle by adding `ReferenceHandler.IgnoreCycles` to `Program.cs` in Identity Server
+  - [x] Rebuilt Docker containers and verified deployment
+- **Dependencies**: Innowise.MusicIdentityServer
+
 ## Task: Fix Dashboard Statistics Authentication Issue
 - **Status**: Completed
 - **Description**: Fixed the dashboard showing incorrect counts (0) for Artists, Genres, Albums, and Tracks. The root cause was a claim type mismatch - the Identity Server uses `"uid"` for user ID but the Admin Dashboard was looking for `ClaimTypes.NameIdentifier`, causing the token to never be cached and API calls to fail with 401.
