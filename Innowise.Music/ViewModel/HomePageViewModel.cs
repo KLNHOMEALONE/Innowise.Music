@@ -35,6 +35,7 @@ public partial class HomePageViewModel : ObservableObject
         _googleAuthService = googleAuthService;
         _navigationService = navigationService;
         _recommendationService = recommendationService;
+        System.Diagnostics.Debug.WriteLine("[HomeVM] Constructor: loading mock data and recommendations");
         LoadMockData();
         LoadUserName();
         _ = LoadRecommendationsAsync();
@@ -42,11 +43,14 @@ public partial class HomePageViewModel : ObservableObject
 
     private async Task LoadRecommendationsAsync()
     {
+        System.Diagnostics.Debug.WriteLine("[HomeVM] LoadRecommendationsAsync started");
         try
         {
             var tracks = await _recommendationService.GetRecommendationsAsync();
+            System.Diagnostics.Debug.WriteLine($"[HomeVM] Got {tracks.Count} recommendation tracks");
             if (tracks.Count == 0)
             {
+                System.Diagnostics.Debug.WriteLine("[HomeVM] No recommendations, keeping mock data");
                 return;
             }
 
@@ -62,10 +66,11 @@ public partial class HomePageViewModel : ObservableObject
                     FileUri = track.FileUri
                 });
             }
+            System.Diagnostics.Debug.WriteLine($"[HomeVM] FeaturedSongs now has {FeaturedSongs.Count} items");
         }
-        catch
+        catch (Exception ex)
         {
-            // Silently fail - mock data is already loaded
+            System.Diagnostics.Debug.WriteLine($"[HomeVM] LoadRecommendationsAsync error: {ex.Message}");
         }
     }
 

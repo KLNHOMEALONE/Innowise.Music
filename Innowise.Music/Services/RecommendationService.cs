@@ -37,6 +37,7 @@ public class RecommendationService : IRecommendationService
             var token = await _authenticationService.GetTokenAsync();
             if (string.IsNullOrEmpty(token))
             {
+                System.Diagnostics.Debug.WriteLine("[Recommendations] No auth token available");
                 return new List<Track>();
             }
 
@@ -44,25 +45,39 @@ public class RecommendationService : IRecommendationService
                 new AuthenticationHeaderValue("Bearer", token);
 
             var url = GetApiUrl("recommendations");
+            System.Diagnostics.Debug.WriteLine($"[Recommendations] Calling: {url}");
+
             var response = await _httpClient.GetFromJsonAsync<RecommendationsResponse>(url);
+            System.Diagnostics.Debug.WriteLine($"[Recommendations] Response tracks: {response?.Tracks?.Count ?? 0}");
 
             // Use HTTP for stream URLs (MediaElement can't handle self-signed HTTPS certs)
             var streamBaseUrl = DeviceInfo.Platform == DevicePlatform.Android
                 ? "http://10.0.2.2:5236"
                 : "http://localhost:5236";
 
-            return response?.Tracks?.Select(t => new Track
+            var tracks = response?.Tracks?.Select(t => new Track
             {
                 Id = t.Id,
                 Title = t.Title,
                 ArtistName = t.Artist?.Name ?? "Unknown Artist",
                 ImageUrl = t.Album?.CoverImageUrl ?? t.Artist?.ImageUrl ?? string.Empty,
                 FileUri = $"{streamBaseUrl}/api/Music/tracks/{t.Id}/stream"
-            }).ToList() ?? new List<Track>();
+            }).ToList();
+
+            if (tracks != null && tracks.Count > 0)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Recommendations] Loaded {tracks.Count} tracks for streaming");
+            }
+
+            return tracks ?? new List<Track>();
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"RecommendationService Error: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[Recommendations] Error: {ex.GetType().Name}: {ex.Message}");
+            if (ex.InnerException != null)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Recommendations] Inner: {ex.InnerException.Message}");
+            }
             return new List<Track>();
         }
     }
