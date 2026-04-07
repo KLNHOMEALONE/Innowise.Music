@@ -25,19 +25,29 @@
                 </VerticalStackLayout>
 
                 <HorizontalStackLayout Grid.Column="2" Spacing="20" VerticalOptions="Center">
-                    <Border BackgroundColor="#D90429" WidthRequest="20" HeightRequest="20" StrokeShape="RoundRectangle 10" StrokeThickness="0">
-                        <Label Text="✔" TextColor="White" FontSize="12" HorizontalOptions="Center" VerticalOptions="Center" />
+                    <Border BackgroundColor="{StaticResource PrimaryRed}" WidthRequest="24" HeightRequest="24" StrokeShape="RoundRectangle 12" StrokeThickness="0">
+                        <Label Text="✔" TextColor="White" FontSize="14" HorizontalOptions="Center" VerticalOptions="Center" />
                     </Border>
-                    <ImageButton Command="{Binding TogglePlayPauseCommand}" WidthRequest="24" HeightRequest="24">
-                        <ImageButton.Triggers>
-                            <DataTrigger TargetType="ImageButton" Binding="{Binding IsPlaying}" Value="True">
-                                <Setter Property="Source" Value="pause_icon.svg" />
-                            </DataTrigger>
-                            <DataTrigger TargetType="ImageButton" Binding="{Binding IsPlaying}" Value="False">
-                                <Setter Property="Source" Value="play_icon.svg" />
-                            </DataTrigger>
-                        </ImageButton.Triggers>
-                    </ImageButton>
+                    <Border BackgroundColor="White" WidthRequest="40" HeightRequest="40" StrokeShape="RoundRectangle 20" StrokeThickness="0">
+                        <Border.Shadow>
+                            <Shadow Brush="{StaticResource PrimaryRed}" Offset="0,2" Radius="4" Opacity="0.3" />
+                        </Border.Shadow>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding TogglePlayPauseCommand}" />
+                        </Border.GestureRecognizers>
+                        <Label Text="▶" TextColor="{StaticResource PrimaryRed}" FontSize="20" HorizontalOptions="Center" VerticalOptions="Center" Margin="3,0,0,0">
+                            <Label.Triggers>
+                                <DataTrigger TargetType="Label" Binding="{Binding IsPlaying}" Value="True">
+                                    <Setter Property="Text" Value="❚❚" />
+                                    <Setter Property="FontSize" Value="14" />
+                                </DataTrigger>
+                                <DataTrigger TargetType="Label" Binding="{Binding IsPlaying}" Value="False">
+                                    <Setter Property="Text" Value="▶" />
+                                    <Setter Property="FontSize" Value="20" />
+                                </DataTrigger>
+                            </Label.Triggers>
+                        </Label>
+                    </Border>
                 </HorizontalStackLayout>
             </Grid>
 
