@@ -6,56 +6,58 @@
 @inject IAuthService AuthService
 @layout MainLayout
 
+<PageTitle>@(IsEditMode ? "Edit Genre" : "Add New Genre")</PageTitle>
+
 <div class="page-header">
-        <h1>@(IsEditMode ? "Edit Genre" : "Add New Genre")</h1>
-        <a href="/genres" class="btn-secondary">Back to List</a>
-    </div>
+    <h1>@(IsEditMode ? "Edit Genre" : "Add New Genre")</h1>
+    <a href="/genres" class="btn-secondary">Back to List</a>
+</div>
 
-    <div class="content-card">
-        @if (!string.IsNullOrEmpty(errorMessage))
-        {
-            <div class="error-message" style="background-color: #fee2e2; border: 1px solid #fecaca; color: #dc2626; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
-                ⚠️ @errorMessage
-            </div>
-        }
-        <form @onsubmit="HandleSubmit" class="form">
+<div class="content-card">
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="error-message" style="background-color: #fee2e2; border: 1px solid #fecaca; color: #dc2626; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+            ⚠️ @errorMessage
+        </div>
+    }
+
+    <EditForm Model="genre" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+
+        <div class="form-group">
+            <label for="name">Name <span class="required">*</span></label>
+            <InputText id="name" @bind-Value="genre.Name" class="form-control" />
+            <ValidationMessage For="@(() => genre.Name)" />
+        </div>
+
+        <div class="form-group">
+            <label for="description">Description</label>
+            <InputTextArea id="description" @bind-Value="genre.Description" class="form-control" rows="3" />
+        </div>
+
+        <div class="form-row">
             <div class="form-group">
-                <label for="name">Name <span class="required">*</span></label>
-                <input type="text" id="name" @bind="genre.Name" class="form-control" required />
-                @if (!string.IsNullOrEmpty(nameError))
-                {
-                    <span class="error-text">@nameError</span>
-                }
-            </div>
-
-            <div class="form-group">
-                <label for="description">Description</label>
-                <textarea id="description" @bind="genre.Description" class="form-control" rows="3"></textarea>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="color">Color (Hex)</label>
-                    <div class="color-input-group">
-                        <input type="text" id="color" @bind="genre.Color" class="form-control" placeholder="#000000" maxlength="7" />
-                        <input type="color" value="@colorPreview" @oninput="OnColorChange" class="color-picker" />
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="imageUrl">Image URL</label>
-                    <input type="url" id="imageUrl" @bind="genre.ImageUrl" class="form-control" placeholder="https://..." />
+                <label for="color">Color (Hex)</label>
+                <div class="color-input-group">
+                    <InputText id="color" @bind-Value="genre.Color" class="form-control" placeholder="#000000" maxlength="7" />
+                    <input type="color" value="@colorPreview" @oninput="OnColorChange" class="color-picker" />
                 </div>
             </div>
 
-            <div class="form-actions">
-                <button type="submit" class="btn-primary" disabled="@isSubmitting">
-                    @(isSubmitting ? "Saving..." : "Save")
-                </button>
-                <a href="/genres" class="btn-secondary">Cancel</a>
+            <div class="form-group">
+                <label for="imageUrl">Image URL</label>
+                <InputText id="imageUrl" @bind-Value="genre.ImageUrl" class="form-control" placeholder="https://..." />
             </div>
-        </form>
-    </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-primary" disabled="@isSubmitting">
+                @(isSubmitting ? "Saving..." : "Save")
+            </button>
+            <a href="/genres" class="btn-secondary">Cancel</a>
+        </div>
+    </EditForm>
+</div>
 
 @code {
     [Parameter]
@@ -63,7 +65,6 @@
 
     private Genre genre = new();
     private bool isSubmitting;
-    private string nameError = string.Empty;
     private string? errorMessage;
     private string colorPreview = "#000000";
 
@@ -95,17 +96,9 @@
         }
     }
 
-    private async Task HandleSubmit()
+    private async Task HandleValidSubmit()
     {
-        nameError = string.Empty;
         errorMessage = null;
-
-        if (string.IsNullOrWhiteSpace(genre.Name))
-        {
-            nameError = "Name is required";
-            return;
-        }
-
         isSubmitting = true;
 
         try

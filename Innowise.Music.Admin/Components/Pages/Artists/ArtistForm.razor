@@ -6,47 +6,48 @@
 @inject IAuthService AuthService
 @layout MainLayout
 
+<PageTitle>@(IsEditMode ? "Edit Artist" : "Add New Artist")</PageTitle>
+
 <div class="page-header">
-        <h1>@(IsEditMode ? "Edit Artist" : "Add New Artist")</h1>
-        <a href="/artists" class="btn-secondary">Back to List</a>
-    </div>
+    <h1>@(IsEditMode ? "Edit Artist" : "Add New Artist")</h1>
+    <a href="/artists" class="btn-secondary">Back to List</a>
+</div>
 
-    <div class="content-card">
-        <form @onsubmit="HandleSubmit" class="form">
-            <div class="form-group">
-                <label for="name">Name <span class="required">*</span></label>
-                <input type="text" id="name" @bind="artist.Name" class="form-control" required />
-                @if (!string.IsNullOrEmpty(nameError))
-                {
-                    <span class="error-text">@nameError</span>
-                }
-            </div>
+<div class="content-card">
+    <EditForm Model="artist" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
 
-            <div class="form-group">
-                <label for="imageUrl">Image URL</label>
-                <input type="url" id="imageUrl" @bind="artist.ImageUrl" class="form-control" placeholder="https://..." />
-            </div>
+        <div class="form-group">
+            <label for="name">Name <span class="required">*</span></label>
+            <InputText id="name" @bind-Value="artist.Name" class="form-control" />
+            <ValidationMessage For="@(() => artist.Name)" />
+        </div>
 
-            <div class="form-group">
-                <label for="biography">Biography</label>
-                <textarea id="biography" @bind="artist.Biography" class="form-control" rows="5" placeholder="Tell us about the artist..."></textarea>
-            </div>
+        <div class="form-group">
+            <label for="imageUrl">Image URL</label>
+            <InputText id="imageUrl" @bind-Value="artist.ImageUrl" class="form-control" placeholder="https://..." />
+        </div>
 
-            <div class="form-group">
-                <label>
-                    <input type="checkbox" @bind="artist.Verified" />
-                    Verified Artist
-                </label>
-            </div>
+        <div class="form-group">
+            <label for="biography">Biography</label>
+            <InputTextArea id="biography" @bind-Value="artist.Biography" class="form-control" rows="5" placeholder="Tell us about the artist..." />
+        </div>
 
-            <div class="form-actions">
-                <button type="submit" class="btn-primary" disabled="@isSubmitting">
-                    @(isSubmitting ? "Saving..." : "Save")
-                </button>
-                <a href="/artists" class="btn-secondary">Cancel</a>
-            </div>
-        </form>
-    </div>
+        <div class="form-group">
+            <label>
+                <InputCheckbox id="verified" @bind-Value="artist.Verified" />
+                Verified Artist
+            </label>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-primary" disabled="@isSubmitting">
+                @(isSubmitting ? "Saving..." : "Save")
+            </button>
+            <a href="/artists" class="btn-secondary">Cancel</a>
+        </div>
+    </EditForm>
+</div>
 
 @code {
     [Parameter]
@@ -54,7 +55,6 @@
 
     private Artist artist = new();
     private bool isSubmitting;
-    private string nameError = string.Empty;
 
     private bool IsEditMode => id.HasValue;
 
@@ -74,16 +74,8 @@
         }
     }
 
-    private async Task HandleSubmit()
+    private async Task HandleValidSubmit()
     {
-        nameError = string.Empty;
-
-        if (string.IsNullOrWhiteSpace(artist.Name))
-        {
-            nameError = "Name is required";
-            return;
-        }
-
         isSubmitting = true;
 
         try

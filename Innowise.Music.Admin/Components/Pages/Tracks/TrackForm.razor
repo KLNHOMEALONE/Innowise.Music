@@ -6,57 +6,55 @@
 @inject IAuthService AuthService
 @layout MainLayout
 
+<PageTitle>@(IsEditMode ? "Edit Track" : "Add New Track")</PageTitle>
+
 <div class="page-header">
     <h1>@(IsEditMode ? "Edit Track" : "Add New Track")</h1>
     <a href="/tracks" class="btn-secondary">Back to List</a>
 </div>
 
 <div class="content-card">
-    <form @onsubmit="HandleSubmit" class="form">
+    <EditForm Model="track" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+
         <div class="form-group">
             <label for="title">Title <span class="required">*</span></label>
-            <input type="text" id="title" @bind="track.Title" class="form-control" required />
-            @if (!string.IsNullOrEmpty(titleError))
-            {
-                <span class="error-text">@titleError</span>
-            }
+            <InputText id="title" @bind-Value="track.Title" class="form-control" />
+            <ValidationMessage For="@(() => track.Title)" />
         </div>
 
         <div class="form-row">
             <div class="form-group">
                 <label for="artistId">Artist <span class="required">*</span></label>
-                <select id="artistId" @bind="track.ArtistId" class="form-control" required>
+                <InputSelect id="artistId" @bind-Value="track.ArtistId" class="form-control">
                     <option value="">-- Select Artist --</option>
                     @foreach (var artist in artists)
                     {
                         <option value="@artist.Id">@artist.Name</option>
                     }
-                </select>
-                @if (!string.IsNullOrEmpty(artistError))
-                {
-                    <span class="error-text">@artistError</span>
-                }
+                </InputSelect>
+                <ValidationMessage For="@(() => track.ArtistId)" />
             </div>
             <div class="form-group">
                 <label for="albumId">Album</label>
-                <select id="albumId" @bind="track.AlbumId" class="form-control">
+                <InputSelect id="albumId" @bind-Value="track.AlbumId" class="form-control">
                     <option value="">-- Select Album (Optional) --</option>
                     @foreach (var album in albums)
                     {
                         <option value="@album.Id">@album.Title</option>
                     }
-                </select>
+                </InputSelect>
             </div>
         </div>
 
         <div class="form-row">
             <div class="form-group">
                 <label for="trackNumber">Track Number</label>
-                <input type="number" id="trackNumber" @bind="track.TrackNumber" class="form-control" min="1" />
+                <InputNumber id="trackNumber" @bind-Value="track.TrackNumber" class="form-control" min="1" />
             </div>
             <div class="form-group">
                 <label for="duration">Duration (seconds)</label>
-                <input type="number" id="duration" @bind="track.Duration" class="form-control" min="1" />
+                <InputNumber id="duration" @bind-Value="track.Duration" class="form-control" min="1" />
             </div>
         </div>
 
@@ -76,16 +74,16 @@
         <div class="form-row">
             <div class="form-group">
                 <label for="audioFormat">Audio Format</label>
-                <select id="audioFormat" @bind="track.AudioFormat" class="form-control">
+                <InputSelect id="audioFormat" @bind-Value="track.AudioFormat" class="form-control">
                     <option value="MP3">MP3</option>
                     <option value="WAV">WAV</option>
                     <option value="FLAC">FLAC</option>
                     <option value="AAC">AAC</option>
-                </select>
+                </InputSelect>
             </div>
             <div class="form-group">
                 <label>
-                    <input type="checkbox" @bind="track.Explicit" />
+                    <InputCheckbox @bind-Value="track.Explicit" />
                     Explicit Content
                 </label>
             </div>
@@ -97,7 +95,7 @@
             </button>
             <a href="/tracks" class="btn-secondary">Cancel</a>
         </div>
-    </form>
+    </EditForm>
 </div>
 
 @code {
@@ -110,8 +108,6 @@
     private List<Genre> genres = new();
     private Guid[] selectedGenreIds = Array.Empty<Guid>();
     private bool isSubmitting;
-    private string titleError = string.Empty;
-    private string artistError = string.Empty;
 
     private bool IsEditMode => id.HasValue;
 
@@ -124,7 +120,7 @@
             var albumsTask = MusicService.GetAllAlbumsAsync();
             var genresTask = MusicService.GetAllGenresAsync();
             await Task.WhenAll(artistsTask, albumsTask, genresTask);
-            
+
             artists = artistsTask.Result.Items.ToList();
             albums = albumsTask.Result.Items.ToList();
             genres = genresTask.Result;
@@ -149,23 +145,8 @@
         }
     }
 
-    private async Task HandleSubmit()
+    private async Task HandleValidSubmit()
     {
-        titleError = string.Empty;
-        artistError = string.Empty;
-
-        if (string.IsNullOrWhiteSpace(track.Title))
-        {
-            titleError = "Title is required";
-            return;
-        }
-
-        if (track.ArtistId == Guid.Empty)
-        {
-            artistError = "Artist is required";
-            return;
-        }
-
         if (track.Duration <= 0)
         {
             track.Duration = 180; // Default 3 minutes
@@ -222,7 +203,7 @@
         flex-wrap: wrap;
         gap: 12px;
     }
-    
+
     .checkbox-label {
         display: flex;
         align-items: center;
