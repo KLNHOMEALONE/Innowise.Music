@@ -41,11 +41,23 @@ namespace Innowise.Music.Services
             if (_mediaElement == null)
                 return Task.CompletedTask;
 
+            // If MediaElement is in Failed state, reset it
+            if (_mediaElement.CurrentState == MediaElementState.Failed)
+            {
+                _mediaElement.Source = null;
+            }
+
             if (_mediaElement.Source != null && _mediaElement.Source is UriMediaSource uriMediaSource && uriMediaSource.Uri.ToString() == mediaUrl)
             {
                 if (_mediaElement.CurrentState == MediaElementState.Paused)
                 {
                     _mediaElement.Play();
+                }
+                else if (_mediaElement.CurrentState == MediaElementState.Stopped)
+                {
+                    _mediaElement.Source = null;
+                    _mediaElement.ShouldAutoPlay = true;
+                    _mediaElement.Source = MediaSource.FromUri(mediaUrl);
                 }
             }
             else

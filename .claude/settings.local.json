@@ -4,7 +4,14 @@
       "Bash(dotnet build:*)",
       "Bash(docker-compose down:*)",
       "Bash(docker-compose up:*)",
-      "Bash(docker-compose ps:*)"
+      "Bash(docker-compose ps:*)",
+      "Bash(curl -sk https://localhost:7008/health)",
+      "Bash(curl -sk https://localhost:5236/health)",
+      "Bash(docker logs:*)",
+      "Bash(docker exec:*)",
+      "Bash(docker port music_identity_server:*)",
+      "Bash(curl:*)",
+      "Bash(python3 -c ':*)"
     ]
   }
 }

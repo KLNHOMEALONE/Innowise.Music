@@ -87,6 +87,23 @@ public class MusicService : IMusicService
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<Track>> GetRecommendedTracksAsync()
+    {
+        // TODO: Implement actual recommendation algorithm based on user listening history.
+        // For now, return a hardcoded set of popular tracks with artist and album data.
+        return await _context.Tracks
+            .Include(t => t.Artist)
+            .Include(t => t.Album)
+            .OrderByDescending(t => t.PlayCount)
+            .Take(10)
+            .ToListAsync();
+    }
+
+    public async Task<int> SaveChangesAsync()
+    {
+        return await _context.SaveChangesAsync();
+    }
+
     // ==================== Artist CRUD Operations ====================
 
     public async Task<IEnumerable<Artist>> GetAllArtistsAsync(int page, int pageSize)

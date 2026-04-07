@@ -106,28 +106,29 @@
                 </VerticalStackLayout>
 
                 <!-- Featuring Songs You Like -->
-                <!-- Проверить Вертикал стак надо ли????-->
                 <VerticalStackLayout Spacing="15">
                     <Label Text="Featuring songs you like" TextColor="White" FontSize="18" FontAttributes="Bold" />
-                    <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
-                        <HorizontalStackLayout x:Name="featuredSongsLayout" BindableLayout.ItemsSource="{Binding FeaturedSongs}" Spacing="15">
-                            <BindableLayout.ItemTemplate>
-                                <DataTemplate x:DataType="vm:HomeItem">
-                                    <VerticalStackLayout Spacing="8" WidthRequest="120">
-                                        <VerticalStackLayout.GestureRecognizers>
-                                            <TapGestureRecognizer 
-                                                Command="{Binding Parent.PlayFeaturedSongCommand}"
-                                                CommandParameter="{Binding .}" />
-                                        </VerticalStackLayout.GestureRecognizers>
-                                        <Border WidthRequest="120" HeightRequest="120" StrokeShape="RoundRectangle 4" StrokeThickness="0">
-                                            <Image Source="{Binding ImageUrl}" Aspect="AspectFill" />
-                                        </Border>
-                                        <Label Text="{Binding Title}" TextColor="White" FontSize="12" />
-                                    </VerticalStackLayout>
-                                </DataTemplate>
-                            </BindableLayout.ItemTemplate>
-                        </HorizontalStackLayout>
-                    </ScrollView>
+                    <CollectionView ItemsSource="{Binding FeaturedSongs}"
+                                    ItemsLayout="HorizontalList"
+                                    HeightRequest="170"
+                                    HorizontalScrollBarVisibility="Never"
+                                    VerticalScrollBarVisibility="Never">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="vm:HomeItem">
+                                <VerticalStackLayout Spacing="8" WidthRequest="120" Margin="0,0,15,0">
+                                    <VerticalStackLayout.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding Parent.PlayFeaturedSongCommand}"
+                                            CommandParameter="{Binding .}" />
+                                    </VerticalStackLayout.GestureRecognizers>
+                                    <Border WidthRequest="120" HeightRequest="120" StrokeShape="RoundRectangle 4" StrokeThickness="0" BackgroundColor="{StaticResource InputBackgroundColor}">
+                                        <Image Source="{Binding ImageUrl, TargetNullValue='return_to_forever.png'}" Aspect="AspectFill" />
+                                    </Border>
+                                    <Label Text="{Binding Title}" TextColor="White" FontSize="12" />
+                                </VerticalStackLayout>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
                 </VerticalStackLayout>
 
                 <!-- Get Back to Listening -->

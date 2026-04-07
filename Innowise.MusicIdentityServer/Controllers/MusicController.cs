@@ -10,11 +10,16 @@ namespace Innowise.MusicIdentityServer.Controllers;
 public class MusicController : ControllerBase
 {
     private readonly IMusicService _musicService;
+    private readonly IStreamTokenService _streamTokenService;
     private readonly ILogger<MusicController> _logger;
 
-    public MusicController(IMusicService musicService, ILogger<MusicController> logger)
+    public MusicController(
+        IMusicService musicService,
+        IStreamTokenService streamTokenService,
+        ILogger<MusicController> logger)
     {
         _musicService = musicService;
+        _streamTokenService = streamTokenService;
         _logger = logger;
     }
 
@@ -96,17 +101,61 @@ public class MusicController : ControllerBase
     }
 
     /// <summary>
-    /// Stream audio for a specific track (supports range requests)
+    /// Generate a short-lived signed token for streaming a specific track
     /// </summary>
-    [HttpGet("tracks/{id}/stream")]
+    [HttpGet("tracks/{id}/stream-token")]
     [Authorize]
-    public async Task<IActionResult> StreamTrack(Guid id)
+    public async Task<ActionResult<StreamTokenResponse>> GetStreamToken(Guid id)
     {
         var track = await _musicService.GetTrackAsync(id);
         if (track == null || track.AudioData == null)
         {
             return NotFound();
         }
+
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        var token = _streamTokenService.GenerateStreamToken(id, userId);
+        return Ok(new StreamTokenResponse { Token = token });
+    }
+
+    /// <summary>
+    /// Stream audio for a specific track (supports range requests)
+    /// Accepts either a JWT Bearer token or a signed stream token via query parameter
+    /// </summary>
+    [HttpGet("tracks/{id}/stream")]
+    public async Task<IActionResult> StreamTrack(Guid id, [FromQuery] string? token)
+    {
+        // Validate access: either via signed stream token (query param) or JWT Bearer (Authorization header)
+        if (!string.IsNullOrEmpty(token))
+        {
+            if (!_streamTokenService.ValidateStreamToken(token, out var trackId) || trackId != id)
+            {
+                return Unauthorized();
+            }
+        }
+        else
+        {
+            // Fall back to standard JWT authorization
+            if (!User.Identity?.IsAuthenticated ?? true)
+            {
+                return Unauthorized();
+            }
+        }
+
+        var track = await _musicService.GetTrackAsync(id);
+        if (track == null || track.AudioData == null)
+        {
+            return NotFound();
+        }
+
+        // Increment play count for streaming
+        track.PlayCount++;
+        await _musicService.SaveChangesAsync();
 
         var audioStream = await _musicService.GetTrackAudioAsync(id);
         if (audioStream == null)
@@ -156,6 +205,30 @@ public class MusicController : ControllerBase
                 Title = t.Title,
                 Duration = t.Duration,
                 PlayCount = t.PlayCount,
+                Album = t.Album != null ? new AlbumDto { Id = t.Album.Id, Title = t.Album.Title, CoverImageUrl = t.Album.CoverImageUrl } : null
+            }).ToList()
+        });
+    }
+
+    /// <summary>
+    /// Get personalized track recommendations for the authenticated user
+    /// </summary>
+    [HttpGet("recommendations")]
+    [Authorize]
+    public async Task<ActionResult<RecommendationsResponse>> GetRecommendations()
+    {
+        // TODO: Replace with actual recommendation algorithm based on user listening history
+        var tracks = await _musicService.GetRecommendedTracksAsync();
+
+        return Ok(new RecommendationsResponse
+        {
+            Tracks = tracks.Select(t => new TrackDto
+            {
+                Id = t.Id,
+                Title = t.Title,
+                Duration = t.Duration,
+                PlayCount = t.PlayCount,
+                Artist = t.Artist != null ? new ArtistDto { Id = t.Artist.Id, Name = t.Artist.Name, ImageUrl = t.Artist.ImageUrl } : null,
                 Album = t.Album != null ? new AlbumDto { Id = t.Album.Id, Title = t.Album.Title, CoverImageUrl = t.Album.CoverImageUrl } : null
             }).ToList()
         });
@@ -253,6 +326,16 @@ public class MusicController : ControllerBase
     public class ArtistTopTracksResponse
     {
         public ArtistDto Artist { get; set; } = new();
+        public List<TrackDto> Tracks { get; set; } = new();
+    }
+
+    public class StreamTokenResponse
+    {
+        public string Token { get; set; } = string.Empty;
+    }
+
+    public class RecommendationsResponse
+    {
         public List<TrackDto> Tracks { get; set; } = new();
     }
 

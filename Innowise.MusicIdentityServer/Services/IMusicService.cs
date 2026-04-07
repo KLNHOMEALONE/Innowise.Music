@@ -12,6 +12,8 @@ public interface IMusicService
     Task<Stream?> GetTrackAudioAsync(Guid trackId);
     Task<IEnumerable<Track>> GetArtistTopTracksAsync(Guid artistId, int count);
     Task<IEnumerable<Track>> GetAlbumTracksAsync(Guid albumId);
+    Task<IEnumerable<Track>> GetRecommendedTracksAsync();
+    Task<int> SaveChangesAsync();
     
     // Artist CRUD operations
     Task<IEnumerable<Artist>> GetAllArtistsAsync(int page, int pageSize);

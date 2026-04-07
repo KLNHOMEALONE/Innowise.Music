@@ -13,6 +13,7 @@ public partial class HomePageViewModel : ObservableObject
     private readonly IAuthenticationService _authenticationService;
     private readonly IGoogleAuthService _googleAuthService;
     private readonly INavigationService _navigationService;
+    private readonly IRecommendationService _recommendationService;
 
     [ObservableProperty]
     private string _userName = "John Doe";
@@ -26,14 +27,46 @@ public partial class HomePageViewModel : ObservableObject
         MiniPlayerViewModel miniPlayerViewModel,
         IAuthenticationService authenticationService,
         IGoogleAuthService googleAuthService,
-        INavigationService navigationService)
+        INavigationService navigationService,
+        IRecommendationService recommendationService)
     {
         _miniPlayerViewModel = miniPlayerViewModel;
         _authenticationService = authenticationService;
         _googleAuthService = googleAuthService;
         _navigationService = navigationService;
+        _recommendationService = recommendationService;
         LoadMockData();
         LoadUserName();
+        _ = LoadRecommendationsAsync();
+    }
+
+    private async Task LoadRecommendationsAsync()
+    {
+        try
+        {
+            var tracks = await _recommendationService.GetRecommendationsAsync();
+            if (tracks.Count == 0)
+            {
+                return;
+            }
+
+            FeaturedSongs.Clear();
+            foreach (var track in tracks)
+            {
+                FeaturedSongs.Add(new HomeItem(this)
+                {
+                    Id = track.Id,
+                    Title = track.Title,
+                    Subtitle = track.ArtistName,
+                    ImageUrl = track.ImageUrl,
+                    FileUri = track.FileUri
+                });
+            }
+        }
+        catch
+        {
+            // Silently fail - mock data is already loaded
+        }
     }
 
     [RelayCommand]
@@ -43,10 +76,13 @@ public partial class HomePageViewModel : ObservableObject
 
         var track = new Track
         {
+            Id = song.Id,
             Title = song.Title,
             ArtistName = song.Subtitle,
             ImageUrl = song.ImageUrl,
-            FileUri = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+            FileUri = !string.IsNullOrEmpty(song.FileUri)
+                ? song.FileUri
+                : "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
         };
 
         await _miniPlayerViewModel.PlayTrack(track);
@@ -112,9 +148,11 @@ public partial class HomePageViewModel : ObservableObject
 
 public class HomeItem
 {
+    public Guid Id { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Subtitle { get; set; } = string.Empty;
     public string ImageUrl { get; set; } = string.Empty;
+    public string FileUri { get; set; } = string.Empty;
     public HomePageViewModel Parent { get; }
 
     public HomeItem(HomePageViewModel parent)

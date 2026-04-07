@@ -27,6 +27,7 @@ builder.Services.AddAutoMapper(cfg => { }, typeof(Program));
 
 // Register Music Service
 builder.Services.AddScoped<IMusicService, MusicService>();
+builder.Services.AddSingleton<IStreamTokenService, StreamTokenService>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>

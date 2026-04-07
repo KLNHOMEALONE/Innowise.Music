@@ -10,6 +10,7 @@ namespace Innowise.Music.ViewModel;
 public partial class MiniPlayerViewModel : ObservableObject
 {
     private readonly IAudioService _audioService;
+    private readonly IStreamTokenService _streamTokenService;
 
     [ObservableProperty]
     private Track _currentTrack;
@@ -20,7 +21,7 @@ public partial class MiniPlayerViewModel : ObservableObject
 
     [ObservableProperty]
     private double _progress;
-    
+
     [ObservableProperty]
     private TimeSpan _position;
 
@@ -29,9 +30,12 @@ public partial class MiniPlayerViewModel : ObservableObject
 
     public bool IsVisible => CurrentTrack != null;
 
-    public MiniPlayerViewModel(IAudioService audioService)
+    public MiniPlayerViewModel(
+        IAudioService audioService,
+        IStreamTokenService streamTokenService)
     {
         _audioService = audioService;
+        _streamTokenService = streamTokenService;
         _audioService.StateChanged += OnAudioServiceStateChanged;
         _audioService.PositionChanged += OnAudioServicePositionChanged;
     }
@@ -73,7 +77,19 @@ public partial class MiniPlayerViewModel : ObservableObject
         {
             if (CurrentTrack != null)
             {
-                await _audioService.Play(CurrentTrack.FileUri);
+                var streamUrl = CurrentTrack.FileUri;
+
+                if (CurrentTrack.Id != Guid.Empty && streamUrl.Contains("/stream", StringComparison.OrdinalIgnoreCase))
+                {
+                    var signedToken = await _streamTokenService.GetStreamTokenAsync(CurrentTrack.Id);
+                    if (!string.IsNullOrEmpty(signedToken))
+                    {
+                        var separator = streamUrl.Contains('?') ? "&" : "?";
+                        streamUrl = $"{streamUrl}{separator}token={Uri.EscapeDataString(signedToken)}";
+                    }
+                }
+
+                await _audioService.Play(streamUrl);
             }
         }
     }
@@ -82,6 +98,20 @@ public partial class MiniPlayerViewModel : ObservableObject
     {
         CurrentTrack = track;
         OnPropertyChanged(nameof(IsVisible));
-        await _audioService.Play(track.FileUri);
+
+        var streamUrl = track.FileUri;
+
+        // If this is an API stream URL and we have a track ID, try to get a signed token
+        if (track.Id != Guid.Empty && streamUrl.Contains("/stream", StringComparison.OrdinalIgnoreCase))
+        {
+            var signedToken = await _streamTokenService.GetStreamTokenAsync(track.Id);
+            if (!string.IsNullOrEmpty(signedToken))
+            {
+                var separator = streamUrl.Contains('?') ? "&" : "?";
+                streamUrl = $"{streamUrl}{separator}token={Uri.EscapeDataString(signedToken)}";
+            }
+        }
+
+        await _audioService.Play(streamUrl);
     }
 }
