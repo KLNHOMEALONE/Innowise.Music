@@ -1,0 +1,57 @@
+@using Microsoft.AspNetCore.Components.Forms
+
+<div class="content-card">
+    <div class="upload-zone">
+        <div class="upload-icon">🎵</div>
+        <h2>Drag & Drop Audio Files</h2>
+        <p>or click to browse</p>
+        <InputFile OnChange="OnChange" accept=".mp3,.wav,.flac,.aac"
+                   multiple id="fileInput" />
+
+        <div class="upload-info">
+            <p>Supported formats: MP3, WAV, FLAC, AAC</p>
+            <p>Maximum 30 files per batch, 50MB per file</p>
+        </div>
+    </div>
+
+    @if (Files.Any())
+    {
+        <FileList Files="Files"
+                  OnRemove="OnRemove"
+                  ClearAllFiles="ClearAllFiles"
+                  ExtractMetadata="ExtractMetadata"
+                  IsExtracting="IsExtracting"
+                  CanExtract="CanExtract" />
+    }
+</div>
+
+@code {
+    [Parameter]
+    public List<SelectedFile> Files { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<InputFileChangeEventArgs> OnChange { get; set; }
+
+    [Parameter]
+    public EventCallback<SelectedFile> OnRemove { get; set; }
+
+    [Parameter]
+    public EventCallback ClearAllFiles { get; set; }
+
+    [Parameter]
+    public EventCallback ExtractMetadata { get; set; }
+
+    [Parameter]
+    public bool IsExtracting { get; set; }
+
+    [Parameter]
+    public bool CanExtract { get; set; }
+
+    private async Task HandleFileChange(InputFileChangeEventArgs e)
+    {
+        if (OnChange.HasDelegate)
+        {
+            await OnChange.InvokeAsync(e);
+        }
+    }
+}

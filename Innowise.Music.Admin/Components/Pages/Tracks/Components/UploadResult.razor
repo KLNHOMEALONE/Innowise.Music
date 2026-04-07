@@ -1,0 +1,48 @@
+@if (UploadComplete)
+{
+    <div class="success-state">
+        <h2>Upload Complete!</h2>
+        <p>Successfully uploaded @Result.UploadedCount track(s)</p>
+        @if (Result.FailedCount > 0)
+        {
+            <p class="warning">Failed to upload @Result.FailedCount track(s)</p>
+            @foreach (var error in Result.Errors)
+            {
+                <p class="error-text">• @error</p>
+            }
+        }
+        <div class="action-buttons">
+            <a href="/tracks/upload-multi" class="btn-primary">Upload More</a>
+            <a href="/tracks" class="btn-secondary">View All Tracks</a>
+        </div>
+    </div>
+}
+else if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="error-state">
+        <p>⚠️ @ErrorMessage</p>
+        <button class="btn-primary" @onclick="TryAgain">Try Again</button>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string? ErrorMessage { get; set; }
+
+    [Parameter]
+    public bool UploadComplete { get; set; }
+
+    [Parameter]
+    public BatchUploadResult Result { get; set; } = new();
+
+    [Parameter]
+    public EventCallback Reset { get; set; }
+
+    private async Task TryAgain()
+    {
+        if (Reset.HasDelegate)
+        {
+            await Reset.InvokeAsync();
+        }
+    }
+}

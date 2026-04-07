@@ -1,0 +1,74 @@
+<div class="selected-files">
+    <h3>Selected Files (@Files.Count)</h3>
+    <ul class="file-list">
+        @foreach (var file in Files)
+        {
+            <li>
+                <span>@file.Name (@FormatFileSize(file.Length))</span>
+                <button class="btn-remove" @onclick="() => RemoveFile(file)">×</button>
+            </li>
+        }
+    </ul>
+    <div class="action-buttons">
+        <button class="btn-secondary" @onclick="ClearAll">Clear All</button>
+        <button class="btn-primary" @onclick="ExtractMetadata" disabled="@(!CanExtract)">
+            @if (IsExtracting)
+            {
+                <text>Extracting...</text>
+            }
+            else
+            {
+                <text>Extract Metadata</text>
+            }
+        </button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public List<SelectedFile> Files { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<SelectedFile> OnRemove { get; set; }
+
+    [Parameter]
+    public EventCallback ClearAllFiles { get; set; }
+
+    [Parameter]
+    public EventCallback ExtractMetadata { get; set; }
+
+    [Parameter]
+    public bool IsExtracting { get; set; }
+
+    [Parameter]
+    public bool CanExtract { get; set; }
+
+    private async Task RemoveFile(SelectedFile file)
+    {
+        if (OnRemove.HasDelegate)
+        {
+            await OnRemove.InvokeAsync(file);
+        }
+    }
+
+    private async Task ClearAll()
+    {
+        if (ClearAllFiles.HasDelegate)
+        {
+            await ClearAllFiles.InvokeAsync();
+        }
+    }
+
+    private string FormatFileSize(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB" };
+        double len = bytes;
+        int order = 0;
+        while (len >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            len = len / 1024;
+        }
+        return $"{len:0.##} {sizes[order]}";
+    }
+}

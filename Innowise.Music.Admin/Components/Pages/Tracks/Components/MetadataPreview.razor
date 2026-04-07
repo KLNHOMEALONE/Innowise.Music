@@ -1,0 +1,164 @@
+@using Innowise.Music.Admin.Models
+@using Innowise.Music.Admin.Components.Pages.Tracks.Components
+
+<div class="content-card">
+    <h2>Review Tracks</h2>
+    <p class="subtitle">Please review and adjust the metadata before uploading</p>
+
+    @if (Tracks.Any())
+    {
+        <div class="tracks-preview">
+            @foreach (var track in Tracks)
+            {
+                <div class="track-preview-card">
+                    <div class="track-header">
+                        <h3>@track.FileName</h3>
+                        @if (!track.IsValid)
+                        {
+                            <span class="validation-warning">⚠️ Missing required fields</span>
+                        }
+                    </div>
+
+                    <div class="track-fields">
+                        <div class="field-group">
+                            <label>Title *</label>
+                            <input type="text" @bind="track.Title" class="form-input"
+                                   placeholder="Track title" />
+                        </div>
+
+                        <div class="field-group">
+                            <label>Artist *</label>
+                            <select @bind="track.MatchedArtistId" class="form-select">
+                                <option value="">-- Select Artist --</option>
+                                @foreach (var artist in Artists)
+                                {
+                                    <option value="@artist.Id">@artist.Name</option>
+                                }
+                            </select>
+                            <input type="text" @bind="track.MatchedArtistName" class="form-input"
+                                   placeholder="Or enter new artist name" />
+                        </div>
+
+                        <div class="field-group">
+                            <label>Album</label>
+                            <select @bind="track.MatchedAlbumId" class="form-select">
+                                <option value="">-- Select Album --</option>
+                                @foreach (var album in Albums)
+                                {
+                                    <option value="@album.Id">@album.Title</option>
+                                }
+                            </select>
+                            <input type="text" @bind="track.MatchedAlbumName" class="form-input"
+                                   placeholder="Or enter new album name" />
+                        </div>
+
+                        <div class="field-group">
+                            <label>Genres</label>
+                            <div class="checkbox-group">
+                                @foreach (var genre in Genres)
+                                {
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" value="@genre.Id"
+                                               checked="@(track.MatchedGenreIds.Contains(genre.Id))"
+                                               @onchange="() => HandleGenreChange(track, genre.Id)" />
+                                        @genre.Name
+                                    </label>
+                                }
+                            </div>
+                            <input type="text" @bind="track.GenresString" class="form-input"
+                                   placeholder="Or enter new genres (comma-separated)" />
+                        </div>
+
+                        <div class="field-row">
+                            <div class="field-group">
+                                <label>Duration (seconds) *</label>
+                                <input type="number" @bind="track.Duration" class="form-input" min="1" />
+                            </div>
+                            <div class="field-group">
+                                <label>Track Number</label>
+                                <input type="number" @bind="track.TrackNumber" class="form-input" min="1" />
+                            </div>
+                            <div class="field-group">
+                                <label>Year</label>
+                                <input type="number" @bind="track.Year" class="form-input" min="1900" max="2100" />
+                            </div>
+                        </div>
+
+                        <div class="field-row">
+                            <div class="field-group">
+                                <label>Bitrate (kbps)</label>
+                                <input type="number" @bind="track.Bitrate" class="form-input" readonly />
+                            </div>
+                            <div class="field-group">
+                                <label>Sample Rate (Hz)</label>
+                                <input type="number" @bind="track.SampleRate" class="form-input" readonly />
+                            </div>
+                            <div class="field-group">
+                                <label>File Size</label>
+                                <input type="text" value="@FormatFileSize(track.FileSize)" class="form-input" readonly />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="upload-actions">
+            <button class="btn-secondary" @onclick="Cancel">Cancel</button>
+            <button class="btn-primary" @onclick="Upload" disabled="@(!CanUpload)">
+                Upload @Tracks.Count Track(s)
+            </button>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public List<ExtractedTrackMetadata> Tracks { get; set; } = new();
+
+    [Parameter]
+    public List<Models.Artist> Artists { get; set; } = new();
+
+    [Parameter]
+    public List<Models.Album> Albums { get; set; } = new();
+
+    [Parameter]
+    public List<Models.Genre> Genres { get; set; } = new();
+
+    [Parameter]
+    public EventCallback Cancel { get; set; }
+
+    [Parameter]
+    public EventCallback Upload { get; set; }
+
+    [Parameter]
+    public EventCallback<GenreChange> OnTrackGenreChanged { get; set; }
+
+    private bool CanUpload => Tracks.Any(t => t.IsValid);
+
+    private async Task HandleGenreChange(ExtractedTrackMetadata track, Guid genreId)
+    {
+        if (OnTrackGenreChanged.HasDelegate)
+        {
+            await OnTrackGenreChanged.InvokeAsync(new GenreChange
+            {
+                Track = track,
+                GenreId = genreId,
+                IsChecked = !track.MatchedGenreIds.Contains(genreId)
+            });
+        }
+    }
+
+    private string FormatFileSize(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB" };
+        double len = bytes;
+        int order = 0;
+        while (len >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            len = len / 1024;
+        }
+        return $"{len:0.##} {sizes[order]}";
+    }
+}

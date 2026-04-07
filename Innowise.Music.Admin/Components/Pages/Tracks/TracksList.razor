@@ -91,6 +91,39 @@ else
                 }
             </tbody>
         </table>
+
+        @if (totalPages > 1)
+        {
+            var startItem = (currentPage - 1) * PageSize + 1;
+            var endItem = Math.Min(currentPage * PageSize, totalCount);
+            var pageInfo = $"Showing {startItem}-{endItem} of {totalCount} tracks";
+            var pageNumbers = GetPageNumbers();
+            var prevDisabled = !hasPrevious;
+            var nextDisabled = !hasNext;
+
+            <div class="pagination">
+                <div class="pagination-info">
+                    @pageInfo
+                </div>
+                <div class="pagination-controls">
+                    <button class="btn-page" @onclick="PreviousPage" disabled="@prevDisabled">← Previous</button>
+
+                    @foreach (var pageNum in pageNumbers)
+                    {
+                        if (pageNum > 0)
+                        {
+                            <button class="btn-page @(pageNum == currentPage ? "btn-page-active" : "")" @onclick="() => GoToPage(pageNum)">@pageNum</button>
+                        }
+                        else
+                        {
+                            <span class="page-ellipsis">...</span>
+                        }
+                    }
+
+                    <button class="btn-page" @onclick="NextPage" disabled="@nextDisabled">Next →</button>
+                </div>
+            </div>
+        }
     </div>
 }
 
@@ -115,6 +148,14 @@ else
     private bool showDeleteDialog;
     private TrackViewModel? deleteTrack;
 
+    // Pagination
+    private int currentPage = 1;
+    private const int PageSize = 20;
+    private int totalCount;
+    private int totalPages;
+    private bool hasPrevious;
+    private bool hasNext;
+
     protected override async Task OnInitializedAsync()
     {
         await LoadTracks();
@@ -127,9 +168,8 @@ else
 
         try
         {
-            var pagedResponse = await MusicService.GetAllTracksAsync();
-            var trackDtos = pagedResponse.Items;
-            tracks = trackDtos.Select(t => new TrackViewModel
+            var pagedResponse = await MusicService.GetAllTracksAsync(page: currentPage, pageSize: PageSize);
+            tracks = pagedResponse.Items.Select(t => new TrackViewModel
             {
                 Id = t.Id,
                 Title = t.Title,
@@ -143,6 +183,11 @@ else
                 Genres = t.Genres?.ToList() ?? new List<Genre>(),
                 Explicit = t.Explicit
             }).ToList();
+
+            totalCount = pagedResponse.TotalCount;
+            totalPages = pagedResponse.TotalPages;
+            hasPrevious = pagedResponse.HasPrevious;
+            hasNext = pagedResponse.HasNext;
         }
         catch (Exception ex)
         {
@@ -152,6 +197,46 @@ else
         {
             isLoading = false;
         }
+    }
+
+    private async Task GoToPage(int page)
+    {
+        if (page < 1 || page > totalPages) return;
+        currentPage = page;
+        await LoadTracks();
+    }
+
+    private async Task PreviousPage()
+    {
+        if (hasPrevious)
+        {
+            await GoToPage(currentPage - 1);
+        }
+    }
+
+    private async Task NextPage()
+    {
+        if (hasNext)
+        {
+            await GoToPage(currentPage + 1);
+        }
+    }
+
+    private List<int> GetPageNumbers()
+    {
+        var pages = new List<int>();
+        for (int i = 1; i <= totalPages; i++)
+        {
+            if (i == 1 || i == totalPages || (i >= currentPage - 2 && i <= currentPage + 2))
+            {
+                pages.Add(i);
+            }
+            else if (i == currentPage - 3 || i == currentPage + 3)
+            {
+                pages.Add(0); // Sentinel for ellipsis
+            }
+        }
+        return pages;
     }
 
     private string FormatDuration(int durationSeconds)
@@ -208,3 +293,58 @@ else
         public bool Explicit { get; set; }
     }
 }
+
+<style>
+    .pagination {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 0;
+        border-top: 1px solid var(--border-color);
+        margin-top: 16px;
+    }
+
+    .pagination-info {
+        color: var(--text-secondary);
+        font-size: 14px;
+    }
+
+    .pagination-controls {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+    }
+
+    .btn-page {
+        padding: 8px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        background: var(--card-bg);
+        color: var(--text-primary);
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+
+    .btn-page:hover:not(:disabled) {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+    }
+
+    .btn-page:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .btn-page-active {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+    }
+
+    .page-ellipsis {
+        padding: 0 8px;
+        color: var(--text-secondary);
+    }
+</style>
