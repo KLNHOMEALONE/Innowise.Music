@@ -66,12 +66,13 @@ public class AuthService : IAuthService
             }
 
             var userId = claimsPrincipal.FindFirst("uid")?.Value;
-            
+
             if (!string.IsNullOrEmpty(userId))
             {
                 var cacheEntryOptions = new MemoryCacheEntryOptions()
                     .SetSlidingExpiration(TimeSpan.FromHours(8));
-                _memoryCache.Set(GetCacheKey(userId), authResponse.Token, cacheEntryOptions);
+                _memoryCache.Set(GetTokenCacheKey(userId), authResponse.Token, cacheEntryOptions);
+                _memoryCache.Set(GetRefreshTokenCacheKey(userId), authResponse.RefreshToken, cacheEntryOptions);
                  _logger.LogInformation("Token for user {userId} cached successfully.", userId);
             }
 
@@ -92,7 +93,8 @@ public class AuthService : IAuthService
 
         if (!string.IsNullOrEmpty(userId))
         {
-            _memoryCache.Remove(GetCacheKey(userId));
+            _memoryCache.Remove(GetTokenCacheKey(userId));
+            _memoryCache.Remove(GetRefreshTokenCacheKey(userId));
              _logger.LogInformation("Token for user {userId} removed from cache.", userId);
         }
 
@@ -118,7 +120,61 @@ public class AuthService : IAuthService
             return null;
         }
 
-        return _memoryCache.Get<string>(GetCacheKey(userId));
+        var token = _memoryCache.Get<string>(GetTokenCacheKey(userId));
+        if (!string.IsNullOrEmpty(token))
+        {
+            return token;
+        }
+
+        // Token missing from cache - try to refresh
+        var refreshToken = _memoryCache.Get<string>(GetRefreshTokenCacheKey(userId));
+        if (!string.IsNullOrEmpty(refreshToken))
+        {
+            _logger.LogInformation("Attempting to refresh token for user {UserId}", userId);
+            var newToken = await RefreshTokenAsync(userId, token, refreshToken);
+            if (!string.IsNullOrEmpty(newToken))
+            {
+                return newToken;
+            }
+        }
+
+        return null;
+    }
+
+    private async Task<string?> RefreshTokenAsync(string userId, string? accessToken, string refreshToken)
+    {
+        try
+        {
+            var payload = new { Token = accessToken ?? string.Empty, RefreshToken = refreshToken };
+            var response = await _httpClient.PostAsJsonAsync("Authentication/refresh", payload);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("Token refresh failed for user {UserId}, status {StatusCode}", userId, response.StatusCode);
+                return null;
+            }
+
+            var content = await response.Content.ReadAsStringAsync();
+            var authResponse = JsonSerializer.Deserialize<AuthResponse>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            if (string.IsNullOrWhiteSpace(authResponse?.Token))
+            {
+                return null;
+            }
+
+            var cacheEntryOptions = new MemoryCacheEntryOptions()
+                .SetSlidingExpiration(TimeSpan.FromHours(8));
+            _memoryCache.Set(GetTokenCacheKey(userId), authResponse.Token, cacheEntryOptions);
+            _memoryCache.Set(GetRefreshTokenCacheKey(userId), authResponse.RefreshToken, cacheEntryOptions);
+
+            _logger.LogInformation("Token refreshed successfully for user {UserId}", userId);
+            return authResponse.Token;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error refreshing token for user {UserId}", userId);
+            return null;
+        }
     }
 
     public async Task<bool> IsAuthenticatedAsync()
@@ -151,10 +207,12 @@ public class AuthService : IAuthService
         return new ClaimsPrincipal(identity);
     }
 
-    private string GetCacheKey(string userId) => $"AuthToken_{userId}";
+    private string GetTokenCacheKey(string userId) => $"AuthToken_{userId}";
+    private string GetRefreshTokenCacheKey(string userId) => $"AuthRefreshToken_{userId}";
 
     private class AuthResponse
     {
         public string? Token { get; set; }
+        public string? RefreshToken { get; set; }
     }
 }
