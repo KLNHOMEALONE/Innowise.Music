@@ -10,11 +10,13 @@ public class AdminMusicService : IAdminMusicService
 {
     private readonly HttpClient _httpClient;
     private readonly IAuthService _authService;
+    private readonly ILogger<AdminMusicService> _logger;
 
-    public AdminMusicService(HttpClient httpClient, IAuthService authService)
+    public AdminMusicService(HttpClient httpClient, IAuthService authService, ILogger<AdminMusicService> logger)
     {
         _httpClient = httpClient;
         _authService = authService;
+        _logger = logger;
     }
 
     private async Task AddAuthHeaderAsync()
@@ -41,8 +43,9 @@ public class AdminMusicService : IAdminMusicService
             var response = await _httpClient.GetFromJsonAsync<List<Genre>>("admin/genres");
             return response ?? new List<Genre>();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "Failed to retrieve genres");
             return new List<Genre>();
         }
     }
@@ -58,7 +61,7 @@ public class AdminMusicService : IAdminMusicService
         await AddAuthHeaderAsync();
         
         // Log the genre data being sent
-        Console.WriteLine($"Creating genre: Name={genre.Name}, Color={genre.Color}, Description={genre.Description}");
+        _logger.LogInformation("Creating genre: {Name}, Color={Color}", genre.Name, genre.Color);
         
         var response = await _httpClient.PostAsJsonAsync("admin/genres", genre);
         if (response.IsSuccessStatusCode)
@@ -68,7 +71,7 @@ public class AdminMusicService : IAdminMusicService
         
         // Try to read error message from response
         var errorContent = await response.Content.ReadAsStringAsync();
-        Console.WriteLine($"CreateGenre error ({response.StatusCode}): {errorContent}");
+        _logger.LogWarning("CreateGenre error ({StatusCode}): {Error}", response.StatusCode, errorContent);
         return null;
     }
 
@@ -102,8 +105,9 @@ public class AdminMusicService : IAdminMusicService
                 $"admin/artists?page={page}&pageSize={pageSize}");
             return response ?? new PagedResponse<Artist>();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "Failed to retrieve artists (page={Page}, pageSize={PageSize})", page, pageSize);
             return new PagedResponse<Artist>();
         }
     }
@@ -155,8 +159,9 @@ public class AdminMusicService : IAdminMusicService
                 $"admin/albums?page={page}&pageSize={pageSize}");
             return response ?? new PagedResponse<Album>();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "Failed to retrieve albums (page={Page}, pageSize={PageSize})", page, pageSize);
             return new PagedResponse<Album>();
         }
     }
@@ -208,8 +213,9 @@ public class AdminMusicService : IAdminMusicService
                 $"admin/tracks?page={page}&pageSize={pageSize}");
             return response ?? new PagedResponse<Track>();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "Failed to retrieve tracks (page={Page}, pageSize={PageSize})", page, pageSize);
             return new PagedResponse<Track>();
         }
     }

@@ -12,7 +12,13 @@ namespace Innowise.Music.Admin.Services;
 public class MetadataExtractionService : IMetadataExtractionService
 {
     private static readonly string[] SupportedExtensions = { ".mp3", ".aac", ".flac", ".wav" };
-    
+    private readonly ILogger<MetadataExtractionService> _logger;
+
+    public MetadataExtractionService(ILogger<MetadataExtractionService> logger)
+    {
+        _logger = logger;
+    }
+
     public async Task<ExtractedTrackMetadata> ExtractMetadataAsync(Stream fileStream, string fileName)
     {
         var metadata = new ExtractedTrackMetadata
@@ -78,7 +84,7 @@ public class MetadataExtractionService : IMetadataExtractionService
             // If metadata extraction fails, use filename as title
             metadata.Title = Path.GetFileNameWithoutExtension(fileName);
             // Log the error but don't fail the entire operation
-            Console.WriteLine($"Error extracting metadata from {fileName}: {ex.Message}");
+            _logger.LogWarning(ex, "Failed to extract metadata from {FileName}", fileName);
         }
         
         return metadata;
