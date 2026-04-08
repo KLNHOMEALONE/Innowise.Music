@@ -31,10 +31,17 @@ namespace Innowise.Music
         {
             // On start, check if the user is authenticated.
             // If they are not, navigate to the login page.
-            // Otherwise, let the Shell default to the main TabBar content (HomePage).
+            // If they are, explicitly re-navigate to HomePage to ensure OnAppearing fires
+            // and recommendations load (Shell's default tab selection may not reliably
+            // trigger OnAppearing on app restart).
             if (!await _authenticationService.IsAuthenticatedAsync())
             {
                 await GoToAsync($"///{nameof(LoginPage)}");
+            }
+            else
+            {
+                // Force re-navigation to HomePage so OnAppearing fires reliably
+                await GoToAsync($"///{nameof(HomePage)}");
             }
         }
 
