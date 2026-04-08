@@ -48,7 +48,8 @@
   - [x] Fixed JWT `sub` claim bug — was set to `user.UserName` (email) instead of `user.Id` (GUID), causing FK violations
   - [x] Removed mock data fallback from `RecentItems` — shows only real user data
   - [x] Clear `RecentItems` on logout to prevent cross-user data leakage
-- **Files**: `Innowise.MusicIdentityServer/Models/Music/UserRecentTrack.cs`, `Innowise.MusicIdentityServer/Data/MusicIdentityDbContext.cs`, `Innowise.MusicIdentityServer/Services/MusicService.cs`, `Innowise.MusicIdentityServer/Controllers/MusicController.cs`, `Innowise.MusicIdentityServer/Controllers/AuthenticationController.cs`, `Innowise.Music/Services/HistoryService.cs`, `Innowise.Music/ViewModel/HomePageViewModel.cs`, `Innowise.Music/ViewModel/MiniPlayerViewModel.cs`, `Innowise.Music/View/HomePage.xaml.cs`, `Innowise.Music/MauiProgram.cs`
+  - [x] Fixed bug where clicking a new track while paused played the old track — `AudioService.Play()` now checks if the source URL changed before resuming
+- **Files**: `Innowise.MusicIdentityServer/Models/Music/UserRecentTrack.cs`, `Innowise.MusicIdentityServer/Data/MusicIdentityDbContext.cs`, `Innowise.MusicIdentityServer/Services/MusicService.cs`, `Innowise.MusicIdentityServer/Controllers/MusicController.cs`, `Innowise.MusicIdentityServer/Controllers/AuthenticationController.cs`, `Innowise.Music/Services/HistoryService.cs`, `Innowise.Music/Services/AudioService.cs`, `Innowise.Music/ViewModel/HomePageViewModel.cs`, `Innowise.Music/ViewModel/MiniPlayerViewModel.cs`, `Innowise.Music/View/HomePage.xaml.cs`, `Innowise.Music/MauiProgram.cs`
 
 ## Task: Fix Audio Resume After Pause
 - **Status**: Completed

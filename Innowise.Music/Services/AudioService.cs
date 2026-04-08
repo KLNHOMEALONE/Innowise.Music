@@ -49,8 +49,11 @@ namespace Innowise.Music.Services
             if (_mediaElement == null)
                 return Task.CompletedTask;
 
-            // If already paused, just resume — don't reset the source or we lose position
-            if (_mediaElement.CurrentState == MediaElementState.Paused)
+            // If paused AND the source URL is the same, just resume — don't reset the source
+            var currentUrl = (_mediaElement.Source as UriMediaSource)?.Uri?.ToString();
+            if (_mediaElement.CurrentState == MediaElementState.Paused &&
+                !string.IsNullOrEmpty(currentUrl) &&
+                currentUrl == mediaUrl)
             {
                 _mediaElement.Play();
                 return Task.CompletedTask;
@@ -59,7 +62,8 @@ namespace Innowise.Music.Services
             // Stop and clean up before playing to release native audio buffers
             // On Android, failing to stop before reassigning the source causes
             // buffer accumulation leading to distortion after multiple plays
-            if (_mediaElement.CurrentState == MediaElementState.Playing)
+            if (_mediaElement.CurrentState == MediaElementState.Playing ||
+                _mediaElement.CurrentState == MediaElementState.Paused)
             {
                 _mediaElement.Stop();
             }

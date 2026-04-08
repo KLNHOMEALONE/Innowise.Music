@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - **JWT `sub` claim using wrong value**: The `sub` claim was set to `user.UserName` (email string) instead of `user.Id` (GUID), causing foreign key violations when the history controller read `ClaimTypes.NameIdentifier` as the user ID for `UserRecentTracks.UserId`. Fixed in `AuthenticationController.GenerateToken()`.
+- **New track while paused played old track**: When a track was paused and the user clicked a different track, the `AudioService.Play()` method saw `CurrentState == Paused` and unconditionally called `_mediaElement.Play()` to resume — but this resumed the **old** track from its paused position, not the new track. Fixed by checking if the source URL matches the requested URL before taking the resume fast-path. If the URL differs, the method now stops the old track and assigns the new source.
 
 ## [2026-04-06] - Fixed Dashboard Statistics, JSON Serialization & Login Styling
 
