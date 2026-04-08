@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased] - Listening History Feature
+
+### Added
+- **Per-user listening history**: New `UserRecentTracks` table tracks the 5 most recently played tracks per user
+  - `POST /api/Music/tracks/{id}/history` — records a play (upsert, trims to 5 most recent)
+  - `GET /api/Music/history/recent?count=N` — fetches user's N most recent tracks
+- `IHistoryService` / `HistoryService` on the MAUI client for recording and fetching listening history
+- `RecentItems` on HomePage now populated from real backend data instead of mock data
+- `MessagingCenter` pub/sub between `MiniPlayerViewModel` and `HomePageViewModel` — recent items refresh automatically when any track plays
+- `RecentItems` cleared on logout to prevent cross-user data leakage
+
+### Fixed
+- **JWT `sub` claim using wrong value**: The `sub` claim was set to `user.UserName` (email string) instead of `user.Id` (GUID), causing foreign key violations when the history controller read `ClaimTypes.NameIdentifier` as the user ID for `UserRecentTracks.UserId`. Fixed in `AuthenticationController.GenerateToken()`.
+
 ## [2026-04-06] - Fixed Dashboard Statistics, JSON Serialization & Login Styling
 
 ### Fixed

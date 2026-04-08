@@ -12,19 +12,43 @@
 |-----------|------|
 | MAUI DI Setup | `Innowise.Music/MauiProgram.cs` |
 | Audio Playback | `Innowise.Music/Services/AudioService.cs` |
+| History Service | `Innowise.Music/Services/HistoryService.cs` |
 | Recommendations | `Innowise.Music/Services/RecommendationService.cs` |
 | Home Page | `Innowise.Music/View/HomePage.xaml.cs` |
 | Home VM | `Innowise.Music/ViewModel/HomePageViewModel.cs` |
 | MiniPlayer VM | `Innowise.Music/ViewModel/MiniPlayerViewModel.cs` |
 | Music Controller | `Innowise.MusicIdentityServer/Controllers/MusicController.cs` |
+| Auth Controller | `Innowise.MusicIdentityServer/Controllers/AuthenticationController.cs` |
 | Admin Music Controller | `Innowise.MusicIdentityServer/Controllers/AdminMusicController.cs` |
 | Music Service | `Innowise.MusicIdentityServer/Services/MusicService.cs` |
 | DB Context | `Innowise.MusicIdentityServer/Data/MusicIdentityDbContext.cs` |
+| UserRecentTrack Entity | `Innowise.MusicIdentityServer/Models/Music/UserRecentTrack.cs` |
 | Admin Service | `Innowise.Music.Admin/Services/AdminMusicService.cs` |
 | Docker Compose | `docker-compose.yml` |
 | App Settings | `Innowise.Music/appsettings.json` |
 
 ---
+
+## Task: Listening History - Recently Played Tracks
+- **Status**: Completed
+- **Description**: Implemented per-user listening history. When a user plays any track, it's recorded in the `UserRecentTracks` table (max 5 most recent per user). The "Get Back to Listening" section on the HomePage shows these tracks in real-time.
+- **Steps**:
+  - [x] Created `UserRecentTrack` entity with `UserId`, `TrackId`, and `PlayedAt` fields
+  - [x] Added `DbSet<UserRecentTracks>` to `MusicIdentityDbContext` with indexes on `UserId` and `(UserId, PlayedAt)`
+  - [x] Created EF migration `AddUserRecentTracks` and applied to database
+  - [x] Added `RecordListeningHistoryAsync` and `GetRecentTracksAsync` to `IMusicService` / `MusicService`
+  - [x] Added `POST /api/Music/tracks/{id}/history` endpoint — upserts track, trims to 5 most recent
+  - [x] Added `GET /api/Music/history/recent?count=N` endpoint — returns user's N most recent tracks
+  - [x] Created `IHistoryService` / `HistoryService` on MAUI client
+  - [x] Registered `IHistoryService` in `MauiProgram.cs`
+  - [x] Wired `MiniPlayerViewModel.PlayTrack()` to record history via `RefreshHistoryAsync()`
+  - [x] Added `MessagingCenter` pub/sub between `MiniPlayerViewModel` and `HomePageViewModel` for real-time UI refresh
+  - [x] Added `LoadRecentItemsAsync()` to `HomePageViewModel` — fetches real data from backend
+  - [x] Called `LoadRecentItemsAsync()` from `HomePage.OnAppearing()`
+  - [x] Fixed JWT `sub` claim bug — was set to `user.UserName` (email) instead of `user.Id` (GUID), causing FK violations
+  - [x] Removed mock data fallback from `RecentItems` — shows only real user data
+  - [x] Clear `RecentItems` on logout to prevent cross-user data leakage
+- **Files**: `Innowise.MusicIdentityServer/Models/Music/UserRecentTrack.cs`, `Innowise.MusicIdentityServer/Data/MusicIdentityDbContext.cs`, `Innowise.MusicIdentityServer/Services/MusicService.cs`, `Innowise.MusicIdentityServer/Controllers/MusicController.cs`, `Innowise.MusicIdentityServer/Controllers/AuthenticationController.cs`, `Innowise.Music/Services/HistoryService.cs`, `Innowise.Music/ViewModel/HomePageViewModel.cs`, `Innowise.Music/ViewModel/MiniPlayerViewModel.cs`, `Innowise.Music/View/HomePage.xaml.cs`, `Innowise.Music/MauiProgram.cs`
 
 ## Task: Fix Audio Resume After Pause
 - **Status**: Completed
@@ -437,8 +461,7 @@
 
 ## Known Issues / Tech Debt
 
-- [x] `HttpClient` shared between `AuthenticationService` and `GoogleAuthService` — potential race condition on DefaultRequestHeaders
-- [ ] Mock data in HomePage still used as fallback — should be removed once backend is stable
+- [ ] `HttpClient` shared between `AuthenticationService` and `GoogleAuthService` — potential race condition on DefaultRequestHeaders
 - [ ] No loading states / spinners in most pages
 - [ ] No offline support or caching
 - [ ] Stream URLs hardcoded with port numbers — should be configurable

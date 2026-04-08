@@ -220,6 +220,8 @@ CREATE INDEX idx_userlisteninghistory_track ON UserListeningHistory(TrackId);
 CREATE INDEX idx_userlisteninghistory_playedat ON UserListeningHistory(PlayedAt DESC);
 ```
 
+> **Implemented as `UserRecentTracks`**: The current implementation uses a simplified version (`UserRecentTracks`) that stores only `Id`, `UserId`, `TrackId`, and `PlayedAt`, keeping only the 5 most recent entries per user. This powers the "Get Back to Listening" section on the home page.
+
 ### Search and Recommendations
 
 #### 12. SearchHistory Table
@@ -391,7 +393,10 @@ These endpoints will be added in subsequent phases to enhance the user experienc
 #### Social Features
 - `POST /artists/{id}/follow` - Follow artist
 - `GET /me/following` - Get followed artists
-- `POST /tracks/{id}/play` - Record play history
+
+#### Listening History (Implemented)
+- `POST /music/tracks/{id}/history` - Record that the authenticated user played a track
+- `GET /music/history/recent?count=N` - Get user's N most recently played tracks
 
 ---
 
