@@ -4,7 +4,7 @@ using CommunityToolkit.Maui.Views;
 
 namespace Innowise.Music.Services
 {
-    public interface IAudioService
+    public interface IAudioService : IDisposable
     {
         bool IsPlaying { get; }
         TimeSpan Duration { get; }
