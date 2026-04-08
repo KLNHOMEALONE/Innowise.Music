@@ -39,7 +39,6 @@ namespace Innowise.Music
             builder.Services.Configure<ApiSettings>(builder.Configuration.GetSection(ApiSettings.SectionName));
             builder.Services.Configure<GoogleAuthenticationSettings>(builder.Configuration.GetSection(GoogleAuthenticationSettings.SectionName));
             builder.Services.AddSingleton<HttpHelper>();
-
             builder.Services.AddSingleton<HttpClient>(provider =>
             {
                 var httpHelper = provider.GetRequiredService<HttpHelper>();

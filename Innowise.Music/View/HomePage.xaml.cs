@@ -14,6 +14,7 @@ public partial class HomePage : ContentPage
         if (BindingContext is ViewModel.HomePageViewModel viewModel)
         {
             viewModel.RefreshUserName();
+            _ = viewModel.LoadRecommendationsAsync();
         }
     }
 }

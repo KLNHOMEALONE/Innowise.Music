@@ -11,7 +11,9 @@
       "Bash(docker exec:*)",
       "Bash(docker port music_identity_server:*)",
       "Bash(curl:*)",
-      "Bash(python3 -c ':*)"
+      "Bash(python3 -c ':*)",
+      "Bash(git log:*)",
+      "Bash(grep:*)"
     ]
   }
 }

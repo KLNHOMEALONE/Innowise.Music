@@ -1,3 +1,4 @@
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Innowise.Music.Configuration;
@@ -12,16 +13,16 @@ public interface IStreamTokenService
 
 public class StreamTokenService : IStreamTokenService
 {
-    private readonly HttpClient _httpClient;
+    private readonly HttpHelper _httpHelper;
     private readonly IAuthenticationService _authenticationService;
     private readonly ApiSettings _apiSettings;
 
     public StreamTokenService(
-        HttpClient httpClient,
+        HttpHelper httpHelper,
         IAuthenticationService authenticationService,
         IOptions<ApiSettings> apiSettings)
     {
-        _httpClient = httpClient;
+        _httpHelper = httpHelper;
         _authenticationService = authenticationService;
         _apiSettings = apiSettings.Value;
     }
@@ -44,11 +45,12 @@ public class StreamTokenService : IStreamTokenService
                 return null;
             }
 
-            _httpClient.DefaultRequestHeaders.Authorization =
+            using var httpClient = new HttpClient(_httpHelper.GetInsecureHandler());
+            httpClient.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", token);
 
             var url = GetApiUrl($"tracks/{trackId}/stream-token");
-            var response = await _httpClient.GetFromJsonAsync<StreamTokenResponse>(url);
+            var response = await httpClient.GetFromJsonAsync<StreamTokenResponse>(url);
             return response?.Token;
         }
         catch (Exception ex)

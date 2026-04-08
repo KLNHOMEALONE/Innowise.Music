@@ -35,13 +35,12 @@ public partial class HomePageViewModel : ObservableObject
         _googleAuthService = googleAuthService;
         _navigationService = navigationService;
         _recommendationService = recommendationService;
-        System.Diagnostics.Debug.WriteLine("[HomeVM] Constructor: loading mock data and recommendations");
+        System.Diagnostics.Debug.WriteLine("[HomeVM] Constructor: loading mock data");
         LoadMockData();
         LoadUserName();
-        _ = LoadRecommendationsAsync();
     }
 
-    private async Task LoadRecommendationsAsync()
+    public async Task LoadRecommendationsAsync()
     {
         System.Diagnostics.Debug.WriteLine("[HomeVM] LoadRecommendationsAsync started");
         try

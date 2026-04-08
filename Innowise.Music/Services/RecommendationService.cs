@@ -1,3 +1,4 @@
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Innowise.Music.Configuration;
@@ -8,16 +9,16 @@ namespace Innowise.Music.Services;
 
 public class RecommendationService : IRecommendationService
 {
-    private readonly HttpClient _httpClient;
+    private readonly HttpHelper _httpHelper;
     private readonly IAuthenticationService _authenticationService;
     private readonly ApiSettings _apiSettings;
 
     public RecommendationService(
-        HttpClient httpClient,
+        HttpHelper httpHelper,
         IAuthenticationService authenticationService,
         IOptions<ApiSettings> apiSettings)
     {
-        _httpClient = httpClient;
+        _httpHelper = httpHelper;
         _authenticationService = authenticationService;
         _apiSettings = apiSettings.Value;
     }
@@ -41,13 +42,14 @@ public class RecommendationService : IRecommendationService
                 return new List<Track>();
             }
 
-            _httpClient.DefaultRequestHeaders.Authorization =
+            using var httpClient = new HttpClient(_httpHelper.GetInsecureHandler());
+            httpClient.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", token);
 
             var url = GetApiUrl("recommendations");
             System.Diagnostics.Debug.WriteLine($"[Recommendations] Calling: {url}");
 
-            var response = await _httpClient.GetFromJsonAsync<RecommendationsResponse>(url);
+            var response = await httpClient.GetFromJsonAsync<RecommendationsResponse>(url);
             System.Diagnostics.Debug.WriteLine($"[Recommendations] Response tracks: {response?.Tracks?.Count ?? 0}");
 
             // Use HTTP for stream URLs (MediaElement can't handle self-signed HTTPS certs)
