@@ -22,7 +22,6 @@ namespace Innowise.Music
             _audioService.Initialize(mediaElement);
 
             Routing.RegisterRoute(nameof(SignUpPage), typeof(SignUpPage));
-            Routing.RegisterRoute(nameof(NewsDetailedPage), typeof(NewsDetailedPage));
             Routing.RegisterRoute(nameof(WebPage), typeof(WebPage));
 
             this.Loaded += OnShellLoaded;

@@ -229,8 +229,8 @@
 - **Dependencies**: Innowise.MusicIdentityServer
 
 ## Task: News Feature
-- **Status**: Completed
-- **Description**: News listing and detailed view with API integration
+- **Status**: Completed (feature removed — dead code cleanup)
+- **Description**: News listing and detailed view with API integration. Removed as part of dead code cleanup since the feature was not wired into any navigation UI.
 - **Steps**:
     - [x] Create News model
     - [x] Implement INewsService interface
@@ -240,8 +240,9 @@
     - [x] Create NewsPage with CollectionView
     - [x] Create NewsDetailedPage
     - [x] Implement navigation with QueryProperty
-    - [ ] Add error handling for API failures
-    - [ ] Add loading states
+    - [x] ~~Add error handling for API failures~~
+    - [x] ~~Add loading states~~
+    - [x] **Removed**: All News feature files deleted (dead code — not integrated into app navigation)
 
 ## Task: Backend Dockerization
 - **Status**: Completed
@@ -436,7 +437,7 @@
 
 ## Known Issues / Tech Debt
 
-- [ ] `HttpClient` shared between `AuthenticationService` and `GoogleAuthService` — potential race condition on DefaultRequestHeaders
+- [x] `HttpClient` shared between `AuthenticationService` and `GoogleAuthService` — potential race condition on DefaultRequestHeaders
 - [ ] Mock data in HomePage still used as fallback — should be removed once backend is stable
 - [ ] No loading states / spinners in most pages
 - [ ] No offline support or caching

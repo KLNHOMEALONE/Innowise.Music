@@ -51,12 +51,6 @@ namespace Innowise.Music
             builder.Services.AddSingleton<IStreamTokenService, StreamTokenService>();
             builder.Services.AddSingleton<IRecommendationService, RecommendationService>();
             builder.Services.AddSingleton<INavigationService, NavigationService>();
-            builder.Services.AddSingleton<WebNewsService>();
-            builder.Services.AddSingleton<MockNewsService>();
-            builder.Services.AddSingleton<NewsPageViewModel>();
-            builder.Services.AddSingleton<NewsPage>();
-            builder.Services.AddSingleton<NewsDetailedPageViewModel>();
-            builder.Services.AddSingleton<NewsDetailedPage>();
             builder.Services.AddSingleton<LoginPageViewModel>();
             builder.Services.AddSingleton<LoginPage>();
             builder.Services.AddSingleton<SignUpPageViewModel>();
