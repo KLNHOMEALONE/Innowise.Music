@@ -1,5 +1,50 @@
 # Task Tracker - Innowise.Music
 
+## Project Overview
+**Innowise.Music** — Cross-platform music streaming app (.NET 9 MAUI)
+- **Client:** Innowise.Music (iOS/Android/macOS/Windows)
+- **API:** Innowise.MusicIdentityServer (ASP.NET Core 9, PostgreSQL, JWT)
+- **Admin:** Innowise.Music.Admin (Blazor Server)
+
+## Key Files Reference
+
+| Component | File |
+|-----------|------|
+| MAUI DI Setup | `Innowise.Music/MauiProgram.cs` |
+| Audio Playback | `Innowise.Music/Services/AudioService.cs` |
+| Recommendations | `Innowise.Music/Services/RecommendationService.cs` |
+| Home Page | `Innowise.Music/View/HomePage.xaml.cs` |
+| Home VM | `Innowise.Music/ViewModel/HomePageViewModel.cs` |
+| MiniPlayer VM | `Innowise.Music/ViewModel/MiniPlayerViewModel.cs` |
+| Music Controller | `Innowise.MusicIdentityServer/Controllers/MusicController.cs` |
+| Admin Music Controller | `Innowise.MusicIdentityServer/Controllers/AdminMusicController.cs` |
+| Music Service | `Innowise.MusicIdentityServer/Services/MusicService.cs` |
+| DB Context | `Innowise.MusicIdentityServer/Data/MusicIdentityDbContext.cs` |
+| Admin Service | `Innowise.Music.Admin/Services/AdminMusicService.cs` |
+| Docker Compose | `docker-compose.yml` |
+| App Settings | `Innowise.Music/appsettings.json` |
+
+---
+
+## Task: Fix Audio Resume After Pause
+- **Status**: Completed
+- **Description**: When a track was paused and then play was pressed again, the audio would restart from the beginning instead of resuming from where it was paused. The root cause was `AudioService.Play()` unconditionally calling `Stop()` and reassigning the source when the player was in `Playing` or `Paused` state.
+- **Steps**:
+  - [x] Modified `AudioService.Play()` to check if player is `Paused` — if so, call `_mediaElement.Play()` directly to resume
+  - [x] Kept stop-and-reassign logic only for `Playing` state (changing tracks) or `Failed` state
+- **Files**: `Innowise.Music/Services/AudioService.cs`
+
+## Task: Fix Featuring Songs Loading from Backend
+- **Status**: Completed
+- **Description**: The "Featuring songs you like" section was not loading recommendations from the backend. The root cause was `HomePageViewModel` (a singleton) calling `LoadRecommendationsAsync()` in its constructor — which ran at app startup before the user was logged in. The API returned 401 (no auth token) and recommendations were never fetched again after login. Additionally, `RecommendationService` and `StreamTokenService` shared a singleton `HttpClient` and both mutated its `Authorization` header, causing race conditions.
+- **Steps**:
+  - [x] Moved `LoadRecommendationsAsync()` from `HomePageViewModel` constructor to `HomePage.OnAppearing()` — ensures recommendations load after authentication
+  - [x] Made `LoadRecommendationsAsync()` public so it can be called from the view
+  - [x] Replaced shared singleton `HttpClient` in `RecommendationService` with per-call `HttpClient` creation via `HttpHelper.GetInsecureHandler()`
+  - [x] Same fix applied to `StreamTokenService`
+  - [x] Reverted `MauiProgram.cs` to original singleton `HttpClient` registration (still used by `AuthenticationService` and `GoogleAuthService`)
+- **Files**: `Innowise.Music/ViewModel/HomePageViewModel.cs`, `Innowise.Music/View/HomePage.xaml.cs`, `Innowise.Music/Services/RecommendationService.cs`, `Innowise.Music/Services/StreamTokenService.cs`, `Innowise.Music/MauiProgram.cs`
+
 ## Task: Fix Dashboard Statistics, JSON Serialization & Login Styling
 - **Status**: Completed
 - **Description**: Fixed three issues: (1) claim type mismatch causing 401 errors, (2) JSON circular reference in Albums API, (3) login page styling inconsistent with dashboard dark theme.
@@ -94,7 +139,7 @@
     - [x] Updated `SignUpPageViewModel` to use `ValidatableObject<string>` for Email, Password, Repeat Password, First Name, and Last Name, and added validation rules (`EmailRule`, `IsNotNullOrEmptyRule`, `CompareRule`).
     - [x] Updated `SignUpPage.xaml` to bind to `ValidatableObject<string>` properties, include `FirstName` and `LastName` input controls, and display validation feedback.
     - [x] Renamed `IsNullOrEmptyRule.cs` to `IsNotNullOrEmptyRule.cs` for consistency.
-    - [x] Added `CommunityToolkit.Maui` NuGet package.
+    - [x] Added `CommunityToolkit.Maui` Nuget package.
     - [x] Initialized `CommunityToolkit.Maui` in `MauiProgram.cs`.
     - [x] Added `TextChangedCommand` to `InputEntryControl`'s code-behind.
     - [x] Integrated `EventToCommandBehavior` in `InputEntryControl.xaml` to trigger ViewModel validation commands on text changes.
@@ -142,6 +187,7 @@
     - [x] Add `Google.Apis.Auth` nuget package to `Innowise.MusicIdentityServer`
     - [x] Create `GoogleTokenDto`
     - [x] Update `AuthenticationController` to handle Google login
+    - **Dependencies**: None
 
 ## Task: Project Reorganization
 - **Status**: Completed
@@ -182,7 +228,6 @@
     - [x] Implement Refresh Token functionality (IdentityServer & MAUI Client)
 - **Dependencies**: Innowise.MusicIdentityServer
 
-
 ## Task: News Feature
 - **Status**: Completed
 - **Description**: News listing and detailed view with API integration
@@ -221,6 +266,7 @@
     - Updated `MiniPlayerControl.xaml` to display track information, playback controls, and progress bar dynamically.
     - Resolved XAML binding issues within `DataTemplate` for command invocation from `HomeItem` by introducing a `Parent` reference in `HomeItem` back to `HomePageViewModel`.
     - Refactored `MiniPlayerControl.xaml.cs` to correctly instantiate `MiniPlayerViewModel` using `Handler.MauiContext.Services.GetService<MiniPlayerViewModel>()` in the `Loaded` event, resolving XAML compilation errors.
+- **Dependencies**: `CommunityToolkit.Maui.MediaElement`
 
 ## Task: Batch Track Upload Feature (Admin Dashboard)
 - **Status**: Completed
@@ -236,6 +282,52 @@
     - [x] Fixed Blazor Server interop issues (render mode, StateHasChanged, disabled attribute syntax)
     - [x] Updated documentation (changelog.md)
 - **Dependencies**: TagLibSharp, Identity Server API
+
+## Task: Admin Dashboard CRUD Operations
+- **Status**: Completed
+- **Description**: Implemented full CRUD operations in the Blazor Admin dashboard for all four entity types: Genres, Artists, Albums, and Tracks.
+- **Steps**:
+    - [x] **Backend API** — Created `AdminMusicController` with full CRUD endpoints for all entities (GET list, GET by id, POST create, PUT update, DELETE)
+    - [x] **Service Layer** — Implemented CRUD methods in `MusicService` and `AdminMusicService`
+    - [x] **Authorization** — Added `[Authorize(Roles = "Administrator")]` to all admin endpoints
+    - [x] **Genres UI** — Created `GenresList.razor` (paginated list with delete) and `GenreForm.razor` (create/edit form)
+    - [x] **Artists UI** — Created `ArtistsList.razor` (paginated list with delete) and `ArtistForm.razor` (create/edit with validation)
+    - [x] **Albums UI** — Created `AlbumsList.razor` (paginated list with delete) and `AlbumForm.razor` (create/edit with artist dropdown)
+    - [x] **Tracks UI** — Created `TracksList.razor` (paginated list with delete), `TrackForm.razor` (create/edit with artist/album dropdowns, genre checkboxes), `TrackUpload.razor` (single track audio upload)
+    - [x] **Pagination** — Added pagination support for all list views
+    - [x] **Validation** — Added form validation for all create/edit forms
+- **Dependencies**: Innowise.MusicIdentityServer, Blazored.LocalStorage
+
+## Task: Music Streaming Service Implementation (Phase 1 - MVP)
+- **Status**: Completed
+- **Description**: Implemented core music streaming functionality with API endpoints for music search, discovery, and playback.
+- **Steps**:
+    - [x] **Database Setup**
+        - [x] Create database models (Artists, Albums, Tracks, Genres) with BYTEA audio storage
+        - [x] Update MusicIdentityDbContext with DbSets and full-text search configuration
+        - [x] Create database migration (AddMusicTables) with pg_trgm extension
+        - [x] Apply migration to PostgreSQL database
+    - [x] **Backend API Development**
+        - [x] Create MusicController with essential endpoints
+        - [x] Implement `GET /music/recommendations` — Personalized recommendations
+        - [x] Implement `GET /music/tracks/{id}/stream` — Stream audio with range request support
+        - [x] Implement `GET /music/tracks/{id}/stream-token` — Signed streaming token
+        - [x] Implement `GET /music/artists/{id}/top-tracks` — Artist's popular tracks
+        - [x] Implement `GET /music/albums/{id}/tracks` — Album tracks
+        - [x] Add audio streaming with proper Content-Type and range request headers
+    - [x] **Service Layer**
+        - [x] Create IMusicService interface
+        - [x] Implement MusicService with database queries and Include for related data
+        - [x] Implement search using ILike for case-insensitive matching
+        - [x] Register service in Program.cs Dependency Injection
+    - [x] **MAUI Client Integration**
+        - [x] Update Track model to include all metadata fields
+        - [x] Create RecommendationService for recommendations API
+        - [x] Create StreamTokenService for signed token streaming
+        - [x] Update HomePage to fetch and display real recommendations
+        - [x] Implement track selection and playback from recommendations
+        - [x] Handle audio streaming with signed tokens and proper error handling
+- **Dependencies**: PostgreSQL database, Existing authentication system
 
 ## Task: Music Library
 - **Status**: Not started
@@ -307,6 +399,7 @@
     - [x] Implement `HomePage.xaml` layout (header, pills, featured card, horizontal collections, sticky mini-player).
     - [x] Implement `SearchPage.xaml` layout (search bar, filter chips, recents grid, sticky mini-player).
     - [x] Implement `LibraryPage.xaml` layout (list view with play buttons/menus, sticky mini-player).
+    - [x] Implement `EventsPage.xaml` placeholder.
     - [x] Setup `EventsPage.xaml` placeholder.
     - [x] Populate ViewModels with mock data (Initial mock data for all main pages).
     - [x] Register new pages and ViewModels in `MauiProgram.cs`.
@@ -317,149 +410,13 @@
 - **Description**: Replaced all instances of `StaticResource PrimaryRed` with its direct hex value `#D90429` across affected XAML files to resolve resource resolution issues.
 - **Steps**:
     - [x] Changed `BackgroundColor` in `LibraryPage.xaml` from `StaticResource PrimaryRed` to `#D90429`.
-    - [x] Changed `TextColor` and `BackgroundColor` in `SignUpPage.xaml` from `Static-resource PrimaryRed` to `#D90429`.
+    - [x] Changed `TextColor` and `BackgroundColor` in `SignUpPage.xaml` from `StaticResource PrimaryRed` to `#D90429`.
     - [x] Changed `TextColor` and `BackgroundColor` in `LoginPage.xaml` from `StaticResource PrimaryRed` to `#D90429`.
     - [x] Changed `Color` and `BackgroundColor` in `EventsPage.xaml` from `StaticResource PrimaryRed` to `#D90429`.
     - [x] Changed `Dark` theme `Shell.TabBarForegroundColor` and `Shell.TabBarTitleColor` in `Resources/Styles/Styles.xaml` from `StaticResource PrimaryRed` to `#D90429`.
     - [x] Changed `BackgroundColor` in `Controls/MiniPlayerControl.xaml` from `StaticResource PrimaryRed` to `#D90429`.
     - [x] Changed `Shell.TabBarTitleColor` and `Shell.TabBarForegroundColor` in `AppShell.xaml` from `StaticResource PrimaryRed` to `#D90429`.
     - [x] Changed `BackgroundColor` in `App.xaml` from `StaticResource PrimaryRed` to `#D90429`.
-
-## Task: Music Streaming Service Implementation (Phase 1 - MVP)
-- **Status**: In progress
-- **Description**: Implement core music streaming functionality with 5 essential API endpoints to enable music search, discovery, and playback. Audio files will be stored in PostgreSQL BYTEA fields.
-- **Steps**:
-    - [x] **Database Setup**
-        - [x] Create database models (Artists, Albums, Tracks, Genres) with BYTEA audio storage
-        - [x] Update MusicIdentityDbContext with DbSets and full-text search configuration
-        - [x] Create database migration (AddMusicTables) with pg_trgm extension
-        - [x] Apply migration to PostgreSQL database
-    - [x] **Backend API Development**
-        - [x] Create MusicController with 5 essential endpoints
-        - [x] Implement `GET /music/tracks?query={q}` - Search tracks with pagination
-        - [x] Implement `GET /music/tracks/{id}` - Get track details
-        - [x] Implement `GET /music/tracks/{id}/stream` - Stream audio with range request support
-        - [x] Implement `GET /music/artists/{id}/top-tracks` - Get artist's popular tracks
-        - [x] Implement `GET /music/albums/{id}/tracks` - Get album tracks
-        - [x] Add audio streaming with proper Content-Type and range request headers
-    - [x] **Service Layer**
-        - [x] Create IMusicService interface
-        - [x] Implement MusicService with database queries and Include for related data
-        - [x] Implement search using ILike for case-insensitive matching
-        - [x] Register service in Program.cs Dependency Injection
-    - [ ] **MAUI Client Integration**
-        - [ ] Update Track model to include all metadata fields
-        - [ ] Create MusicApiClient service for API communication
-        - [ ] Update SearchPage to use real API instead of mock data
-        - [ ] Update HomePage to display real featured content
-        - [ ] Implement track selection and playback from search results
-        - [ ] Handle audio streaming with proper error handling
-    - [ ] **Testing & Optimization**
-        - [ ] Test audio streaming with various file sizes
-        - [ ] Optimize database queries for search performance
-        - [ ] Test range requests for seeking in audio player
-        - [ ] Verify pagination works correctly
-- **Dependencies**: PostgreSQL database, Existing authentication system, Audio streaming infrastructure
-
-## Task: Music Streaming Service (Phase 2+ - Future)
-- **Status**: Not started
-- **Description**: Advanced features to enhance user experience including user libraries, playlists, recommendations, and social features.
-- **Steps**:
-    - [ ] **User Library Features**
-        - [ ] Implement user playlists CRUD operations
-        - [ ] Add like/unlike tracks functionality
-        - [ ] Create "Liked Songs" automatic playlist
-        - [ ] Implement follow/unfollow artists
-    - [ ] **Advanced Search**
-        - [ ] Add search autocomplete/suggestions
-        - [ ] Implement universal search across all content types
-        - [ ] Add search filters (genre, year, explicit content)
-    - [ ] **Recommendations**
-        - [ ] Create personalized home page based on listening history
-        - [ ] Implement featured playlists algorithm
-        - [ ] Add "Because you listened to..." recommendations
-        - [ ] Create new releases feed
-    - [ ] **Social Features**
-        - [ ] Record and analyze listening history
-        - [ ] Create "Recently Played" functionality
-        - [ ] Add play count tracking
-        - [ ] Implement shared playlists
-- **Dependencies**: Phase 1 completion, User authentication system, Listening history data
-
-## Task: Admin Dashboard Implementation
-- **Status**: In progress
-- **Description**: Blazor Web admin dashboard for managing music content (artists, albums, tracks, genres). See detailed plan in `Docs/admin-dashboard-plan.md`.
-- **Steps**:
-    - [x] **Phase 1: Backend API Enhancements**
-        - [x] Extend IMusicService with CRUD operations for all entities
-        - [x] Implement CRUD methods in MusicService
-        - [x] Create AdminMusicController with admin endpoints
-        - [x] Add role-based authorization to admin endpoints
-        - [x] Fix AdminMusicService endpoint paths to use `api/admin/` prefix
-    - [ ] **Phase 2: Blazor Admin Project Creation**
-        - [ ] Create Innowise.Music.Admin project
-        - [ ] Set up project structure (Components, Services, Models)
-        - [ ] Configure dependency injection
-        - [ ] Add project to solution file
-    - [ ] **Phase 3: Authentication & Authorization**
-        - [ ] Implement AuthService for JWT handling
-        - [ ] Create login page with role validation
-        - [ ] Implement token refresh logic
-    - [ ] **Phase 4: CRUD Operations**
-        - [ ] Genre management (list, create, edit, delete)
-        - [ ] Artist management with image support
-        - [ ] Album management with relationships
-        - [ ] Track management with metadata
-    - [ ] **Phase 5: File Upload**
-        - [ ] Create FileUpload component
-        - [ ] Implement streaming upload for audio files
-        - [ ] Add progress tracking
-        - [ ] Validate file types and sizes
-    - [ ] **Phase 6: UI/UX Polish**
-        - [ ] Create main layout with navigation
-        - [ ] Add shared components (dialogs, spinners)
-        - [ ] Implement responsive styling
-    - [ ] **Phase 7: Docker Integration**
-        - [ ] Create Dockerfile for admin app
-        - [ ] Update docker-compose.yml
-    - [ ] **Phase 8: Testing & Documentation**
-        - [ ] Write unit tests for services
-        - [ ] Test file upload functionality
-        - [ ] Update project documentation
-- **Dependencies**: Innowise.MusicIdentityServer (existing), PostgreSQL database
-
-## Task: Music Tracks Upload Implementation
-- **Status**: Completed
-- **Description**: Implemented semi-automated batch upload functionality for music tracks with metadata extraction using TagLibSharp. Users can select multiple audio files, review extracted metadata, and upload them with binary data to the identity server database.
-- **Steps**:
-    - [x] **Phase 1: Backend API Development (Identity Server)**
-        - [x] Create TrackUploadDto model for batch upload data transfer
-        - [x] Add GetOrCreate methods to IMusicService for Artist, Album, Genre
-        - [x] Implement GetOrCreate logic in MusicService
-        - [x] Create UploadTracksAsync batch method in IMusicService
-        - [x] Implement batch upload logic in MusicService with transaction support
-        - [x] Add POST /api/admin/tracks/upload-batch endpoint to AdminMusicController
-        - [x] Configure request size limit (500MB) for batch uploads
-    - [x] **Phase 2: Admin Dashboard Development**
-        - [x] Create ExtractedTrackMetadata model for preview data
-        - [x] Implement IMetadataExtractionService interface
-        - [x] Implement MetadataExtractionService using TagLibSharp
-        - [x] Add UploadTracksBatchAsync method to IAdminMusicService
-        - [x] Implement batch upload in AdminMusicService
-        - [x] Create MultiTrackUpload.razor component with file selection
-        - [x] Add file type validation (mp3, aac, flac, wav only)
-        - [x] Add file size validation (50MB per file, 30 files max)
-        - [x] Implement metadata extraction and preview UI
-        - [x] Add dropdown selectors for existing artists/albums/genres
-        - [x] Allow creating new entities if not found
-        - [x] Implement batch upload with progress indicator
-        - [x] Add success/error feedback and summary
-        - [x] Update TracksList.razor to add "Add Tracks" button
-    - [x] **Phase 3: Documentation**
-        - [x] Update changelog.md with implementation details
-        - [x] Update tasktracker.md with completion status
-    - **Dependencies**: TagLibSharp (already installed), Innowise.MusicIdentityServer, Innowise.Music.Admin
-    - **Documentation**: See `Docs/uploading-tracks.md` for detailed implementation plan
 
 ## Task: Performance & Scalability
 - **Status**: Not started
@@ -474,3 +431,24 @@
     - [ ] Set up automated backup and recovery
     - [ ] Implement load testing and performance tuning
 - **Dependencies**: Production deployment, Monitoring infrastructure
+
+---
+
+## Known Issues / Tech Debt
+
+- [ ] `HttpClient` shared between `AuthenticationService` and `GoogleAuthService` — potential race condition on DefaultRequestHeaders
+- [ ] Mock data in HomePage still used as fallback — should be removed once backend is stable
+- [ ] No loading states / spinners in most pages
+- [ ] No offline support or caching
+- [ ] Stream URLs hardcoded with port numbers — should be configurable
+- [ ] No unit or integration tests
+- [ ] `DateOnly` serialization may cause issues with some JSON serializers
+
+## Documentation Files
+
+- `CLAUDE.md` — Quick reference for Claude Code
+- `AGENTS.md` — Coding standards and development guidelines
+- `Docs/music-architecture.md` — Full system architecture
+- `Docs/validation.md` — Validation framework details
+- `Docs/changelog.md` — Change history
+- `Docs/project.md` — Project architecture overview
