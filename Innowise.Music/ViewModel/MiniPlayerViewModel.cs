@@ -78,22 +78,8 @@ public partial class MiniPlayerViewModel : ObservableObject
         }
         else
         {
-            if (CurrentTrack != null)
-            {
-                var streamUrl = CurrentTrack.FileUri;
-
-                if (CurrentTrack.Id != Guid.Empty && streamUrl.Contains("/stream", StringComparison.OrdinalIgnoreCase))
-                {
-                    var signedToken = await _streamTokenService.GetStreamTokenAsync(CurrentTrack.Id);
-                    if (!string.IsNullOrEmpty(signedToken))
-                    {
-                        var separator = streamUrl.Contains('?') ? "&" : "?";
-                        streamUrl = $"{streamUrl}{separator}token={Uri.EscapeDataString(signedToken)}";
-                    }
-                }
-
-                await _audioService.Play(streamUrl);
-            }
+            // Resume current track from paused position without resetting the source
+            await _audioService.Resume();
         }
     }
     

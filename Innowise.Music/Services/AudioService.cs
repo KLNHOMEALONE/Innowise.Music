@@ -87,6 +87,14 @@ namespace Innowise.Music.Services
             }
             return Task.CompletedTask;
         }
+        public Task Resume()
+        {
+            if (_mediaElement?.CurrentState == MediaElementState.Paused)
+            {
+                _mediaElement.Play();
+            }
+            return Task.CompletedTask;
+        }
         public Task Stop()
         {
             if (_mediaElement != null && _mediaElement.CurrentState != MediaElementState.Stopped)
