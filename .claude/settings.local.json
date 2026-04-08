@@ -13,7 +13,9 @@
       "Bash(curl:*)",
       "Bash(python3 -c ':*)",
       "Bash(git log:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(dotnet ef migrations:*)",
+      "Bash(docker-compose logs:*)"
     ]
   }
 }

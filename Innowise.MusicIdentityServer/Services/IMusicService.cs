@@ -52,4 +52,8 @@ public interface IMusicService
     Task<Artist?> GetOrCreateArtistAsync(string artistName);
     Task<Album?> GetOrCreateAlbumAsync(string albumTitle, Guid artistId, uint? year);
     Task<IEnumerable<Genre>> GetOrCreateGenresAsync(IEnumerable<string> genreNames);
+
+    // Listening history operations
+    Task RecordListeningHistoryAsync(string userId, Guid trackId);
+    Task<IEnumerable<Track>> GetRecentTracksAsync(string userId, int count);
 }

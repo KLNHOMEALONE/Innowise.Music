@@ -270,6 +270,67 @@ public class MusicController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// Record that the authenticated user played a track
+    /// </summary>
+    [HttpPost("tracks/{id}/history")]
+    [Authorize]
+    public async Task<IActionResult> RecordHistory(Guid id)
+    {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            await _musicService.RecordListeningHistoryAsync(userId, id);
+            return Ok();
+        }
+        catch (ArgumentException)
+        {
+            return NotFound();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error recording history for user {userId}, track {id}");
+            return StatusCode(500, new { message = "Failed to record listening history" });
+        }
+    }
+
+    /// <summary>
+    /// Get recent tracks for the authenticated user
+    /// </summary>
+    [HttpGet("history/recent")]
+    [Authorize]
+    public async Task<ActionResult<RecentTracksResponse>> GetRecentTracks(
+        [FromQuery] int count = 5)
+    {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        count = Math.Min(count, 10); // Cap at 10
+        var tracks = await _musicService.GetRecentTracksAsync(userId, count);
+
+        return Ok(new RecentTracksResponse
+        {
+            Tracks = tracks.Select(t => new TrackDto
+            {
+                Id = t.Id,
+                Title = t.Title,
+                Duration = t.Duration,
+                TrackNumber = t.TrackNumber,
+                PlayCount = t.PlayCount,
+                Artist = t.Artist != null ? new ArtistDto { Id = t.Artist.Id, Name = t.Artist.Name, ImageUrl = t.Artist.ImageUrl } : null,
+                Album = t.Album != null ? new AlbumDto { Id = t.Album.Id, Title = t.Album.Title, CoverImageUrl = t.Album.CoverImageUrl } : null
+            }).ToList()
+        });
+    }
+
     // DTOs for responses
     public class SearchTracksResponse
     {
@@ -344,5 +405,10 @@ public class MusicController : ControllerBase
         public AlbumDto Album { get; set; } = new();
         public List<TrackDto> Tracks { get; set; } = new();
         public int TotalDuration { get; set; }
+    }
+
+    public class RecentTracksResponse
+    {
+        public List<TrackDto> Tracks { get; set; } = new();
     }
 }

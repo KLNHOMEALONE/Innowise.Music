@@ -13,6 +13,7 @@ public partial class MusicIdentityDbContext : IdentityDbContext<ApiUser>
     public DbSet<Album> Albums { get; set; }
     public DbSet<Track> Tracks { get; set; }
     public DbSet<Genre> Genres { get; set; }
+    public DbSet<UserRecentTrack> UserRecentTracks { get; set; }
 
     public MusicIdentityDbContext()
     {
@@ -146,6 +147,13 @@ public partial class MusicIdentityDbContext : IdentityDbContext<ApiUser>
                 {
                     j.HasKey("TrackId", "GenreId");
                 });
+
+        // UserRecentTrack configuration
+        modelBuilder.Entity<UserRecentTrack>(entity =>
+        {
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => new { e.UserId, e.PlayedAt });
+        });
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

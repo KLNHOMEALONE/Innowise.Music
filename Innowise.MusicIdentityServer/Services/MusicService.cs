@@ -670,4 +670,65 @@ public class MusicService : IMusicService
         await _context.SaveChangesAsync();
         return genres;
     }
+
+    public async Task RecordListeningHistoryAsync(string userId, Guid trackId)
+    {
+        // Check if track exists
+        var track = await _context.Tracks.FindAsync(trackId);
+        if (track == null)
+        {
+            throw new ArgumentException($"Track with id {trackId} not found.", nameof(trackId));
+        }
+
+        // Check if already in recent tracks - if so, update PlayedAt to move it to top
+        var existing = await _context.UserRecentTracks
+            .FirstOrDefaultAsync(r => r.UserId == userId && r.TrackId == trackId);
+
+        if (existing != null)
+        {
+            existing.PlayedAt = DateTime.UtcNow;
+        }
+        else
+        {
+            var recentTrack = new UserRecentTrack
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                TrackId = trackId,
+                PlayedAt = DateTime.UtcNow
+            };
+            _context.UserRecentTracks.Add(recentTrack);
+        }
+
+        // Trim to keep only the 5 most recent
+        var excessEntries = await _context.UserRecentTracks
+            .Where(r => r.UserId == userId)
+            .OrderByDescending(r => r.PlayedAt)
+            .Skip(5)
+            .ToListAsync();
+
+        if (excessEntries.Any())
+        {
+            _context.UserRecentTracks.RemoveRange(excessEntries);
+        }
+
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<IEnumerable<Track>> GetRecentTracksAsync(string userId, int count)
+    {
+        var recentTrackIds = await _context.UserRecentTracks
+            .Where(r => r.UserId == userId)
+            .OrderByDescending(r => r.PlayedAt)
+            .Take(count)
+            .Select(r => r.TrackId)
+            .ToListAsync();
+
+        return await _context.Tracks
+            .Include(t => t.Artist)
+            .Include(t => t.Album)
+            .Where(t => recentTrackIds.Contains(t.Id))
+            .OrderBy(t => recentTrackIds.IndexOf(t.Id))
+            .ToListAsync();
+    }
 }

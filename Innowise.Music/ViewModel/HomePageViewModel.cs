@@ -14,6 +14,7 @@ public partial class HomePageViewModel : ObservableObject
     private readonly IGoogleAuthService _googleAuthService;
     private readonly INavigationService _navigationService;
     private readonly IRecommendationService _recommendationService;
+    private readonly IHistoryService _historyService;
 
     [ObservableProperty]
     private string _userName = "John Doe";
@@ -28,16 +29,24 @@ public partial class HomePageViewModel : ObservableObject
         IAuthenticationService authenticationService,
         IGoogleAuthService googleAuthService,
         INavigationService navigationService,
-        IRecommendationService recommendationService)
+        IRecommendationService recommendationService,
+        IHistoryService historyService)
     {
         _miniPlayerViewModel = miniPlayerViewModel;
         _authenticationService = authenticationService;
         _googleAuthService = googleAuthService;
         _navigationService = navigationService;
         _recommendationService = recommendationService;
+        _historyService = historyService;
         System.Diagnostics.Debug.WriteLine("[HomeVM] Constructor: loading mock data");
         LoadMockData();
         LoadUserName();
+
+        // Subscribe to history refresh messages from MiniPlayer
+        MessagingCenter.Subscribe<MiniPlayerViewModel>(this, "RecentTracksChanged", async _ =>
+        {
+            await LoadRecentItemsAsync();
+        });
     }
 
     public async Task LoadRecommendationsAsync()
@@ -108,6 +117,9 @@ public partial class HomePageViewModel : ObservableObject
         {
         }
 
+        // Clear user-specific recent items so next login doesn't show previous user's data
+        RecentItems.Clear();
+
         await _navigationService.NavigateAndClearStackAsync("LoginPage");
     }
 
@@ -124,15 +136,38 @@ public partial class HomePageViewModel : ObservableObject
         RecommendedArtists.Add(new HomeItem(this) { Title = "Invent Animate", ImageUrl = "shade_astray.png", Subtitle = "Artist" });
         RecommendedArtists.Add(new HomeItem(this) { Title = "Chick Corea", ImageUrl = "chick_corea.png", Subtitle = "Artist" });
 
-        // Featured Songs
+        // Featured Songs (mock data - replaced by LoadRecommendationsAsync after auth)
         FeaturedSongs.Add(new HomeItem(this) { Title = "Heavener", ImageUrl = "shade_astray.png", Subtitle = "Invent Animate" });
         FeaturedSongs.Add(new HomeItem(this) { Title = "Return to forever", ImageUrl = "return_to_forever.png", Subtitle = "Chick Corea" });
         FeaturedSongs.Add(new HomeItem(this) { Title = "Ambient", ImageUrl = "playlist_big.png", Subtitle = "Various Artists" });
+    }
 
-        // Recent Items
-        RecentItems.Add(new HomeItem(this) { Title = "Heavener", ImageUrl = "shade_astray.png", Subtitle = "Invent Animate" });
-        RecentItems.Add(new HomeItem(this) { Title = "Return to forever", ImageUrl = "return_to_forever.png", Subtitle = "Chick Corea" });
-        RecentItems.Add(new HomeItem(this) { Title = "Ambient", ImageUrl = "playlist_big.png", Subtitle = "Various Artists" });
+    public async Task LoadRecentItemsAsync()
+    {
+        System.Diagnostics.Debug.WriteLine("[HomeVM] LoadRecentItemsAsync started");
+        try
+        {
+            var tracks = await _historyService.GetRecentTracksAsync(5);
+            System.Diagnostics.Debug.WriteLine($"[HomeVM] Got {tracks.Count} recent tracks");
+
+            RecentItems.Clear();
+            foreach (var track in tracks)
+            {
+                RecentItems.Add(new HomeItem(this)
+                {
+                    Id = track.Id,
+                    Title = track.Title,
+                    Subtitle = track.ArtistName,
+                    ImageUrl = track.ImageUrl,
+                    FileUri = track.FileUri
+                });
+            }
+            System.Diagnostics.Debug.WriteLine($"[HomeVM] RecentItems now has {RecentItems.Count} items");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[HomeVM] LoadRecentItemsAsync error: {ex.Message}");
+        }
     }
 
     private void LoadUserName()

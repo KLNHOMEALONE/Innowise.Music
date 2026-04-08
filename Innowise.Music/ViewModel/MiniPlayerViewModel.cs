@@ -11,6 +11,7 @@ public partial class MiniPlayerViewModel : ObservableObject
 {
     private readonly IAudioService _audioService;
     private readonly IStreamTokenService _streamTokenService;
+    private readonly IHistoryService _historyService;
 
     [ObservableProperty]
     private Track _currentTrack;
@@ -32,10 +33,12 @@ public partial class MiniPlayerViewModel : ObservableObject
 
     public MiniPlayerViewModel(
         IAudioService audioService,
-        IStreamTokenService streamTokenService)
+        IStreamTokenService streamTokenService,
+        IHistoryService historyService)
     {
         _audioService = audioService;
         _streamTokenService = streamTokenService;
+        _historyService = historyService;
         _audioService.StateChanged += OnAudioServiceStateChanged;
         _audioService.PositionChanged += OnAudioServicePositionChanged;
     }
@@ -99,6 +102,9 @@ public partial class MiniPlayerViewModel : ObservableObject
         CurrentTrack = track;
         OnPropertyChanged(nameof(IsVisible));
 
+        // Record listening history and notify subscribers
+        _ = RefreshHistoryAsync(track.Id);
+
         var streamUrl = track.FileUri;
 
         // If this is an API stream URL and we have a track ID, try to get a signed token
@@ -113,5 +119,24 @@ public partial class MiniPlayerViewModel : ObservableObject
         }
 
         await _audioService.Play(streamUrl);
+    }
+
+    private async Task RefreshHistoryAsync(Guid trackId)
+    {
+        try
+        {
+            System.Diagnostics.Debug.WriteLine($"[MiniPlayer] Recording history for track {trackId}");
+            await _historyService.RecordPlayAsync(trackId);
+            // Notify any subscribers (e.g. HomePageViewModel) to refresh recent items
+            MessagingCenter.Send(this, "RecentTracksChanged");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[MiniPlayer] Error refreshing history: {ex.GetType().Name}: {ex.Message}");
+            if (ex.InnerException != null)
+            {
+                System.Diagnostics.Debug.WriteLine($"[MiniPlayer] Inner: {ex.InnerException.Message}");
+            }
+        }
     }
 }

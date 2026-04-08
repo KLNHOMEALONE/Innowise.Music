@@ -15,6 +15,7 @@ public partial class HomePage : ContentPage
         {
             viewModel.RefreshUserName();
             _ = viewModel.LoadRecommendationsAsync();
+            _ = viewModel.LoadRecentItemsAsync();
         }
     }
 }
