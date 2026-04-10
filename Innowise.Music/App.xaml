@@ -64,8 +64,9 @@
             </Style>
 
             <!-- Converters -->
-            <converters:FavoriteIconConverter x:Key="FavoriteIconConverter" />
+            <converters:BoolToFavoriteIconConverter x:Key="BoolToFavoriteIconConverter" />
             <converters:FavoriteBackgroundConverter x:Key="FavoriteBackgroundConverter" />
+            <converters:FavoriteTextConverter x:Key="FavoriteTextConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

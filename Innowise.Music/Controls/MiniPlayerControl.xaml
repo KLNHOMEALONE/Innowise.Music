@@ -25,11 +25,11 @@
                 </VerticalStackLayout>
 
                 <HorizontalStackLayout Grid.Column="2" Spacing="20" VerticalOptions="Center">
-                    <Border BackgroundColor="{Binding IsFavorite, Converter={StaticResource FavoriteBackgroundConverter}}" WidthRequest="24" HeightRequest="24" StrokeShape="RoundRectangle 12" StrokeThickness="0">
+                    <Border BackgroundColor="{Binding IsFavorite, Converter={StaticResource FavoriteBackgroundConverter}}" WidthRequest="40" HeightRequest="40" StrokeShape="RoundRectangle 20" StrokeThickness="0">
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding ToggleFavoriteCommand}" />
                         </Border.GestureRecognizers>
-                        <Label Text="{Binding IsFavorite, Converter={StaticResource FavoriteIconConverter}}" TextColor="White" FontSize="14" HorizontalOptions="Center" VerticalOptions="Center" />
+                        <Label Text="{Binding IsFavorite, Converter={StaticResource FavoriteTextConverter}}" TextColor="White" FontSize="20" HorizontalOptions="Center" VerticalOptions="Center" />
                     </Border>
                     <Border BackgroundColor="White" WidthRequest="40" HeightRequest="40" StrokeShape="RoundRectangle 20" StrokeThickness="0">
                         <Border.Shadow>

@@ -4,15 +4,16 @@ using Microsoft.Maui.Controls;
 
 namespace Innowise.Music.Converters
 {
-    public class BoolToFavoriteIconConverter : IValueConverter
+    public class FavoriteTextConverter : IValueConverter
     {
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            if (value is bool isFavorited)
+            if (value is bool isFavorite)
             {
-                return isFavorited ? "favorite_icon.svg" : "favorite_outline_icon.svg";
+                // Use text variant selector (U+FE0E) to prevent emoji rendering on Android
+                return isFavorite ? "\u2665\uFE0E" : "\u2661\uFE0E";
             }
-            return "favorite_outline_icon.svg";
+            return "\u2661\uFE0E";
         }
 
         public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)

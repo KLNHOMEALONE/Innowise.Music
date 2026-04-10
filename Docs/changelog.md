@@ -13,10 +13,12 @@ All notable changes to this project will be documented in this file.
 - `IFavoriteService` / `FavoriteService` on the MAUI client for toggling and checking favorite status
 - Mini player heart icon: filled heart (♥) with red background when favorited, outlined heart (♡) with transparent background when not
 - Favorite status is checked automatically when a track starts playing
-- `FavoriteIconConverter` and `FavoriteBackgroundConverter` for the heart UI
+- `FavoriteTextConverter` (uses Unicode text variant selector for cross-platform heart rendering) and `FavoriteBackgroundConverter`
 
 ### Changed
-- Mini player's static checkmark replaced with interactive heart toggle
+- Mini player's static checkmark replaced with interactive heart toggle (40x40, matching play/pause button size)
+- `BoolToFavoriteIconConverter` now returns outlined heart (`favorite_outline_icon.svg`) instead of add icon for unfavorited state
+- Added `favorite_outline_icon.svg` image resource
 
 ## [Previous] - Listening History Feature
 

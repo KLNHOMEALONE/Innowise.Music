@@ -406,8 +406,10 @@
   - [x] Registered `IFavoriteService` in `MauiProgram.cs`
   - [x] Added `IsFavorite` property and `ToggleFavoriteCommand` to `MiniPlayerViewModel`
   - [x] `PlayTrack()` now checks favorite status via `RefreshFavoriteStatusAsync()`
-  - [x] Created `FavoriteIconConverter` (bool → ♥/♡) and `FavoriteBackgroundConverter` (bool → PrimaryRed/Transparent)
-  - [x] Updated `MiniPlayerControl.xaml` — replaced static checkmark with bound heart icon and tap gesture
+  - [x] Created `FavoriteTextConverter` (uses U+FE0E text variant selector for cross-platform heart rendering) and `FavoriteBackgroundConverter`
+  - [x] Created `favorite_outline_icon.svg` image resource
+  - [x] Updated `MiniPlayerControl.xaml` — replaced static checkmark with interactive heart toggle (40x40, matching play/pause button)
+  - [x] Updated `BoolToFavoriteIconConverter` to return outlined heart for unfavorited state (used by SearchPage)
 
 ## Task: Testing
 - **Status**: Not started
