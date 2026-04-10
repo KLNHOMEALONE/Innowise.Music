@@ -57,4 +57,9 @@ public interface IMusicService
     Task RecordListeningHistoryAsync(string userId, Guid trackId);
     Task<IEnumerable<Track>> GetRecentTracksAsync(string userId, int count);
     Task<IEnumerable<Artist>> GetTopArtistsAsync(string userId, int count);
+
+    // Favorite operations
+    Task<bool> ToggleFavoriteAsync(string userId, Guid trackId);
+    Task<bool> IsFavoriteAsync(string userId, Guid trackId);
+    Task<IEnumerable<Track>> GetFavoritesAsync(string userId);
 }

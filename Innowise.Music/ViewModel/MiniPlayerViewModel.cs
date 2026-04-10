@@ -12,6 +12,7 @@ public partial class MiniPlayerViewModel : ObservableObject
     private readonly IAudioService _audioService;
     private readonly IStreamTokenService _streamTokenService;
     private readonly IHistoryService _historyService;
+    private readonly IFavoriteService _favoriteService;
 
     [ObservableProperty]
     private Track _currentTrack;
@@ -19,6 +20,9 @@ public partial class MiniPlayerViewModel : ObservableObject
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsVisible))]
     private bool _isPlaying;
+
+    [ObservableProperty]
+    private bool _isFavorite;
 
     [ObservableProperty]
     private double _progress;
@@ -34,11 +38,13 @@ public partial class MiniPlayerViewModel : ObservableObject
     public MiniPlayerViewModel(
         IAudioService audioService,
         IStreamTokenService streamTokenService,
-        IHistoryService historyService)
+        IHistoryService historyService,
+        IFavoriteService favoriteService)
     {
         _audioService = audioService;
         _streamTokenService = streamTokenService;
         _historyService = historyService;
+        _favoriteService = favoriteService;
         _audioService.StateChanged += OnAudioServiceStateChanged;
         _audioService.PositionChanged += OnAudioServicePositionChanged;
     }
@@ -82,11 +88,24 @@ public partial class MiniPlayerViewModel : ObservableObject
             await _audioService.Resume();
         }
     }
-    
+
+    [RelayCommand]
+    private async Task ToggleFavorite()
+    {
+        if (CurrentTrack?.Id == null || CurrentTrack.Id == Guid.Empty)
+            return;
+
+        var result = await _favoriteService.ToggleFavoriteAsync(CurrentTrack.Id);
+        IsFavorite = result;
+    }
+
     public async Task PlayTrack(Track track)
     {
         CurrentTrack = track;
         OnPropertyChanged(nameof(IsVisible));
+
+        // Check favorite status for the new track
+        _ = RefreshFavoriteStatusAsync(track.Id);
 
         // Record listening history and notify subscribers
         _ = RefreshHistoryAsync(track.Id);
@@ -123,6 +142,18 @@ public partial class MiniPlayerViewModel : ObservableObject
             {
                 System.Diagnostics.Debug.WriteLine($"[MiniPlayer] Inner: {ex.InnerException.Message}");
             }
+        }
+    }
+
+    private async Task RefreshFavoriteStatusAsync(Guid trackId)
+    {
+        try
+        {
+            IsFavorite = await _favoriteService.IsFavoriteAsync(trackId);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[MiniPlayer] Error checking favorite status: {ex.GetType().Name}: {ex.Message}");
         }
     }
 }

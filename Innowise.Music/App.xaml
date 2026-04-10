@@ -2,6 +2,7 @@
 <Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Innowise.Music"
+             xmlns:converters="clr-namespace:Innowise.Music.Converters"
              x:Class="Innowise.Music.App">
     <Application.Resources>
         <ResourceDictionary>
@@ -61,6 +62,10 @@
                 <Setter Property="FontFamily" Value="LexendExtrabold" />
                 <Setter Property="HorizontalTextAlignment" Value="Center" />
             </Style>
+
+            <!-- Converters -->
+            <converters:FavoriteIconConverter x:Key="FavoriteIconConverter" />
+            <converters:FavoriteBackgroundConverter x:Key="FavoriteBackgroundConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

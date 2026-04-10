@@ -51,6 +51,7 @@ namespace Innowise.Music
             builder.Services.AddSingleton<IStreamTokenService, StreamTokenService>();
             builder.Services.AddSingleton<IRecommendationService, RecommendationService>();
             builder.Services.AddSingleton<IHistoryService, HistoryService>();
+            builder.Services.AddSingleton<IFavoriteService, FavoriteService>();
             builder.Services.AddSingleton<INavigationService, NavigationService>();
             builder.Services.AddSingleton<LoginPageViewModel>();
             builder.Services.AddSingleton<LoginPage>();

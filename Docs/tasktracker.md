@@ -13,6 +13,7 @@
 | MAUI DI Setup | `Innowise.Music/MauiProgram.cs` |
 | Audio Playback | `Innowise.Music/Services/AudioService.cs` |
 | History Service | `Innowise.Music/Services/HistoryService.cs` |
+| Favorite Service | `Innowise.Music/Services/FavoriteService.cs` |
 | Recommendations | `Innowise.Music/Services/RecommendationService.cs` |
 | Home Page | `Innowise.Music/View/HomePage.xaml.cs` |
 | Home VM | `Innowise.Music/ViewModel/HomePageViewModel.cs` |
@@ -23,6 +24,7 @@
 | Music Service | `Innowise.MusicIdentityServer/Services/MusicService.cs` |
 | DB Context | `Innowise.MusicIdentityServer/Data/MusicIdentityDbContext.cs` |
 | UserRecentTrack Entity | `Innowise.MusicIdentityServer/Models/Music/UserRecentTrack.cs` |
+| UserFavoriteTrack Entity | `Innowise.MusicIdentityServer/Models/Music/UserFavoriteTrack.cs` |
 | Admin Service | `Innowise.Music.Admin/Services/AdminMusicService.cs` |
 | Docker Compose | `docker-compose.yml` |
 | App Settings | `Innowise.Music/appsettings.json` |
@@ -381,12 +383,31 @@
     - [ ] Add theme customization
 
 ## Task: Favorites & Playlists
-- **Status**: Not started
+- **Status**: In progress (Favorites implemented, Playlists pending)
 - **Description**: Allow users to save favorites and create playlists
 - **Steps**:
-    - [ ] Create favorite tracks feature
+    - [x] Create favorite tracks feature
     - [ ] Implement playlist CRUD operations
     - [ ] Build playlist UI
+
+### Completed: Favorite Tracks Feature
+
+- **Description**: Implemented a toggle favorite feature for tracks. The mini player displays a heart icon that is filled (♥) with red background when the track is favorited, or outlined (♡) with transparent background when not. Clicking the heart toggles the status.
+- **Backend changes**:
+  - [x] Created `UserFavoriteTrack` entity with `Id`, `UserId`, `TrackId`, `CreatedAt`
+  - [x] Added `DbSet<UserFavoriteTrack>` and unique index on `(UserId, TrackId)` to `MusicIdentityDbContext`
+  - [x] Added `ToggleFavoriteAsync`, `IsFavoriteAsync`, `GetFavoritesAsync` to `IMusicService` / `MusicService`
+  - [x] Added `POST /api/Music/tracks/{id}/favorite` — toggles favorite, returns `{ isFavorite: bool }`
+  - [x] Added `GET /api/Music/tracks/{id}/is-favorite` — returns `{ isFavorite: bool }`
+  - [x] Added `GET /api/Music/favorites` — returns user's favorite tracks
+  - [x] Created and applied EF Core migration `AddUserFavoriteTracks`
+- **Frontend changes**:
+  - [x] Created `IFavoriteService` / `FavoriteService` with `ToggleFavoriteAsync` and `IsFavoriteAsync`
+  - [x] Registered `IFavoriteService` in `MauiProgram.cs`
+  - [x] Added `IsFavorite` property and `ToggleFavoriteCommand` to `MiniPlayerViewModel`
+  - [x] `PlayTrack()` now checks favorite status via `RefreshFavoriteStatusAsync()`
+  - [x] Created `FavoriteIconConverter` (bool → ♥/♡) and `FavoriteBackgroundConverter` (bool → PrimaryRed/Transparent)
+  - [x] Updated `MiniPlayerControl.xaml` — replaced static checkmark with bound heart icon and tap gesture
 
 ## Task: Testing
 - **Status**: Not started

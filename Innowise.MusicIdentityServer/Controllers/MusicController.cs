@@ -354,6 +354,98 @@ public class MusicController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// Toggle favorite status for a track (add if not favorite, remove if favorite)
+    /// </summary>
+    [HttpPost("tracks/{id}/favorite")]
+    [Authorize]
+    public async Task<IActionResult> ToggleFavorite(Guid id)
+    {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            var isFavorite = await _musicService.ToggleFavoriteAsync(userId, id);
+            return Ok(new { isFavorite });
+        }
+        catch (ArgumentException)
+        {
+            return NotFound();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error toggling favorite for user {userId}, track {id}");
+            return StatusCode(500, new { message = "Failed to toggle favorite" });
+        }
+    }
+
+    /// <summary>
+    /// Check if a track is favorited by the authenticated user
+    /// </summary>
+    [HttpGet("tracks/{id}/is-favorite")]
+    [Authorize]
+    public async Task<IActionResult> IsFavorite(Guid id)
+    {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            var isFavorite = await _musicService.IsFavoriteAsync(userId, id);
+            return Ok(new { isFavorite });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error checking favorite status for user {userId}, track {id}");
+            return StatusCode(500, new { message = "Failed to check favorite status" });
+        }
+    }
+
+    /// <summary>
+    /// Get all favorite tracks for the authenticated user
+    /// </summary>
+    [HttpGet("favorites")]
+    [Authorize]
+    public async Task<ActionResult<RecentTracksResponse>> GetFavorites()
+    {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            var tracks = await _musicService.GetFavoritesAsync(userId);
+
+            return Ok(new RecentTracksResponse
+            {
+                Tracks = tracks.Select(t => new TrackDto
+                {
+                    Id = t.Id,
+                    Title = t.Title,
+                    Duration = t.Duration,
+                    TrackNumber = t.TrackNumber,
+                    PlayCount = t.PlayCount,
+                    Artist = t.Artist != null ? new ArtistDto { Id = t.Artist.Id, Name = t.Artist.Name, ImageUrl = t.Artist.ImageUrl } : null,
+                    Album = t.Album != null ? new AlbumDto { Id = t.Album.Id, Title = t.Album.Title, CoverImageUrl = t.Album.CoverImageUrl } : null
+                }).ToList()
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error getting favorites for user {userId}");
+            return StatusCode(500, new { message = "Failed to get favorites" });
+        }
+    }
+
     // DTOs for responses
     public class SearchTracksResponse
     {

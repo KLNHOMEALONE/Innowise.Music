@@ -2,7 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased] - Listening History Feature
+## [Unreleased] - Favorites Feature
+
+### Added
+- **Favorite tracks**: Users can now mark tracks as favorites with a heart icon in the mini player
+  - `UserFavoriteTracks` table with unique constraint on `(UserId, TrackId)`
+  - `POST /api/Music/tracks/{id}/favorite` — toggle favorite (add if not favorited, remove if already)
+  - `GET /api/Music/tracks/{id}/is-favorite` — check if a track is favorited by current user
+  - `GET /api/Music/favorites` — get all favorite tracks for current user
+- `IFavoriteService` / `FavoriteService` on the MAUI client for toggling and checking favorite status
+- Mini player heart icon: filled heart (♥) with red background when favorited, outlined heart (♡) with transparent background when not
+- Favorite status is checked automatically when a track starts playing
+- `FavoriteIconConverter` and `FavoriteBackgroundConverter` for the heart UI
+
+### Changed
+- Mini player's static checkmark replaced with interactive heart toggle
+
+## [Previous] - Listening History Feature
 
 ### Added
 - **Per-user listening history**: New `UserRecentTracks` table tracks the 5 most recently played tracks per user

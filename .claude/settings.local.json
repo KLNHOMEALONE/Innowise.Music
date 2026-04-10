@@ -15,7 +15,9 @@
       "Bash(git log:*)",
       "Bash(grep:*)",
       "Bash(dotnet ef migrations:*)",
-      "Bash(docker-compose logs:*)"
+      "Bash(docker-compose logs:*)",
+      "Bash(dotnet ef database:*)",
+      "Bash(docker-compose build:*)"
     ]
   }
 }

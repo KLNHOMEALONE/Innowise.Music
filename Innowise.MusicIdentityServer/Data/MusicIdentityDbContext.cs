@@ -14,6 +14,7 @@ public partial class MusicIdentityDbContext : IdentityDbContext<ApiUser>
     public DbSet<Track> Tracks { get; set; }
     public DbSet<Genre> Genres { get; set; }
     public DbSet<UserRecentTrack> UserRecentTracks { get; set; }
+    public DbSet<UserFavoriteTrack> UserFavoriteTracks { get; set; }
 
     public MusicIdentityDbContext()
     {
@@ -153,6 +154,13 @@ public partial class MusicIdentityDbContext : IdentityDbContext<ApiUser>
         {
             entity.HasIndex(e => e.UserId);
             entity.HasIndex(e => new { e.UserId, e.PlayedAt });
+        });
+
+        // UserFavoriteTrack configuration
+        modelBuilder.Entity<UserFavoriteTrack>(entity =>
+        {
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => new { e.UserId, e.TrackId }).IsUnique();
         });
     }
 

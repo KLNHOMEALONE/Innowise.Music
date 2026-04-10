@@ -752,4 +752,56 @@ public class MusicService : IMusicService
                     .ToListAsync();
             }).Unwrap();
     }
+
+    public async Task<bool> ToggleFavoriteAsync(string userId, Guid trackId)
+    {
+        var track = await _context.Tracks.FindAsync(trackId);
+        if (track == null)
+        {
+            throw new ArgumentException($"Track with id {trackId} not found.", nameof(trackId));
+        }
+
+        var existing = await _context.UserFavoriteTracks
+            .FirstOrDefaultAsync(f => f.UserId == userId && f.TrackId == trackId);
+
+        if (existing != null)
+        {
+            _context.UserFavoriteTracks.Remove(existing);
+            await _context.SaveChangesAsync();
+            return false;
+        }
+
+        var favorite = new UserFavoriteTrack
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            TrackId = trackId,
+            CreatedAt = DateTime.UtcNow
+        };
+        _context.UserFavoriteTracks.Add(favorite);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> IsFavoriteAsync(string userId, Guid trackId)
+    {
+        return await _context.UserFavoriteTracks
+            .AnyAsync(f => f.UserId == userId && f.TrackId == trackId);
+    }
+
+    public async Task<IEnumerable<Track>> GetFavoritesAsync(string userId)
+    {
+        var favoriteTrackIds = await _context.UserFavoriteTracks
+            .Where(f => f.UserId == userId)
+            .OrderByDescending(f => f.CreatedAt)
+            .Select(f => f.TrackId)
+            .ToListAsync();
+
+        return await _context.Tracks
+            .Include(t => t.Artist)
+            .Include(t => t.Album)
+            .Where(t => favoriteTrackIds.Contains(t.Id))
+            .OrderBy(t => favoriteTrackIds.IndexOf(t.Id))
+            .ToListAsync();
+    }
 }

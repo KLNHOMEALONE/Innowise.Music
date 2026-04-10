@@ -398,6 +398,11 @@ These endpoints will be added in subsequent phases to enhance the user experienc
 - `POST /music/tracks/{id}/history` - Record that the authenticated user played a track
 - `GET /music/history/recent?count=N` - Get user's N most recently played tracks
 
+#### Favorites (Implemented)
+- `POST /music/tracks/{id}/favorite` - Toggle favorite status for a track
+- `GET /music/tracks/{id}/is-favorite` - Check if a track is favorited by the current user
+- `GET /music/favorites` - Get all favorite tracks for the current user
+
 #### Recommendations (Implemented)
 - `GET /music/recommendations` - Get personalized track recommendations for the authenticated user
 - `GET /music/recommendations/artists` - Get top 3 most-played distinct artists from the user's listening history
