@@ -235,6 +235,29 @@ public class MusicController : ControllerBase
     }
 
     /// <summary>
+    /// Get top artists from the authenticated user's listening history
+    /// </summary>
+    [HttpGet("recommendations/artists")]
+    [Authorize]
+    public async Task<ActionResult<List<ArtistDto>>> GetRecommendedArtists()
+    {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        var artists = await _musicService.GetTopArtistsAsync(userId, 3);
+
+        return Ok(artists.Select(a => new ArtistDto
+        {
+            Id = a.Id,
+            Name = a.Name,
+            ImageUrl = a.ImageUrl
+        }).ToList());
+    }
+
+    /// <summary>
     /// Get all tracks from an album
     /// </summary>
     [HttpGet("albums/{id}/tracks")]

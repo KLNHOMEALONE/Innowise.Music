@@ -84,6 +84,41 @@ public class RecommendationService : IRecommendationService
         }
     }
 
+    public async Task<List<Artist>> GetRecommendedArtistsAsync()
+    {
+        try
+        {
+            var token = await _authenticationService.GetTokenAsync();
+            if (string.IsNullOrEmpty(token))
+            {
+                System.Diagnostics.Debug.WriteLine("[RecommendedArtists] No auth token available");
+                return new List<Artist>();
+            }
+
+            using var httpClient = new HttpClient(_httpHelper.GetInsecureHandler());
+            httpClient.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
+
+            var url = GetApiUrl("recommendations/artists");
+            System.Diagnostics.Debug.WriteLine($"[RecommendedArtists] Calling: {url}");
+
+            var artists = await httpClient.GetFromJsonAsync<List<ArtistDto>>(url);
+            System.Diagnostics.Debug.WriteLine($"[RecommendedArtists] Response artists: {artists?.Count ?? 0}");
+
+            return artists?.Select(a => new Artist
+            {
+                Id = a.Id,
+                Name = a.Name,
+                ImageUrl = a.ImageUrl
+            }).ToList() ?? new List<Artist>();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[RecommendedArtists] Error: {ex.GetType().Name}: {ex.Message}");
+            return new List<Artist>();
+        }
+    }
+
     private class RecommendationsResponse
     {
         public List<TrackDto> Tracks { get; set; } = new();

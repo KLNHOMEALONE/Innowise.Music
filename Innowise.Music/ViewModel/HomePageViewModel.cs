@@ -59,26 +59,56 @@ public partial class HomePageViewModel : ObservableObject
             if (tracks.Count == 0)
             {
                 System.Diagnostics.Debug.WriteLine("[HomeVM] No recommendations, keeping mock data");
-                return;
             }
-
-            FeaturedSongs.Clear();
-            foreach (var track in tracks)
+            else
             {
-                FeaturedSongs.Add(new HomeItem(this)
+                FeaturedSongs.Clear();
+                foreach (var track in tracks)
                 {
-                    Id = track.Id,
-                    Title = track.Title,
-                    Subtitle = track.ArtistName,
-                    ImageUrl = track.ImageUrl,
-                    FileUri = track.FileUri
-                });
+                    FeaturedSongs.Add(new HomeItem(this)
+                    {
+                        Id = track.Id,
+                        Title = track.Title,
+                        Subtitle = track.ArtistName,
+                        ImageUrl = track.ImageUrl,
+                        FileUri = track.FileUri
+                    });
+                }
+                System.Diagnostics.Debug.WriteLine($"[HomeVM] FeaturedSongs now has {FeaturedSongs.Count} items");
             }
-            System.Diagnostics.Debug.WriteLine($"[HomeVM] FeaturedSongs now has {FeaturedSongs.Count} items");
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"[HomeVM] LoadRecommendationsAsync error: {ex.Message}");
+        }
+
+        // Load recommended artists from user's listening history
+        try
+        {
+            var artists = await _recommendationService.GetRecommendedArtistsAsync();
+            System.Diagnostics.Debug.WriteLine($"[HomeVM] Got {artists.Count} recommended artists");
+            if (artists.Count == 0)
+            {
+                System.Diagnostics.Debug.WriteLine("[HomeVM] No recommended artists, keeping mock data");
+                return;
+            }
+
+            RecommendedArtists.Clear();
+            foreach (var artist in artists)
+            {
+                RecommendedArtists.Add(new HomeItem(this)
+                {
+                    Id = artist.Id,
+                    Title = artist.Name,
+                    ImageUrl = artist.ImageUrl ?? string.Empty,
+                    Subtitle = "Artist"
+                });
+            }
+            System.Diagnostics.Debug.WriteLine($"[HomeVM] RecommendedArtists now has {RecommendedArtists.Count} items");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[HomeVM] LoadRecommendedArtistsAsync error: {ex.Message}");
         }
     }
 

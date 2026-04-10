@@ -398,6 +398,10 @@ These endpoints will be added in subsequent phases to enhance the user experienc
 - `POST /music/tracks/{id}/history` - Record that the authenticated user played a track
 - `GET /music/history/recent?count=N` - Get user's N most recently played tracks
 
+#### Recommendations (Implemented)
+- `GET /music/recommendations` - Get personalized track recommendations for the authenticated user
+- `GET /music/recommendations/artists` - Get top 3 most-played distinct artists from the user's listening history
+
 ---
 
 ### Audio Streaming Details
@@ -441,6 +445,7 @@ public interface IMusicService
     Task<IEnumerable<TrackDto>> GetTopTracksAsync(string genre, int count);
     Task<IEnumerable<AlbumDto>> GetNewReleasesAsync(int count);
     Task<IEnumerable<PlaylistDto>> GetFeaturedPlaylistsAsync();
+    Task<IEnumerable<ArtistDto>> GetTopArtistsAsync(string userId, int count);
 }
 ```
 

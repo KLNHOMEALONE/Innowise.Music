@@ -731,4 +731,25 @@ public class MusicService : IMusicService
             .OrderBy(t => recentTrackIds.IndexOf(t.Id))
             .ToListAsync();
     }
+
+    public async Task<IEnumerable<Artist>> GetTopArtistsAsync(string userId, int count)
+    {
+        return await _context.UserRecentTracks
+            .Where(urt => urt.UserId == userId)
+            .Include(urt => urt.Track)
+            .ThenInclude(t => t.Artist)
+            .GroupBy(urt => urt.Track.ArtistId)
+            .Select(g => new { ArtistId = g.Key, PlayCount = g.Count() })
+            .OrderByDescending(g => g.PlayCount)
+            .Take(count)
+            .Select(g => g.ArtistId)
+            .ToListAsync()
+            .ContinueWith(async ids =>
+            {
+                var artistIds = await ids;
+                return await _context.Artists
+                    .Where(a => artistIds.Contains(a.Id))
+                    .ToListAsync();
+            }).Unwrap();
+    }
 }

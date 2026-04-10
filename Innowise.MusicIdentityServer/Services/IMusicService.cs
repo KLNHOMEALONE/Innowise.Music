@@ -56,4 +56,5 @@ public interface IMusicService
     // Listening history operations
     Task RecordListeningHistoryAsync(string userId, Guid trackId);
     Task<IEnumerable<Track>> GetRecentTracksAsync(string userId, int count);
+    Task<IEnumerable<Artist>> GetTopArtistsAsync(string userId, int count);
 }
