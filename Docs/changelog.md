@@ -14,11 +14,14 @@ All notable changes to this project will be documented in this file.
 - Mini player heart icon: filled heart (♥) with red background when favorited, outlined heart (♡) with transparent background when not
 - Favorite status is checked automatically when a track starts playing
 - `FavoriteTextConverter` (uses Unicode text variant selector for cross-platform heart rendering) and `FavoriteBackgroundConverter`
+- Quick Access section on homepage now displays user's favorite tracks (6 random if > 6, all if ≤ 6) with clickable play support
 
 ### Changed
 - Mini player's static checkmark replaced with interactive heart toggle (40x40, matching play/pause button size)
 - `BoolToFavoriteIconConverter` now returns outlined heart (`favorite_outline_icon.svg`) instead of add icon for unfavorited state
 - Added `favorite_outline_icon.svg` image resource
+- `IFavoriteService` extended with `GetAllFavoritesAsync()` for fetching all user favorites
+- `HomePageViewModel` loads favorite tracks into Quick Access items on login, replacing static mock data
 
 ## [Previous] - Listening History Feature
 

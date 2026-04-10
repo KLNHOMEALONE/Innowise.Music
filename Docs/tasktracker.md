@@ -402,7 +402,7 @@
   - [x] Added `GET /api/Music/favorites` — returns user's favorite tracks
   - [x] Created and applied EF Core migration `AddUserFavoriteTracks`
 - **Frontend changes**:
-  - [x] Created `IFavoriteService` / `FavoriteService` with `ToggleFavoriteAsync` and `IsFavoriteAsync`
+  - [x] Created `IFavoriteService` / `FavoriteService` with `ToggleFavoriteAsync`, `IsFavoriteAsync`, and `GetAllFavoritesAsync`
   - [x] Registered `IFavoriteService` in `MauiProgram.cs`
   - [x] Added `IsFavorite` property and `ToggleFavoriteCommand` to `MiniPlayerViewModel`
   - [x] `PlayTrack()` now checks favorite status via `RefreshFavoriteStatusAsync()`
@@ -410,6 +410,8 @@
   - [x] Created `favorite_outline_icon.svg` image resource
   - [x] Updated `MiniPlayerControl.xaml` — replaced static checkmark with interactive heart toggle (40x40, matching play/pause button)
   - [x] Updated `BoolToFavoriteIconConverter` to return outlined heart for unfavorited state (used by SearchPage)
+  - [x] Quick Access section on homepage displays user's favorite tracks (6 random if > 6, all if ≤ 6)
+  - [x] Quick Access items are clickable and play the selected track
 
 ## Task: Testing
 - **Status**: Not started

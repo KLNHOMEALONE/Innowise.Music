@@ -15,6 +15,7 @@ public partial class HomePageViewModel : ObservableObject
     private readonly INavigationService _navigationService;
     private readonly IRecommendationService _recommendationService;
     private readonly IHistoryService _historyService;
+    private readonly IFavoriteService _favoriteService;
 
     [ObservableProperty]
     private string _userName = "John Doe";
@@ -30,7 +31,8 @@ public partial class HomePageViewModel : ObservableObject
         IGoogleAuthService googleAuthService,
         INavigationService navigationService,
         IRecommendationService recommendationService,
-        IHistoryService historyService)
+        IHistoryService historyService,
+        IFavoriteService favoriteService)
     {
         _miniPlayerViewModel = miniPlayerViewModel;
         _authenticationService = authenticationService;
@@ -38,6 +40,7 @@ public partial class HomePageViewModel : ObservableObject
         _navigationService = navigationService;
         _recommendationService = recommendationService;
         _historyService = historyService;
+        _favoriteService = favoriteService;
         System.Diagnostics.Debug.WriteLine("[HomeVM] Constructor: loading mock data");
         LoadMockData();
         LoadUserName();
@@ -81,6 +84,9 @@ public partial class HomePageViewModel : ObservableObject
         {
             System.Diagnostics.Debug.WriteLine($"[HomeVM] LoadRecommendationsAsync error: {ex.Message}");
         }
+
+        // Load user's favorite tracks for Quick Access
+        await LoadFavoriteTracksAsync();
 
         // Load recommended artists from user's listening history
         try
@@ -197,6 +203,45 @@ public partial class HomePageViewModel : ObservableObject
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"[HomeVM] LoadRecentItemsAsync error: {ex.Message}");
+        }
+    }
+
+    public async Task LoadFavoriteTracksAsync()
+    {
+        System.Diagnostics.Debug.WriteLine("[HomeVM] LoadFavoriteTracksAsync started");
+        try
+        {
+            var favorites = await _favoriteService.GetAllFavoritesAsync();
+            System.Diagnostics.Debug.WriteLine($"[HomeVM] Got {favorites.Count} favorite tracks");
+
+            if (favorites.Count == 0)
+            {
+                System.Diagnostics.Debug.WriteLine("[HomeVM] No favorites, keeping mock data");
+                return;
+            }
+
+            QuickAccessItems.Clear();
+
+            var selectedTracks = favorites.Count > 6
+                ? favorites.OrderBy(_ => Random.Shared.Next()).Take(6).ToList()
+                : favorites;
+
+            foreach (var track in selectedTracks)
+            {
+                QuickAccessItems.Add(new HomeItem(this)
+                {
+                    Id = track.Id,
+                    Title = track.Title,
+                    Subtitle = track.ArtistName,
+                    ImageUrl = track.ImageUrl,
+                    FileUri = track.FileUri
+                });
+            }
+            System.Diagnostics.Debug.WriteLine($"[HomeVM] QuickAccessItems now has {QuickAccessItems.Count} items");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[HomeVM] LoadFavoriteTracksAsync error: {ex.Message}");
         }
     }
 

@@ -1,6 +1,8 @@
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using Innowise.Music.Configuration;
+using Innowise.Music.Model;
 using Microsoft.Extensions.Options;
 
 namespace Innowise.Music.Services;
@@ -9,6 +11,7 @@ public interface IFavoriteService
 {
     Task<bool> ToggleFavoriteAsync(Guid trackId);
     Task<bool> IsFavoriteAsync(Guid trackId);
+    Task<List<Track>> GetAllFavoritesAsync();
 }
 
 public class FavoriteService : IFavoriteService
@@ -124,6 +127,49 @@ public class FavoriteService : IFavoriteService
         return false;
     }
 
+    public async Task<List<Track>> GetAllFavoritesAsync()
+    {
+        try
+        {
+            var token = await _authenticationService.GetTokenAsync();
+            if (string.IsNullOrEmpty(token))
+            {
+                System.Diagnostics.Debug.WriteLine("[Favorite] No auth token, skipping get all favorites");
+                return new List<Track>();
+            }
+
+            using var httpClient = new HttpClient(_httpHelper.GetInsecureHandler());
+            httpClient.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
+
+            var url = GetApiUrl("favorites");
+            System.Diagnostics.Debug.WriteLine($"[Favorite] Fetching all favorites: GET {url}");
+
+            var response = await httpClient.GetFromJsonAsync<FavoritesResponse>(url);
+            System.Diagnostics.Debug.WriteLine($"[Favorite] Response tracks: {response?.Tracks?.Count ?? 0}");
+
+            var streamBaseUrl = DeviceInfo.Platform == DevicePlatform.Android
+                ? "http://10.0.2.2:5236"
+                : "http://localhost:5236";
+
+            var tracks = response?.Tracks?.Select(t => new Track
+            {
+                Id = t.Id,
+                Title = t.Title,
+                ArtistName = t.Artist?.Name ?? "Unknown Artist",
+                ImageUrl = t.Album?.CoverImageUrl ?? t.Artist?.ImageUrl ?? string.Empty,
+                FileUri = $"{streamBaseUrl}/api/Music/tracks/{t.Id}/stream"
+            }).ToList();
+
+            return tracks ?? new List<Track>();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[Favorite] Error getting all favorites: {ex.GetType().Name}: {ex.Message}");
+            return new List<Track>();
+        }
+    }
+
     private static bool TryParseIsFavorite(string json, out bool isFavorite)
     {
         isFavorite = false;
@@ -152,5 +198,32 @@ public class FavoriteService : IFavoriteService
             }
         }
         return false;
+    }
+
+    private class FavoritesResponse
+    {
+        public List<TrackDto> Tracks { get; set; } = new();
+    }
+
+    private class TrackDto
+    {
+        public Guid Id { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public ArtistDto? Artist { get; set; }
+        public AlbumDto? Album { get; set; }
+    }
+
+    private class ArtistDto
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string? ImageUrl { get; set; }
+    }
+
+    private class AlbumDto
+    {
+        public Guid Id { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string? CoverImageUrl { get; set; }
     }
 }
