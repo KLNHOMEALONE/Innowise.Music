@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased] - Search Feature
+
+### Added
+- **Unified real-time search**: Users can now search for **tracks, artists, and albums** in a single query.
+  - Backend: Added `SearchArtistsAsync` and `SearchAlbumsAsync` to `MusicService`.
+  - Backend: New `GET /api/Music/search` endpoint that returns a combined result of all three categories.
+  - Frontend: `SearchService.UnifiedSearchAsync` implemented with DI and thread-safe `HttpClient`.
+  - Frontend: `SearchPageViewModel` now dynamically maps and displays mixed result types with category labels ("Song", "Artist", "Album").
+- **Smart UI for Search Results**:
+  - Category labels added to subtitles for clarity.
+  - Track-specific actions (Favorite, Options menu) are conditionally hidden for Artist and Album results.
+  - Debounce logic (500ms) prevents excessive API calls during typing.
+
 ## [Unreleased] - Favorites Feature
 
 ### Added

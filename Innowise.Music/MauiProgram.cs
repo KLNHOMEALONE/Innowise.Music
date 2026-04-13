@@ -48,6 +48,7 @@ namespace Innowise.Music
             builder.Services.AddSingleton<IAuthenticationService, AuthenticationService>();
             builder.Services.AddSingleton<IGoogleAuthService, GoogleAuthService>();
             builder.Services.AddSingleton<IAudioService, AudioService>();
+            builder.Services.AddSingleton<ISearchService, SearchService>();
             builder.Services.AddSingleton<IStreamTokenService, StreamTokenService>();
             builder.Services.AddSingleton<IRecommendationService, RecommendationService>();
             builder.Services.AddSingleton<IHistoryService, HistoryService>();

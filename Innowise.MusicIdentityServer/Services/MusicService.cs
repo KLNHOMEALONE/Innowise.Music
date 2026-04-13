@@ -44,6 +44,40 @@ public class MusicService : IMusicService
         return (tracks, totalCount);
     }
 
+    public async Task<IEnumerable<Artist>> SearchArtistsAsync(string query, int count)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return Enumerable.Empty<Artist>();
+        }
+
+        var queryLower = query.ToLower();
+
+        return await _context.Artists
+            .Where(a => EF.Functions.ILike(a.Name, $"%{queryLower}%"))
+            .OrderByDescending(a => a.MonthlyListeners)
+            .Take(count)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Album>> SearchAlbumsAsync(string query, int count)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return Enumerable.Empty<Album>();
+        }
+
+        var queryLower = query.ToLower();
+
+        return await _context.Albums
+            .Include(a => a.Artist)
+            .Where(a => EF.Functions.ILike(a.Title, $"%{queryLower}%") ||
+                       EF.Functions.ILike(a.Artist.Name, $"%{queryLower}%"))
+            .OrderByDescending(a => a.ReleaseDate)
+            .Take(count)
+            .ToListAsync();
+    }
+
     public async Task<Track?> GetTrackAsync(Guid id)
     {
         return await _context.Tracks

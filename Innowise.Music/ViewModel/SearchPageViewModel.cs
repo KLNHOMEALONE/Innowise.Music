@@ -1,96 +1,211 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Innowise.Music.Model;
+using Innowise.Music.Services;
 using System.Collections.ObjectModel;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Innowise.Music.ViewModel;
 
+public enum SearchResultType
+{
+    Track,
+    Artist,
+    Album
+}
+
 public partial class SearchPageViewModel : ObservableObject
 {
+    private readonly ISearchService _searchService;
+    private readonly IAudioService _audioService;
+    private readonly IFavoriteService _favoriteService;
+    private readonly MiniPlayerViewModel _miniPlayerViewModel;
+    private CancellationTokenSource? _searchCancellationTokenSource;
+
     [ObservableProperty]
-    private string _searchQuery;
+    private string _searchQuery = string.Empty;
 
     public ObservableCollection<string> FilterChips { get; } = new()
     {
-        "Artists", "Songs", "Albums", "Playlists", "Podcasts"
+        "Artists", "Songs", "Albums", "Playlists"
     };
 
-    public ObservableCollection<GenreItem> Genres { get; } = new()
-    {
-        new GenreItem("Pop", "#E13300", "https://example.com/pop.jpg"),
-        new GenreItem("Hip-Hop", "#1E3264", "https://example.com/hiphop.jpg"),
-        new GenreItem("Rock", "#7358FF", "https://example.com/rock.jpg"),
-        new GenreItem("Electronic", "#E8115B", "https://example.com/electronic.jpg"),
-        new GenreItem("Jazz", "#FF4632", "https://example.com/jazz.jpg"),
-        new GenreItem("Classical", "#503750", "https://example.com/classical.jpg")
-    };
-
-    public ObservableCollection<RecentSearchItem> RecentSearches { get; } = new()
-    {
-        new RecentSearchItem("Invent Animate", "Artist", "shade_astray.png"),
-        new RecentSearchItem("Heavener", "Album", "shade_astray.png"),
-        new RecentSearchItem("Shade Astray", "Song", "shade_astray.png")
-    };
-    
     public ObservableCollection<SearchResultItem> SearchResults { get; } = new();
 
-    public SearchPageViewModel()
+    public SearchPageViewModel(
+        ISearchService searchService,
+        IAudioService audioService,
+        IFavoriteService favoriteService,
+        MiniPlayerViewModel miniPlayerViewModel)
     {
-        LoadMockData();
+        _searchService = searchService;
+        _audioService = audioService;
+        _favoriteService = favoriteService;
+        _miniPlayerViewModel = miniPlayerViewModel;
     }
 
-    private void LoadMockData()
+    async partial void OnSearchQueryChanged(string value)
     {
-        SearchResults.Add(new SearchResultItem("Shade Astray", "Song / Invent Animate", "shade_astray.png", true));
-        SearchResults.Add(new SearchResultItem("Return To Forever", "Album / Chick Corea", "return_to_forever.png", false));
-        SearchResults.Add(new SearchResultItem("Ambient chill", "Playlist", "playlist_big.png", false));
-        SearchResults.Add(new SearchResultItem("Shade Astray", "Song / Invent Animate", "shade_astray.png", true));
-        SearchResults.Add(new SearchResultItem("Return To Forever", "Album / Chick Corea", "return_to_forever.png", false));
-        SearchResults.Add(new SearchResultItem("Ambient chill", "Playlist", "playlist_big.png", false));
-        SearchResults.Add(new SearchResultItem("Shade Astray", "Song / Invent Animate", "shade_astray.png", true));
-        SearchResults.Add(new SearchResultItem("Return To Forever", "Album / Chick Corea", "return_to_forever.png", false));
-        SearchResults.Add(new SearchResultItem("Ambient chill", "Playlist", "playlist_big.png", false));
+        if (string.IsNullOrWhiteSpace(value) || value.Length < 2)
+        {
+            SearchResults.Clear();
+            return;
+        }
+
+        _searchCancellationTokenSource?.Cancel();
+        _searchCancellationTokenSource = new CancellationTokenSource();
+
+        try
+        {
+            await Task.Delay(500, _searchCancellationTokenSource.Token);
+            await PerformSearchAsync();
+        }
+        catch (TaskCanceledException)
+        {
+            // Ignore cancellation
+        }
+    }
+
+    [RelayCommand]
+    private async Task PerformSearchAsync()
+    {
+        if (string.IsNullOrWhiteSpace(SearchQuery))
+        {
+            SearchResults.Clear();
+            return;
+        }
+
+        System.Diagnostics.Debug.WriteLine($"[SearchVM] Performing unified search for: {SearchQuery}");
+        var response = await _searchService.UnifiedSearchAsync(SearchQuery);
+
+        if (response != null)
+        {
+            SearchResults.Clear();
+
+            // Add Artists
+            if (response.Artists != null)
+            {
+                foreach (var artist in response.Artists)
+                {
+                    SearchResults.Add(new SearchResultItem(this, artist));
+                }
+            }
+
+            // Add Albums
+            if (response.Albums != null)
+            {
+                foreach (var album in response.Albums)
+                {
+                    SearchResults.Add(new SearchResultItem(this, album));
+                }
+            }
+
+            // Add Tracks
+            if (response.Tracks != null)
+            {
+                foreach (var trackDto in response.Tracks)
+                {
+                    var isFavorited = await _favoriteService.IsFavoriteAsync(trackDto.Id);
+                    SearchResults.Add(new SearchResultItem(this, trackDto, isFavorited));
+                }
+            }
+
+            System.Diagnostics.Debug.WriteLine($"[SearchVM] Total results: {SearchResults.Count}");
+        }
+    }
+
+    [RelayCommand]
+    private async Task PlayTrack(SearchResultItem item)
+    {
+        if (item == null || item.Type != SearchResultType.Track || item.Track == null) return;
+
+        // Use HTTP for stream URLs (MediaElement can't handle self-signed HTTPS certs)
+        var streamBaseUrl = DeviceInfo.Platform == DevicePlatform.Android
+            ? "http://10.0.2.2:5236"
+            : "http://localhost:5236";
+
+        var track = new Track
+        {
+            Id = item.Track.Id,
+            Title = item.Track.Title,
+            ArtistName = item.Track.Artist?.Name ?? "Unknown Artist",
+            ImageUrl = item.Track.Album?.CoverImageUrl ?? item.Track.Artist?.ImageUrl ?? string.Empty,
+            FileUri = $"{streamBaseUrl}/api/Music/tracks/{item.Track.Id}/stream"
+        };
+
+        await _miniPlayerViewModel.PlayTrack(track);
+    }
+
+    [RelayCommand]
+    private async Task ToggleFavorite(SearchResultItem item)
+    {
+        if (item == null || item.Type != SearchResultType.Track || item.Track == null) return;
+
+        var result = await _favoriteService.ToggleFavoriteAsync(item.Track.Id);
+        item.IsFavorited = result;
     }
 }
 
-public class GenreItem
+public partial class SearchResultItem : ObservableObject
 {
-    public string Name { get; }
-    public string Color { get; }
-    public string ImageUrl { get; }
-
-    public GenreItem(string name, string color, string imageUrl)
+    public SearchPageViewModel Parent { get; }
+    public SearchResultType Type { get; }
+    public TrackDto? Track { get; }
+    public Artist? Artist { get; }
+    public Album? Album { get; }
+    
+    public string Title => Type switch
     {
-        Name = name;
-        Color = color;
-        ImageUrl = imageUrl;
-    }
-}
+        SearchResultType.Track => Track?.Title ?? string.Empty,
+        SearchResultType.Artist => Artist?.Name ?? string.Empty,
+        SearchResultType.Album => Album?.Title ?? string.Empty,
+        _ => string.Empty
+    };
 
-public class RecentSearchItem
-{
-    public string Title { get; }
-    public string Type { get; }
-    public string ImageUrl { get; }
-
-    public RecentSearchItem(string title, string type, string imageUrl)
+    public string Subtitle => Type switch
     {
-        Title = title;
-        Type = type;
-        ImageUrl = imageUrl;
-    }
-}
+        SearchResultType.Track => $"Song • {Track?.Artist?.Name}",
+        SearchResultType.Artist => "Artist",
+        SearchResultType.Album => $"Album • {Album?.Title}", // Note: Backend Album doesn't have Artist populated in SearchAlbumsAsync currently, but DTO might have it
+        _ => string.Empty
+    };
 
-public class SearchResultItem
-{
-    public string Title { get; }
-    public string Subtitle { get; }
-    public string ImageUrl { get; }
-    public bool IsFavorited { get; }
-
-    public SearchResultItem(string title, string subtitle, string imageUrl, bool isFavorited)
+    public string ImageUrl => Type switch
     {
-        Title = title;
-        Subtitle = subtitle;
-        ImageUrl = imageUrl;
+        SearchResultType.Track => Track?.Album?.CoverImageUrl ?? Track?.Artist?.ImageUrl ?? string.Empty,
+        SearchResultType.Artist => Artist?.ImageUrl ?? string.Empty,
+        SearchResultType.Album => Album?.CoverImageUrl ?? string.Empty,
+        _ => string.Empty
+    };
+
+    public bool IsTrack => Type == SearchResultType.Track;
+
+    [ObservableProperty]
+    private bool _isFavorited;
+
+    // Track Constructor
+    public SearchResultItem(SearchPageViewModel parent, TrackDto track, bool isFavorited)
+    {
+        Parent = parent;
+        Type = SearchResultType.Track;
+        Track = track;
         IsFavorited = isFavorited;
+    }
+
+    // Artist Constructor
+    public SearchResultItem(SearchPageViewModel parent, Artist artist)
+    {
+        Parent = parent;
+        Type = SearchResultType.Artist;
+        Artist = artist;
+    }
+
+    // Album Constructor
+    public SearchResultItem(SearchPageViewModel parent, Album album)
+    {
+        Parent = parent;
+        Type = SearchResultType.Album;
+        Album = album;
     }
 }

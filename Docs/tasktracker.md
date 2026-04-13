@@ -367,12 +367,16 @@
     - [ ] Build library UI
 
 ## Task: Search Functionality
-- **Status**: Not started
-- **Description**: Search for tracks, artists, albums
+- **Status**: Completed
+- **Description**: Implemented real-time unified search for tracks, artists, and albums using the IdentityServer backend.
 - **Steps**:
-    - [ ] Create search service
-    - [ ] Implement search UI
-    - [ ] Add filters and sorting
+  - [x] Backend: Added `SearchArtistsAsync` and `SearchAlbumsAsync` to `MusicService`.
+  - [x] Backend: Added unified `GET /api/Music/search` endpoint to `MusicController`.
+  - [x] Frontend: Created `UnifiedSearchResponse` and `TrackDto` models.
+  - [x] Frontend: Implemented `ISearchService.UnifiedSearchAsync`.
+  - [x] Frontend: Updated `SearchPageViewModel` to handle mixed result types (Tracks, Artists, Albums).
+  - [x] Frontend: Updated `SearchPage.xaml` to show type-specific subtitles and hide track-only icons for artists/albums.
+- **Files**: `Innowise.Music/Services/SearchService.cs`, `Innowise.Music/ViewModel/SearchPageViewModel.cs`, `Innowise.MusicIdentityServer/Controllers/MusicController.cs`, `Innowise.MusicIdentityServer/Services/MusicService.cs`
 
 ## Task: User Profile
 - **Status**: Not started

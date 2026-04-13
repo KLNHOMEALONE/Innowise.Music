@@ -6,6 +6,8 @@ public interface IMusicService
 {
     // Search
     Task<(IEnumerable<Track> Tracks, int TotalCount)> SearchTracksAsync(string query, int page, int pageSize);
+    Task<IEnumerable<Artist>> SearchArtistsAsync(string query, int count);
+    Task<IEnumerable<Album>> SearchAlbumsAsync(string query, int count);
     
     // Track operations
     Task<Track?> GetTrackAsync(Guid id);

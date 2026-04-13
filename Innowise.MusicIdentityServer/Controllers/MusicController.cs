@@ -23,6 +23,47 @@ public class MusicController : ControllerBase
         _logger = logger;
     }
 
+    [HttpGet("search")]
+    [Authorize]
+    public async Task<ActionResult<UnifiedSearchResponse>> Search([FromQuery] string query)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return BadRequest(new { message = "Query parameter is required" });
+        }
+
+        // Execute searches sequentially because DbContext is not thread-safe
+        var (tracks, _) = await _musicService.SearchTracksAsync(query, 1, 10);
+        var artists = await _musicService.SearchArtistsAsync(query, 5);
+        var albums = await _musicService.SearchAlbumsAsync(query, 5);
+
+        return Ok(new UnifiedSearchResponse
+        {
+            Tracks = tracks.Select(t => new TrackDto
+            {
+                Id = t.Id,
+                Title = t.Title,
+                Duration = t.Duration,
+                TrackNumber = t.TrackNumber,
+                Artist = t.Artist != null ? new ArtistDto { Id = t.Artist.Id, Name = t.Artist.Name } : null,
+                Album = t.Album != null ? new AlbumDto { Id = t.Album.Id, Title = t.Album.Title, CoverImageUrl = t.Album.CoverImageUrl } : null
+            }).ToList(),
+            Artists = artists.Select(a => new ArtistDto
+            {
+                Id = a.Id,
+                Name = a.Name,
+                ImageUrl = a.ImageUrl
+            }).ToList(),
+            Albums = albums.Select(a => new AlbumDto
+            {
+                Id = a.Id,
+                Title = a.Title,
+                CoverImageUrl = a.CoverImageUrl,
+                ReleaseDate = a.ReleaseDate
+            }).ToList()
+        });
+    }
+
     /// <summary>
     /// Search tracks by title, artist, or album name
     /// </summary>
@@ -453,6 +494,13 @@ public class MusicController : ControllerBase
         public int TotalCount { get; set; }
         public int Page { get; set; }
         public int PageSize { get; set; }
+    }
+
+    public class UnifiedSearchResponse
+    {
+        public List<TrackDto> Tracks { get; set; } = new();
+        public List<ArtistDto> Artists { get; set; } = new();
+        public List<AlbumDto> Albums { get; set; } = new();
     }
 
     public class TrackDto
