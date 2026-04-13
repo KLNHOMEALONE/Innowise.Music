@@ -84,43 +84,52 @@ graph TB
 
 ### Architecture
 
-The admin dashboard uses Blazor Server's built-in authentication infrastructure with `Blazored.LocalStorage` for token persistence, following the same pattern as the BookStore reference project.
+The admin dashboard uses standard ASP.NET Core Identity authentication infrastructure with secure cookies for browser session management and server-side memory caching (`IMemoryCache`) for IdentityServer JWT tokens.
 
 **Key components:**
 
 | Component | File | Purpose |
 |-----------|------|---------|
-| Auth State Provider | [`Auth/ApiAuthenticationStateProvider.cs`](../Innowise.Music.Admin/Auth/ApiAuthenticationStateProvider.cs) | JWT-based `AuthenticationStateProvider` with `localStorage` persistence |
-| Auth Service | [`Services/AuthService.cs`](../Innowise.Music.Admin/Services/AuthService.cs) | Login/logout orchestration, token storage, admin role check |
+| Auth Logic | [`Services/AuthService.cs`](../Innowise.Music.Admin/Services/AuthService.cs) | Login/logout orchestration, server-side token caching, admin role check |
+| Auth Provider | [`Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider`](https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.components.authorization.authenticationstateprovider) | Standard Blazor auth provider integrated with the cookie session |
 | App Router | [`Components/App.razor`](../Innowise.Music.Admin/Components/App.razor) | `CascadingAuthenticationState` + `AuthorizeRouteView` with `RedirectToLogin` |
 | Login Page | [`Components/Pages/Login.razor`](../Innowise.Music.Admin/Components/Pages/Login.razor) | Credential input and admin verification |
-| Logout Page | [`Components/Pages/Logout.razor`](../Innowise.Music.Admin/Components/Pages/Logout.razor) | Token removal and auth state notification |
+| Logout Page | [`Components/Pages/Logout.razor`](../Innowise.Music.Admin/Components/Pages/Logout.razor) | Sign-out orchestration and cache cleanup |
 | Redirect | [`Components/Shared/RedirectToLogin.razor`](../Innowise.Music.Admin/Components/Shared/RedirectToLogin.razor) | Navigates unauthenticated users to `/login` |
-| Host Page | [`Pages/_Host.cshtml`](../Innowise.Music.Admin/Pages/_Host.cshtml) | Entry point with `render-mode="Server"` (not `ServerPrerendered`) |
+| Host Page | [`Pages/_Host.cshtml`](../Innowise.Music.Admin/Pages/_Host.cshtml) | Entry point with `render-mode="Server"` |
 
 ### Token Storage
 
-Tokens are stored in the browser's `localStorage` via **Blazored.LocalStorage** (`ILocalStorageService`):
+IdentityServer JWT tokens are never stored in the browser's `localStorage` for security reasons. Instead, they are managed entirely on the server:
 
-- **Key**: `"accessToken"`
-- **Write**: `AuthService.LoginAsync()` stores JWT after successful API login
-- **Read**: `ApiAuthenticationStateProvider.GetAuthenticationStateAsync()` reads and validates on each auth check
-- **Delete**: `ApiAuthenticationStateProvider.LoggedOut()` removes token on logout
-- **Bearer injection**: `AdminMusicService.AddAuthHeaderAsync()` reads token for API calls
+- **Session**: Standard ASP.NET Core Identity Cookies (`CookieAuthenticationDefaults.AuthenticationScheme`) manage the browser session.
+- **Cache**: `IMemoryCache` stores the JWT token (`Token`) and `RefreshToken` on the server.
+- **Key**: Tokens are keyed in the cache using the format `AuthToken_{userId}` and `AuthRefreshToken_{userId}`, where `{userId}` is the value of the `uid` claim.
+- **Write**: `AuthService.LoginAndGetPrincipalAsync()` caches tokens after a successful API login and calls `HttpContext.SignInAsync()`.
+- **Read**: `AuthService.GetTokenAsync()` retrieves the token from `IMemoryCache` for backend API requests.
+- **Delete**: `AuthService.LogoutAsync()` removes tokens from the cache and calls `HttpContext.SignOutAsync()`.
 
 ### DI Registration (Program.cs)
 
 ```csharp
-// Blazored.LocalStorage for browser localStorage access
-builder.Services.AddBlazoredLocalStorage();
+// Add Authentication services
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.Cookie.HttpOnly = true;
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+        options.LoginPath = "/login";
+        options.AccessDeniedPath = "/";
+    });
 
-// Dual registration pattern - both resolve to same scoped instance
-builder.Services.AddScoped<ApiAuthenticationStateProvider>();
-builder.Services.AddScoped<AuthenticationStateProvider>(p =>
-    p.GetRequiredService<ApiAuthenticationStateProvider>());
+// Register AuthService with IMemoryCache and IHttpContextAccessor
+builder.Services.AddMemoryCache();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddHttpClient<IAuthService, AuthService>(client =>
+{
+    client.BaseAddress = new Uri(apiBaseUrl);
+});
 ```
-
-The dual registration is critical: Blazor's infrastructure resolves `AuthenticationStateProvider` (abstract base), while `AuthService` casts to `ApiAuthenticationStateProvider` to call `LoggedIn()`/`LoggedOut()`.
 
 ### Route Protection
 
@@ -138,51 +147,50 @@ sequenceDiagram
     participant Browser
     participant App.razor
     participant AuthStateProvider
-    participant localStorage
+    participant Cookie
     participant Login
     participant AuthService
+    participant MemoryCache
     participant IdentityServer
 
     Browser->>App.razor: Navigate to /
     App.razor->>AuthStateProvider: GetAuthenticationStateAsync()
-    AuthStateProvider->>localStorage: GetItemAsync("accessToken")
-    localStorage-->>AuthStateProvider: null (no token)
+    AuthStateProvider->>Cookie: Read Auth Cookie
+    Cookie-->>AuthStateProvider: null (no session)
     AuthStateProvider-->>App.razor: Unauthenticated
     App.razor->>Browser: Render RedirectToLogin → /login
 
     Browser->>Login: Show login form
-    Login->>AuthService: LoginAsync(email, password)
+    Login->>AuthService: LoginAndGetPrincipalAsync(email, password)
     AuthService->>IdentityServer: POST /api/authentication/login
-    IdentityServer-->>AuthService: JWT Token
-    AuthService->>localStorage: SetItemAsync("accessToken", token)
-    AuthService->>AuthStateProvider: LoggedIn()
-    AuthStateProvider->>localStorage: GetItemAsync("accessToken")
-    AuthStateProvider->>AuthStateProvider: NotifyAuthenticationStateChanged()
+    IdentityServer-->>AuthService: JWT Token + Refresh Token
+    AuthService->>MemoryCache: Set("AuthToken_{uid}", token)
+    AuthService->>Cookie: HttpContext.SignInAsync()
     Login->>Browser: NavigateTo("/")
+    
     App.razor->>AuthStateProvider: GetAuthenticationStateAsync()
-    AuthStateProvider-->>App.razor: Authenticated
+    AuthStateProvider-->>App.razor: Authenticated (via Cookie)
     App.razor->>Browser: Render Dashboard
+
+    Note over Browser,IdentityServer: API Call Flow
+    Dashboard->>AdminMusicService: GetAllArtistsAsync()
+    AdminMusicService->>AuthService: GetTokenAsync()
+    AuthService->>MemoryCache: Get("AuthToken_{uid}")
+    MemoryCache-->>AuthService: JWT Token
+    AdminMusicService->>Backend: GET /api/admin/artists (with Bearer token)
 
     Note over Browser,IdentityServer: Logout Flow
     Browser->>App.razor: Navigate to /logout
     App.razor->>AuthService: LogoutAsync()
-    AuthService->>AuthStateProvider: LoggedOut()
-    AuthStateProvider->>localStorage: RemoveItemAsync("accessToken")
-    AuthStateProvider->>AuthStateProvider: NotifyAuthenticationStateChanged()
+    AuthService->>MemoryCache: Remove("AuthToken_{uid}")
+    AuthService->>Cookie: HttpContext.SignOutAsync()
     App.razor->>Browser: NavigateTo("/login")
-
-    Note over Browser,IdentityServer: App Restart
-    Browser->>App.razor: Navigate to /
-    App.razor->>AuthStateProvider: GetAuthenticationStateAsync()
-    AuthStateProvider->>localStorage: GetItemAsync("accessToken")
-    localStorage-->>AuthStateProvider: null (token was removed)
-    AuthStateProvider-->>App.razor: Unauthenticated
-    App.razor->>Browser: Render RedirectToLogin → /login
 ```
 
 ### Prerendering
 
-The `_Host.cshtml` uses `render-mode="Server"` (NOT `ServerPrerendered`). This ensures the Blazor SignalR circuit is established before any component code runs, which is required because `Blazored.LocalStorage` uses JS interop to access `localStorage` — unavailable during prerendering.
+The `_Host.cshtml` uses `render-mode="Server"`. This ensures the Blazor SignalR circuit is established immediately, allowing the server-side `AuthService` to interact with `IHttpContextAccessor` and `IMemoryCache` reliably during the authentication and authorization lifecycle.
+
 
 ## Project Structure
 

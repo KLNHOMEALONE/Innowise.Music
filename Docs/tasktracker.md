@@ -109,25 +109,25 @@
 
 ## Task: Admin Dashboard Authentication Refactor
 - **Status**: Completed
-- **Description**: Complete rewrite of the admin dashboard authentication system to follow the BookStore Blazor Server pattern. Replaced custom in-memory token storage with `Blazored.LocalStorage`, custom `AuthorizeRouteView`/`AuthorizeView` components with Blazor's built-in equivalents, and added proper `[Authorize]` attributes to all protected pages.
+- **Description**: Complete rewrite of the admin dashboard authentication system using standard ASP.NET Core Identity Cookies and server-side `IMemoryCache` for JWT token storage. This replaced the previous custom in-memory storage and moved away from the browser local storage approach.
 - **Steps**:
-  - [x] Added `Blazored.LocalStorage` v4.3.0 NuGet package
-  - [x] Created `ApiAuthenticationStateProvider` with `LoggedIn()`/`LoggedOut()` calling `NotifyAuthenticationStateChanged()`
+  - [x] Configured standard `CookieAuthenticationDefaults` in `Program.cs`
+  - [x] Implemented `IMemoryCache` for server-side JWT token persistence
   - [x] Deleted old `PersistentAuthenticationStateProvider`, custom `AuthorizeRouteView.razor`, custom `AuthorizeView.razor`
   - [x] Updated `App.razor` with `<CascadingAuthenticationState>` + built-in `<AuthorizeRouteView>` + `<RedirectToLogin />`
-  - [x] Changed `_Host.cshtml` from `ServerPrerendered` to `Server` to avoid JS interop issues during prerendering
-  - [x] Updated `Program.cs` with dual registration pattern for `ApiAuthenticationStateProvider`
-  - [x] Rewrote `AuthService.cs` to use `Blazored.LocalStorage` and `ApiAuthenticationStateProvider`
-  - [x] Updated `Login.razor` to use `NavigateTo("/")` without `forceLoad`
+  - [x] Changed `_Host.cshtml` from `ServerPrerendered` to `Server` to ensure a stable Blazor circuit for auth
+  - [x] Updated `Program.cs` with standard `AuthenticationStateProvider` registration
+  - [x] Rewrote `AuthService.cs` to use `HttpContext.SignInAsync` and `IMemoryCache`
+  - [x] Updated `Login.razor` to handle the cookie-based sign-in flow
   - [x] Created `Logout.razor` page with async logout and navigation to `/login`
   - [x] Updated `MainLayout.razor` with logout link and async `GetTokenAsync()`
   - [x] Added `@attribute [Authorize]` to all 11 protected pages
-  - [x] Removed `@rendermode InteractiveServer` from 3 components (not applicable in Blazor Server)
-  - [x] Updated `AdminMusicService.cs` to use `GetTokenAsync()` for bearer token
+  - [x] Removed `@rendermode InteractiveServer` from components (handled by Blazor Server defaults)
+  - [x] Updated `AdminMusicService.cs` to use `GetTokenAsync()` for bearer token injection
   - [x] Updated `_Imports.razor` with auth-related usings
   - [x] Verified build succeeds with 0 errors
   - [x] Updated changelog.md, tasktracker.md, admin-dashboard.md
-- **Dependencies**: Blazored.LocalStorage, Innowise.MusicIdentityServer
+- **Dependencies**: Innowise.MusicIdentityServer
 
 ## Task: Fix Admin Dashboard Black Screen
 - **Status**: Completed
@@ -324,7 +324,7 @@
     - [x] **Tracks UI** — Created `TracksList.razor` (paginated list with delete), `TrackForm.razor` (create/edit with artist/album dropdowns, genre checkboxes), `TrackUpload.razor` (single track audio upload)
     - [x] **Pagination** — Added pagination support for all list views
     - [x] **Validation** — Added form validation for all create/edit forms
-- **Dependencies**: Innowise.MusicIdentityServer, Blazored.LocalStorage
+- **Dependencies**: Innowise.MusicIdentityServer
 
 ## Task: Music Streaming Service Implementation (Phase 1 - MVP)
 - **Status**: Completed

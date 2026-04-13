@@ -157,3 +157,7 @@ public partial class MiniPlayerViewModel : ObservableObject
         }
     }
 }
+/*
+ *  Track favorite info shall be extracted with the track aty the same time (like using join in SQL) to reduce the number of calls to the service.
+ *  It should be like a common best practice pattern for mobile devewlopment
+ */

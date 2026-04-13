@@ -1,1 +1,18 @@
-{}
+{
+    "mcpServers": {
+        "context7": {
+        "command": "npx",
+        "args": [
+            "-y",
+            "@modelcontextprotocol/server-context7"
+        ]
+        },
+    "lightrag": {
+      "command": "python",
+      "args": ["-m", "daniel_lightrag_mcp"],
+      "env": {
+        "LIGHTRAG_BASE_URL": "http://localhost:9621"
+      }
+    }
+}
+}
