@@ -101,7 +101,7 @@
 - **Steps**:
   - [x] Identified claim type mismatch between Identity Server (`"uid"`) and Admin Dashboard (`ClaimTypes.NameIdentifier`)
   - [x] Updated `AuthService.LoginAndGetPrincipalAsync()` to extract user ID using `FindFirst("uid")`
-  - [x] Updated `AuthService.GetTokenAsync()` to use `FindFirst("uid")` for consistent claim extraction
+  - [x] Updated `AuthService.GetTokenAsync()` to use `user.FindFirst("uid")?.Value` for consistent claim extraction
   - [x] Added try-catch error handling in `AdminMusicService` methods for graceful API failure handling
   - [x] Added `ILogger<Dashboard>` to `Dashboard.razor` for proper logging
   - [x] Rebuilt Docker containers and verified deployment
@@ -365,6 +365,27 @@
     - [ ] Implement database context (PostgreSQL)
     - [ ] Create repository pattern for data access
     - [ ] Build library UI
+
+## Task: Search Pagination
+- **Status**: Completed
+- **Description**: Upgraded the unified search feature to support infinite scrolling and pagination.
+- **Steps**:
+  - [x] Backend: Updated `IMusicService` and `MusicService` to support skip/take pagination for artists and albums.
+  - [x] Backend: Updated `MusicController.Search` to accept `page` and `pageSize` and return pagination metadata.
+  - [x] Frontend: Updated `UnifiedSearchResponse` and `ISearchService` to support pagination parameters.
+  - [x] Frontend: Implemented `LoadMoreAsync` in `SearchPageViewModel` to append results as the user scrolls.
+  - [x] Frontend: Integrated `RemainingItemsThreshold` in `SearchPage.xaml` for seamless loading.
+  - [x] Frontend: Added `ActivityIndicator` to show background loading status.
+- **Files**: `Innowise.MusicIdentityServer/Services/IMusicService.cs`, `Innowise.MusicIdentityServer/Services/MusicService.cs`, `Innowise.MusicIdentityServer/Controllers/MusicController.cs`, `Innowise.Music/Model/UnifiedSearchResponse.cs`, `Innowise.Music/Services/ISearchService.cs`, `Innowise.Music/Services/SearchService.cs`, `Innowise.Music/ViewModel/SearchPageViewModel.cs`, `Innowise.Music/View/SearchPage.xaml`
+
+## Task: UI Layout Optimization
+- **Status**: Completed
+- **Description**: Replaced problematic `HorizontalStackLayout` with more stable `Grid` and `StackLayout` (Legacy) across major pages to resolve Android rendering and measurement issues.
+- **Steps**:
+  - [x] Refactored `SearchPage.xaml` result template to use nested `Grid`.
+  - [x] Refactored `HomePage.xaml` sections (Featured, Artists, Recent Items) to use `Grid` and `StackLayout`.
+  - [x] Refactored `LibraryPage.xaml` (Filter chips, Sort toggle) to use `StackLayout` and `Grid`.
+- **Files**: `Innowise.Music/View/SearchPage.xaml`, `Innowise.Music/View/HomePage.xaml`, `Innowise.Music/View/LibraryPage.xaml`
 
 ## Task: Search Functionality
 - **Status**: Completed

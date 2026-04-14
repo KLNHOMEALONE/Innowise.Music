@@ -17,7 +17,18 @@
       "Bash(dotnet ef migrations:*)",
       "Bash(docker-compose logs:*)",
       "Bash(dotnet ef database:*)",
-      "Bash(docker-compose build:*)"
+      "Bash(docker-compose build:*)",
+      "Bash(python -m daniel_lightrag_mcp)",
+      "Bash(pip install:*)",
+      "Bash(python D:/Projects/InnowiseMusic/lightrag_mcp_bridge.py)",
+      "Bash(python -m json.tool)",
+      "Bash(python -c ':*)",
+      "Bash(node lightrag_mcp_bridge.js)",
+      "Skill(update-config)",
+      "WebSearch",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(start cmd:*)",
+      "Bash(echo \"Bridge started with PID $!\")"
     ]
   }
 }

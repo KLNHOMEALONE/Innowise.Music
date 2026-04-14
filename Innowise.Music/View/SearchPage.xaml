@@ -14,22 +14,28 @@
         <converters:BoolToFavoriteIconConverter x:Key="BoolToFavoriteIconConverter" />
     </ContentPage.Resources>
 
-    <Grid RowDefinitions="*, Auto">
-        <VerticalStackLayout Grid.Row="0" Spacing="20" Padding="20">
-            <!-- Search Bar -->
-            <Border BackgroundColor="{StaticResource InputBackgroundColor}" StrokeShape="RoundRectangle 8" HeightRequest="50" Padding="15,0" StrokeThickness="0">
-                <Grid ColumnDefinitions="Auto, *">
-                    <Label Grid.Column="0" Text="🔍" VerticalOptions="Center" Margin="0,0,10,0" />
-                    <Entry Grid.Column="1" 
-                           Text="{Binding SearchQuery}" 
-                           Placeholder="What do you want to listen to?" 
-                           PlaceholderColor="Gray"
-                           TextColor="White"
-                           VerticalOptions="Center" />
-                </Grid>
-            </Border>
+    <Grid RowDefinitions="Auto, *, Auto, Auto">
+        <!-- 1. Search Bar (Fixed at Top) -->
+        <Border Grid.Row="0" 
+                BackgroundColor="{StaticResource InputBackgroundColor}" 
+                StrokeShape="RoundRectangle 8" 
+                HeightRequest="50" 
+                Margin="20,20,20,10" 
+                Padding="15,0" 
+                StrokeThickness="0">
+            <Grid ColumnDefinitions="Auto, *">
+                <Label Grid.Column="0" Text="🔍" VerticalOptions="Center" Margin="0,0,10,0" />
+                <Entry Grid.Column="1" 
+                       Text="{Binding SearchQuery}" 
+                       Placeholder="What do you want to listen to?" 
+                       PlaceholderColor="Gray"
+                       TextColor="White"
+                       VerticalOptions="Center" />
+            </Grid>
+        </Border>
 
-            <!-- Search Results -->
+        <!-- 2. Search Results Area (Scrollable Middle) -->
+        <Grid Grid.Row="1" Padding="20,0">
             <CollectionView ItemsSource="{Binding SearchResults}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="vm:SearchResultItem">
@@ -47,22 +53,80 @@
                                 <Label Text="{Binding Subtitle}" TextColor="Gray" FontSize="14" MaxLines="1" LineBreakMode="TailTruncation" />
                             </VerticalStackLayout>
 
-                            <HorizontalStackLayout Grid.Column="2" VerticalOptions="Center" Spacing="20">
-                                <Image Source="{Binding IsFavorited, Converter={StaticResource BoolToFavoriteIconConverter}}" 
+                            <Grid Grid.Column="2" ColumnDefinitions="Auto, Auto" ColumnSpacing="20" VerticalOptions="Center">
+                                <Image Grid.Column="0"
+                                       Source="{Binding IsFavorited, Converter={StaticResource BoolToFavoriteIconConverter}}" 
                                        WidthRequest="24" HeightRequest="24"
                                        IsVisible="{Binding IsTrack}">
                                     <Image.GestureRecognizers>
                                         <TapGestureRecognizer Command="{Binding Parent.ToggleFavoriteCommand}" CommandParameter="{Binding .}" />
                                     </Image.GestureRecognizers>
                                 </Image>
-                                <Label Text="⋮" TextColor="White" FontSize="24" IsVisible="{Binding IsTrack}" />
-                            </HorizontalStackLayout>
+                                <Label Grid.Column="1"
+                                       Text="⋮" TextColor="White" FontSize="24" IsVisible="{Binding IsTrack}" VerticalOptions="Center" />
+                            </Grid>
                         </Grid>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Padding="20">
+                        <Label Text="No results found" TextColor="Gray" FontSize="16" HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
             </CollectionView>
-        </VerticalStackLayout>
+
+            <!-- Loading Overlay (Centered in results area) -->
+            <Grid BackgroundColor="#40000000" IsVisible="{Binding IsSearching}" InputTransparent="False">
+                <ActivityIndicator IsRunning="{Binding IsSearching}" Color="{StaticResource PrimaryRed}" VerticalOptions="Center" HorizontalOptions="Center" Scale="1.5" />
+            </Grid>
+        </Grid>
+
+        <!-- 3. Pagination Bar (Fixed above Player) -->
+        <Border Grid.Row="2" 
+                BackgroundColor="{StaticResource Gray950}" 
+                IsVisible="{Binding IsPaginationVisible}"
+                Padding="20,10"
+                StrokeThickness="0"
+                VerticalOptions="End">
+            <Grid ColumnDefinitions="Auto, *, Auto">
+                <Button Grid.Column="0" 
+                        Text="Previous" 
+                        Command="{Binding PreviousPageCommand}"
+                        BackgroundColor="{StaticResource InputBackgroundColor}"
+                        TextColor="White"
+                        CornerRadius="20"
+                        FontSize="12"
+                        HeightRequest="36"
+                        Padding="15,0" />
+                
+                <Label Grid.Column="1" 
+                       VerticalOptions="Center" 
+                       HorizontalOptions="Center" 
+                       TextColor="Gray"
+                       FontSize="13">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="Page " />
+                            <Span Text="{Binding CurrentPage}" TextColor="White" FontAttributes="Bold" />
+                            <Span Text=" of " />
+                            <Span Text="{Binding TotalPages}" TextColor="White" FontAttributes="Bold" />
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+
+                <Button Grid.Column="2" 
+                        Text="Next" 
+                        Command="{Binding NextPageCommand}"
+                        BackgroundColor="{StaticResource InputBackgroundColor}"
+                        TextColor="White"
+                        CornerRadius="20"
+                        FontSize="12"
+                        HeightRequest="36"
+                        Padding="15,0" />
+            </Grid>
+        </Border>
         
-        <controls:MiniPlayerControl Grid.Row="1" />
+        <!-- 4. Mini Player (Fixed at Very Bottom) -->
+        <controls:MiniPlayerControl Grid.Row="3" />
     </Grid>
 </ContentPage>

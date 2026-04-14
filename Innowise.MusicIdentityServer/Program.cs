@@ -29,6 +29,9 @@ builder.Services.AddAutoMapper(cfg => { }, typeof(Program));
 builder.Services.AddScoped<IMusicService, MusicService>();
 builder.Services.AddSingleton<IStreamTokenService, StreamTokenService>();
 
+builder.Services.Configure<Innowise.MusicIdentityServer.Configurations.MusicSettings>(
+    builder.Configuration.GetSection(Innowise.MusicIdentityServer.Configurations.MusicSettings.SectionName));
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {

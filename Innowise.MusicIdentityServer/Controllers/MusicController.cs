@@ -1,7 +1,9 @@
 using Innowise.MusicIdentityServer.Models.Music;
 using Innowise.MusicIdentityServer.Services;
+using Innowise.MusicIdentityServer.Configurations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace Innowise.MusicIdentityServer.Controllers;
 
@@ -12,34 +14,51 @@ public class MusicController : ControllerBase
     private readonly IMusicService _musicService;
     private readonly IStreamTokenService _streamTokenService;
     private readonly ILogger<MusicController> _logger;
+    private readonly MusicSettings _musicSettings;
 
     public MusicController(
         IMusicService musicService,
         IStreamTokenService streamTokenService,
-        ILogger<MusicController> logger)
+        ILogger<MusicController> logger,
+        IOptions<MusicSettings> musicSettings)
     {
         _musicService = musicService;
         _streamTokenService = streamTokenService;
         _logger = logger;
+        _musicSettings = musicSettings.Value;
     }
 
     [HttpGet("search")]
     [Authorize]
-    public async Task<ActionResult<UnifiedSearchResponse>> Search([FromQuery] string query)
+    public async Task<ActionResult<UnifiedSearchResponse>> Search(
+        [FromQuery] string query,
+        [FromQuery] int page = 1,
+        [FromQuery] int? pageSize = null)
     {
         if (string.IsNullOrWhiteSpace(query))
         {
             return BadRequest(new { message = "Query parameter is required" });
         }
 
-        // Execute searches sequentially because DbContext is not thread-safe
-        var (tracks, _) = await _musicService.SearchTracksAsync(query, 1, 10);
-        var artists = await _musicService.SearchArtistsAsync(query, 5);
-        var albums = await _musicService.SearchAlbumsAsync(query, 5);
+        int actualPageSize = pageSize ?? _musicSettings.DefaultSearchPageSize;
+        page = Math.Max(1, page);
+        actualPageSize = Math.Clamp(actualPageSize, 1, 50);
 
-        return Ok(new UnifiedSearchResponse
+        int globalSkip = (page - 1) * actualPageSize;
+        int remainingTake = actualPageSize;
+
+        // 1. Get Total Counts for metadata and pagination calculation
+        var (_, totalTracks) = await _musicService.SearchTracksAsync(query, 0, 0);
+        var (_, totalArtists) = await _musicService.SearchArtistsAsync(query, 0, 0);
+        var (_, totalAlbums) = await _musicService.SearchAlbumsAsync(query, 0, 0);
+
+        // 2. Fetch Tracks
+        List<TrackDto> tracksList = new();
+        if (remainingTake > 0 && globalSkip < totalTracks)
         {
-            Tracks = tracks.Select(t => new TrackDto
+            int tracksToTake = Math.Min(remainingTake, totalTracks - globalSkip);
+            var (tracks, _) = await _musicService.SearchTracksAsync(query, globalSkip, tracksToTake);
+            tracksList = tracks.Select(t => new TrackDto
             {
                 Id = t.Id,
                 Title = t.Title,
@@ -47,20 +66,52 @@ public class MusicController : ControllerBase
                 TrackNumber = t.TrackNumber,
                 Artist = t.Artist != null ? new ArtistDto { Id = t.Artist.Id, Name = t.Artist.Name } : null,
                 Album = t.Album != null ? new AlbumDto { Id = t.Album.Id, Title = t.Album.Title, CoverImageUrl = t.Album.CoverImageUrl } : null
-            }).ToList(),
-            Artists = artists.Select(a => new ArtistDto
+            }).ToList();
+            remainingTake -= tracksList.Count;
+        }
+
+        // 3. Fetch Artists
+        List<ArtistDto> artistsList = new();
+        int artistsSkip = Math.Max(0, globalSkip - totalTracks);
+        if (remainingTake > 0 && artistsSkip < totalArtists)
+        {
+            int artistsToTake = Math.Min(remainingTake, totalArtists - artistsSkip);
+            var (artists, _) = await _musicService.SearchArtistsAsync(query, artistsSkip, artistsToTake);
+            artistsList = artists.Select(a => new ArtistDto
             {
                 Id = a.Id,
                 Name = a.Name,
                 ImageUrl = a.ImageUrl
-            }).ToList(),
-            Albums = albums.Select(a => new AlbumDto
+            }).ToList();
+            remainingTake -= artistsList.Count;
+        }
+
+        // 4. Fetch Albums
+        List<AlbumDto> albumsList = new();
+        int albumsSkip = Math.Max(0, globalSkip - totalTracks - totalArtists);
+        if (remainingTake > 0 && albumsSkip < totalAlbums)
+        {
+            int albumsToTake = Math.Min(remainingTake, totalAlbums - albumsSkip);
+            var (albums, _) = await _musicService.SearchAlbumsAsync(query, albumsSkip, albumsToTake);
+            albumsList = albums.Select(a => new AlbumDto
             {
                 Id = a.Id,
                 Title = a.Title,
                 CoverImageUrl = a.CoverImageUrl,
                 ReleaseDate = a.ReleaseDate
-            }).ToList()
+            }).ToList();
+        }
+
+        return Ok(new UnifiedSearchResponse
+        {
+            Tracks = tracksList,
+            Artists = artistsList,
+            Albums = albumsList,
+            TotalTracks = totalTracks,
+            TotalArtists = totalArtists,
+            TotalAlbums = totalAlbums,
+            Page = page,
+            PageSize = actualPageSize
         });
     }
 
@@ -501,6 +552,11 @@ public class MusicController : ControllerBase
         public List<TrackDto> Tracks { get; set; } = new();
         public List<ArtistDto> Artists { get; set; } = new();
         public List<AlbumDto> Albums { get; set; } = new();
+        public int TotalTracks { get; set; }
+        public int TotalArtists { get; set; }
+        public int TotalAlbums { get; set; }
+        public int Page { get; set; }
+        public int PageSize { get; set; }
     }
 
     public class TrackDto

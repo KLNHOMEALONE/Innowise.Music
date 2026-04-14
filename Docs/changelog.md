@@ -2,18 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased] - Search Feature
+## [Unreleased] - Search Pagination
 
 ### Added
-- **Unified real-time search**: Users can now search for **tracks, artists, and albums** in a single query.
-  - Backend: Added `SearchArtistsAsync` and `SearchAlbumsAsync` to `MusicService`.
-  - Backend: New `GET /api/Music/search` endpoint that returns a combined result of all three categories.
-  - Frontend: `SearchService.UnifiedSearchAsync` implemented with DI and thread-safe `HttpClient`.
-  - Frontend: `SearchPageViewModel` now dynamically maps and displays mixed result types with category labels ("Song", "Artist", "Album").
-- **Smart UI for Search Results**:
-  - Category labels added to subtitles for clarity.
-  - Track-specific actions (Favorite, Options menu) are conditionally hidden for Artist and Album results.
-  - Debounce logic (500ms) prevents excessive API calls during typing.
+- **Infinite scrolling for search results**: Users can now scroll through long lists of results with automatic background loading.
+  - Backend: Added skip/take pagination support to `SearchArtistsAsync` and `SearchAlbumsAsync`.
+  - Backend: `GET /api/Music/search` now accepts `page` and `pageSize` parameters.
+  - Backend: `UnifiedSearchResponse` now includes `TotalTracks`, `TotalArtists`, `TotalAlbums` and current page metadata.
+  - Frontend: `SearchPageViewModel` implements `LoadMoreCommand` with state management (`IsLoadingMore`, `_hasMoreResults`).
+  - Frontend: `SearchPage.xaml` updated to use `CollectionView.RemainingItemsThreshold` for seamless loading.
+  - Frontend: Added `ActivityIndicator` footer to the search results list.
+
+### Changed
+- **Search UI Optimization**: Replaced `HorizontalStackLayout` with `Grid` in the `SearchPage` results template to improve rendering stability and performance on Android devices.
+
+## [Unreleased] - Search Feature
+...
 
 ## [Unreleased] - Favorites Feature
 

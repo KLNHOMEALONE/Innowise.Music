@@ -5,9 +5,9 @@ namespace Innowise.MusicIdentityServer.Services;
 public interface IMusicService
 {
     // Search
-    Task<(IEnumerable<Track> Tracks, int TotalCount)> SearchTracksAsync(string query, int page, int pageSize);
-    Task<IEnumerable<Artist>> SearchArtistsAsync(string query, int count);
-    Task<IEnumerable<Album>> SearchAlbumsAsync(string query, int count);
+    Task<(IEnumerable<Track> Tracks, int TotalCount)> SearchTracksAsync(string query, int skip, int take);
+    Task<(IEnumerable<Artist> Artists, int TotalCount)> SearchArtistsAsync(string query, int skip, int take);
+    Task<(IEnumerable<Album> Albums, int TotalCount)> SearchAlbumsAsync(string query, int skip, int take);
     
     // Track operations
     Task<Track?> GetTrackAsync(Guid id);

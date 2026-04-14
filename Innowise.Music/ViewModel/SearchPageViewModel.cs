@@ -22,9 +22,31 @@ public partial class SearchPageViewModel : ObservableObject
     private readonly IFavoriteService _favoriteService;
     private readonly MiniPlayerViewModel _miniPlayerViewModel;
     private CancellationTokenSource? _searchCancellationTokenSource;
+    private readonly int _pageSize;
 
     [ObservableProperty]
     private string _searchQuery = string.Empty;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(NextPageCommand))]
+    [NotifyCanExecuteChangedFor(nameof(PreviousPageCommand))]
+    private bool _isSearching;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(NextPageCommand))]
+    [NotifyCanExecuteChangedFor(nameof(PreviousPageCommand))]
+    private int _currentPage = 1;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(NextPageCommand))]
+    [NotifyCanExecuteChangedFor(nameof(PreviousPageCommand))]
+    [NotifyPropertyChangedFor(nameof(IsPaginationVisible))]
+    private int _totalPages = 1;
+
+    [ObservableProperty]
+    private bool _hasResults;
+
+    public bool IsPaginationVisible => TotalPages > 1;
 
     public ObservableCollection<string> FilterChips { get; } = new()
     {
@@ -37,12 +59,14 @@ public partial class SearchPageViewModel : ObservableObject
         ISearchService searchService,
         IAudioService audioService,
         IFavoriteService favoriteService,
-        MiniPlayerViewModel miniPlayerViewModel)
+        MiniPlayerViewModel miniPlayerViewModel,
+        Microsoft.Extensions.Options.IOptions<Innowise.Music.Configuration.ApiSettings> apiSettings)
     {
         _searchService = searchService;
         _audioService = audioService;
         _favoriteService = favoriteService;
         _miniPlayerViewModel = miniPlayerViewModel;
+        _pageSize = apiSettings.Value.SearchPageSize;
     }
 
     async partial void OnSearchQueryChanged(string value)
@@ -50,6 +74,9 @@ public partial class SearchPageViewModel : ObservableObject
         if (string.IsNullOrWhiteSpace(value) || value.Length < 2)
         {
             SearchResults.Clear();
+            CurrentPage = 1;
+            TotalPages = 1;
+            HasResults = false;
             return;
         }
 
@@ -59,6 +86,7 @@ public partial class SearchPageViewModel : ObservableObject
         try
         {
             await Task.Delay(500, _searchCancellationTokenSource.Token);
+            CurrentPage = 1;
             await PerformSearchAsync();
         }
         catch (TaskCanceledException)
@@ -73,46 +101,108 @@ public partial class SearchPageViewModel : ObservableObject
         if (string.IsNullOrWhiteSpace(SearchQuery))
         {
             SearchResults.Clear();
+            HasResults = false;
             return;
         }
 
-        System.Diagnostics.Debug.WriteLine($"[SearchVM] Performing unified search for: {SearchQuery}");
-        var response = await _searchService.UnifiedSearchAsync(SearchQuery);
-
-        if (response != null)
+        IsSearching = true;
+        
+        try
         {
-            SearchResults.Clear();
+            System.Diagnostics.Debug.WriteLine($"[SearchVM] Searching: {SearchQuery}, Page: {CurrentPage}");
+            var response = await _searchService.UnifiedSearchAsync(SearchQuery, CurrentPage, _pageSize);
 
-            // Add Artists
-            if (response.Artists != null)
+            if (response != null)
             {
-                foreach (var artist in response.Artists)
-                {
-                    SearchResults.Add(new SearchResultItem(this, artist));
-                }
+                SearchResults.Clear();
+                ProcessResponse(response);
+                
+                int totalItems = response.TotalTracks + response.TotalArtists + response.TotalAlbums;
+                TotalPages = (int)Math.Ceiling((double)totalItems / _pageSize);
+                if (TotalPages == 0) TotalPages = 1;
+                
+                HasResults = SearchResults.Count > 0;
+                System.Diagnostics.Debug.WriteLine($"[SearchVM] Results: {SearchResults.Count}, Total Items: {totalItems}, Total Pages: {TotalPages}");
             }
-
-            // Add Albums
-            if (response.Albums != null)
+            else
             {
-                foreach (var album in response.Albums)
-                {
-                    SearchResults.Add(new SearchResultItem(this, album));
-                }
+                SearchResults.Clear();
+                HasResults = false;
+                TotalPages = 1;
             }
-
-            // Add Tracks
-            if (response.Tracks != null)
-            {
-                foreach (var trackDto in response.Tracks)
-                {
-                    var isFavorited = await _favoriteService.IsFavoriteAsync(trackDto.Id);
-                    SearchResults.Add(new SearchResultItem(this, trackDto, isFavorited));
-                }
-            }
-
-            System.Diagnostics.Debug.WriteLine($"[SearchVM] Total results: {SearchResults.Count}");
         }
+        finally
+        {
+            IsSearching = false;
+            // Force refresh of button states
+            NextPageCommand.NotifyCanExecuteChanged();
+            PreviousPageCommand.NotifyCanExecuteChanged();
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanGoNext))]
+    private async Task NextPage()
+    {
+        System.Diagnostics.Debug.WriteLine($"[SearchVM] NextPage clicked. Current: {CurrentPage}, Total: {TotalPages}");
+        CurrentPage++;
+        await PerformSearchAsync();
+    }
+
+    private bool CanGoNext() => CurrentPage < TotalPages && !IsSearching;
+
+    [RelayCommand(CanExecute = nameof(CanGoPrevious))]
+    private async Task PreviousPage()
+    {
+        System.Diagnostics.Debug.WriteLine($"[SearchVM] PreviousPage clicked. Current: {CurrentPage}");
+        CurrentPage--;
+        await PerformSearchAsync();
+    }
+
+    private bool CanGoPrevious() => CurrentPage > 1 && !IsSearching;
+
+    private void ProcessResponse(UnifiedSearchResponse response)
+    {
+        int tracksAdded = 0, artistsAdded = 0, albumsAdded = 0;
+
+        // Add Artists
+        if (response.Artists != null)
+        {
+            foreach (var artist in response.Artists)
+            {
+                SearchResults.Add(new SearchResultItem(this, artist));
+                artistsAdded++;
+            }
+        }
+
+        // Add Albums
+        if (response.Albums != null)
+        {
+            foreach (var album in response.Albums)
+            {
+                SearchResults.Add(new SearchResultItem(this, album));
+                albumsAdded++;
+            }
+        }
+
+        // Add Tracks
+        if (response.Tracks != null)
+        {
+            foreach (var trackDto in response.Tracks)
+            {
+                var item = new SearchResultItem(this, trackDto, false);
+                SearchResults.Add(item);
+                tracksAdded++;
+                
+                _ = UpdateFavoriteStatus(item, trackDto.Id);
+            }
+        }
+
+        System.Diagnostics.Debug.WriteLine($"[SearchVM] Processed: {tracksAdded} tracks, {artistsAdded} artists, {albumsAdded} albums. Total Results: {SearchResults.Count}");
+    }
+
+    private async Task UpdateFavoriteStatus(SearchResultItem item, Guid trackId)
+    {
+        item.IsFavorited = await _favoriteService.IsFavoriteAsync(trackId);
     }
 
     [RelayCommand]
@@ -120,7 +210,6 @@ public partial class SearchPageViewModel : ObservableObject
     {
         if (item == null || item.Type != SearchResultType.Track || item.Track == null) return;
 
-        // Use HTTP for stream URLs (MediaElement can't handle self-signed HTTPS certs)
         var streamBaseUrl = DeviceInfo.Platform == DevicePlatform.Android
             ? "http://10.0.2.2:5236"
             : "http://localhost:5236";
@@ -167,7 +256,7 @@ public partial class SearchResultItem : ObservableObject
     {
         SearchResultType.Track => $"Song • {Track?.Artist?.Name}",
         SearchResultType.Artist => "Artist",
-        SearchResultType.Album => $"Album • {Album?.Title}", // Note: Backend Album doesn't have Artist populated in SearchAlbumsAsync currently, but DTO might have it
+        SearchResultType.Album => $"Album • {Album?.Title}",
         _ => string.Empty
     };
 

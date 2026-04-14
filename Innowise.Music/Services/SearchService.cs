@@ -31,7 +31,7 @@ public class SearchService : ISearchService
         return $"{baseUrl}/api/Music/{endpoint}";
     }
 
-    public async Task<UnifiedSearchResponse?> UnifiedSearchAsync(string query)
+    public async Task<UnifiedSearchResponse?> UnifiedSearchAsync(string query, int page = 1, int pageSize = 8)
     {
         try
         {
@@ -43,7 +43,7 @@ public class SearchService : ISearchService
                 return null;
             }
 
-            var url = $"{GetApiUrl("search")}?query={Uri.EscapeDataString(query)}";
+            var url = $"{GetApiUrl("search")}?query={Uri.EscapeDataString(query)}&page={page}&pageSize={pageSize}";
             System.Diagnostics.Debug.WriteLine($"[Search] Calling: {url}");
 
             using var request = new HttpRequestMessage(HttpMethod.Get, url);
@@ -53,7 +53,7 @@ public class SearchService : ISearchService
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<UnifiedSearchResponse>();
-                System.Diagnostics.Debug.WriteLine($"[Search] Response: T:{result?.Tracks?.Count}, Art:{result?.Artists?.Count}, Alb:{result?.Albums?.Count}");
+                System.Diagnostics.Debug.WriteLine($"[Search] Response: Page:{result?.Page}, T:{result?.Tracks?.Count}, Art:{result?.Artists?.Count}, Alb:{result?.Albums?.Count}");
                 return result;
             }
             

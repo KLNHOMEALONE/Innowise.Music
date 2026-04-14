@@ -16,7 +16,7 @@ public class MusicService : IMusicService
         _logger = logger;
     }
 
-    public async Task<(IEnumerable<Track> Tracks, int TotalCount)> SearchTracksAsync(string query, int page, int pageSize)
+    public async Task<(IEnumerable<Track> Tracks, int TotalCount)> SearchTracksAsync(string query, int skip, int take)
     {
         if (string.IsNullOrWhiteSpace(query))
         {
@@ -37,45 +37,57 @@ public class MusicService : IMusicService
 
         var totalCount = await tracksQuery.CountAsync();
         var tracks = await tracksQuery
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
+            .Skip(skip)
+            .Take(take)
             .ToListAsync();
 
         return (tracks, totalCount);
     }
 
-    public async Task<IEnumerable<Artist>> SearchArtistsAsync(string query, int count)
+    public async Task<(IEnumerable<Artist> Artists, int TotalCount)> SearchArtistsAsync(string query, int skip, int take)
     {
         if (string.IsNullOrWhiteSpace(query))
         {
-            return Enumerable.Empty<Artist>();
+            return (Enumerable.Empty<Artist>(), 0);
         }
 
         var queryLower = query.ToLower();
-
-        return await _context.Artists
+        var artistsQuery = _context.Artists
             .Where(a => EF.Functions.ILike(a.Name, $"%{queryLower}%"))
             .OrderByDescending(a => a.MonthlyListeners)
-            .Take(count)
+            .ThenBy(a => a.Name);
+
+        var totalCount = await artistsQuery.CountAsync();
+        var artists = await artistsQuery
+            .Skip(skip)
+            .Take(take)
             .ToListAsync();
+
+        return (artists, totalCount);
     }
 
-    public async Task<IEnumerable<Album>> SearchAlbumsAsync(string query, int count)
+    public async Task<(IEnumerable<Album> Albums, int TotalCount)> SearchAlbumsAsync(string query, int skip, int take)
     {
         if (string.IsNullOrWhiteSpace(query))
         {
-            return Enumerable.Empty<Album>();
+            return (Enumerable.Empty<Album>(), 0);
         }
 
         var queryLower = query.ToLower();
-
-        return await _context.Albums
+        var albumsQuery = _context.Albums
             .Include(a => a.Artist)
             .Where(a => EF.Functions.ILike(a.Title, $"%{queryLower}%") ||
                        EF.Functions.ILike(a.Artist.Name, $"%{queryLower}%"))
             .OrderByDescending(a => a.ReleaseDate)
-            .Take(count)
+            .ThenBy(a => a.Title);
+
+        var totalCount = await albumsQuery.CountAsync();
+        var albums = await albumsQuery
+            .Skip(skip)
+            .Take(take)
             .ToListAsync();
+
+        return (albums, totalCount);
     }
 
     public async Task<Track?> GetTrackAsync(Guid id)

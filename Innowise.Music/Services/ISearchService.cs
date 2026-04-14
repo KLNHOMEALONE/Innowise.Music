@@ -5,5 +5,5 @@ namespace Innowise.Music.Services;
 
 public interface ISearchService
 {
-    Task<UnifiedSearchResponse?> UnifiedSearchAsync(string query);
+    Task<UnifiedSearchResponse?> UnifiedSearchAsync(string query, int page = 1, int pageSize = 8);
 }

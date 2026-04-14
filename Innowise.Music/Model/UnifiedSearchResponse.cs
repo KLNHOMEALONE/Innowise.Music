@@ -8,6 +8,11 @@ public class UnifiedSearchResponse
     public List<TrackDto> Tracks { get; set; } = new();
     public List<Artist> Artists { get; set; } = new();
     public List<Album> Albums { get; set; } = new();
+    public int TotalTracks { get; set; }
+    public int TotalArtists { get; set; }
+    public int TotalAlbums { get; set; }
+    public int Page { get; set; }
+    public int PageSize { get; set; }
 }
 
 public class TrackDto
