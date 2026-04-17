@@ -21,9 +21,11 @@ Innowise.Music is a cross-platform music streaming application built with **.NET
 # Start PostgreSQL, Identity Server, and Admin Dashboard
 docker-compose up --build
 ```
-- Identity Server: `http://localhost:5236`
+- Identity Server: `http://localhost:5236` (HTTP), `https://localhost:7008` (HTTPS)
 - Admin Dashboard: `http://localhost:5237`
 - PostgreSQL: `localhost:5432` (user/password from `.env`)
+
+**Note:** The HTTPS development certificate is auto-generated during the Docker build — no manual certificate setup is required. See `Docs/docker-setup.md` for details.
 
 ### Running the MAUI client
 Open `Innowise.Music.sln` in Visual Studio and run the `Innowise.Music` project. Select your target platform (Windows, Android, iOS, MacCatalyst).

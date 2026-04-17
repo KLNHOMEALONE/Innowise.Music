@@ -21,10 +21,23 @@ RUN dotnet build "./Innowise.MusicIdentityServer.csproj" -c $BUILD_CONFIGURATION
 # This stage is used to publish the service project to be copied to the final stage
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
+# Generate HTTPS development certificate for the container (PFX format)
+RUN dotnet dev-certs https -ep /app/https-dev.pfx -p "devcert"
+# Convert PFX to separate clean PEM files for certificate and private key
+RUN openssl pkcs12 -in /app/https-dev.pfx -passin pass:devcert -clcerts -nokeys 2>/dev/null | openssl x509 > /app/https-dev-cert.pem && \
+    openssl pkcs12 -in /app/https-dev.pfx -passin pass:devcert -nocerts -nodes 2>/dev/null | openssl pkey > /app/https-dev-key.pem
 RUN dotnet publish "./Innowise.MusicIdentityServer.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+COPY --from=publish /app/https-dev-cert.pem /home/app/.aspnet/https/https-dev-cert.pem
+COPY --from=publish /app/https-dev-key.pem /home/app/.aspnet/https/https-dev-key.pem
+# Make the certificates readable by the non-root app user
+USER root
+RUN chmod 644 /home/app/.aspnet/https/https-dev-*.pem && chown app:app /home/app/.aspnet/https/https-dev-*.pem
+USER $APP_UID
+ENV ASPNETCORE_Kestrel__Certificates__Default__Path=/home/app/.aspnet/https/https-dev-cert.pem
+ENV ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/home/app/.aspnet/https/https-dev-key.pem
 ENTRYPOINT ["dotnet", "Innowise.MusicIdentityServer.dll"]

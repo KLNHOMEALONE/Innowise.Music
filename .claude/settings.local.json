@@ -28,7 +28,22 @@
       "WebSearch",
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(start cmd:*)",
-      "Bash(echo \"Bridge started with PID $!\")"
+      "Bash(echo \"Bridge started with PID $!\")",
+      "Bash(docker run *)",
+      "Bash(openssl pkcs12 *)",
+      "Bash(docker buildx *)",
+      "Bash(docker rmi *)",
+      "Bash(openssl x509 *)",
+      "Bash(openssl pkey *)",
+      "Bash(dotnet dev-certs *)",
+      "Read(//tmp/**)",
+      "Bash(docker-compose run *)",
+      "Bash(docker-compose stop *)",
+      "Bash(docker start *)",
+      "Bash(docker stop *)",
+      "Bash(docker rm *)",
+      "Bash(docker-compose create *)",
+      "Bash(at System)"
     ]
   }
 }
