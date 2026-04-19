@@ -26,6 +26,9 @@ namespace Innowise.Music
             
             builder
                 .UseMauiApp<App>()
+#if !WINDOWS
+                .UseMauiMaps()
+#endif
                 .UseMauiCommunityToolkit()
                 .UseMauiCommunityToolkitMediaElement()
                 .ConfigureFonts(fonts =>

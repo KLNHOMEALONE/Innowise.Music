@@ -2,7 +2,9 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:Innowise.Music.ViewModel"
+             xmlns:model="clr-namespace:Innowise.Music.Model"
              xmlns:controls="clr-namespace:Innowise.Music.Controls"
+             xmlns:maps="clr-namespace:Microsoft.Maui.Controls.Maps;assembly=Microsoft.Maui.Controls.Maps"
              x:Class="Innowise.Music.View.EventsPage"
              x:DataType="vm:EventsPageViewModel"
              BackgroundColor="{StaticResource Gray950}"
@@ -32,19 +34,34 @@
         </Grid>
 
         <!-- Map View -->
-        <Border Grid.Row="1" IsVisible="{Binding IsMapViewVisible}" BackgroundColor="{StaticResource Gray900}" Margin="20,0" StrokeShape="RoundRectangle 12" StrokeThickness="0">
-            <Label Text="Map Placeholder" TextColor="White" HorizontalOptions="Center" VerticalOptions="Center" />
+        <Border Grid.Row="1" x:Name="MapBorder" IsVisible="{Binding IsMapViewVisible}" BackgroundColor="{StaticResource Gray900}" Margin="20,0" StrokeShape="RoundRectangle 12" StrokeThickness="0">
+            <Grid>
+                <maps:Map x:Name="EventsMap"
+                     IsScrollEnabled="True"
+                     IsZoomEnabled="True" />
+                <Button x:Name="LocationButton" Text="📍"
+                        BackgroundColor="#D90429"
+                        WidthRequest="44"
+                        HeightRequest="44"
+                        CornerRadius="22"
+                        Margin="0,0,30,30"
+                        HorizontalOptions="End"
+                        VerticalOptions="End"
+                        Clicked="OnCenterOnUserClicked"
+                        Padding="0"
+                        FontSize="20" />
+            </Grid>
         </Border>
 
         <!-- List View -->
         <CollectionView Grid.Row="1" ItemsSource="{Binding EventGroups}" IsVisible="{Binding IsListViewVisible}" IsGrouped="True">
             <CollectionView.GroupHeaderTemplate>
-                <DataTemplate x:DataType="vm:EventGroup">
+                <DataTemplate x:DataType="model:EventGroup">
                     <Label Text="{Binding Month}" TextColor="White" FontSize="22" FontAttributes="Bold" Padding="20,20,20,10" />
                 </DataTemplate>
             </CollectionView.GroupHeaderTemplate>
             <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="vm:MusicEvent">
+                <DataTemplate x:DataType="model:MusicEvent">
                     <Border StrokeShape="RoundRectangle 12" BackgroundColor="{StaticResource InputBackgroundColor}" Margin="20,0,20,15" Padding="15" StrokeThickness="0">
                         <Grid ColumnDefinitions="100, *">
                             <Image Grid.Column="0" Source="{Binding ImageUrl}" Aspect="AspectFill" HeightRequest="100" />

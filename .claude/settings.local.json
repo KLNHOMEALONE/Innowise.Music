@@ -50,7 +50,18 @@
       "Bash(python3 -c \"import sys,json; data=json.load\\(sys.stdin\\); [print\\(f'{m.upper\\(\\)} {p}'\\) for p,methods in data.get\\('paths',{}\\).items\\(\\) for m in methods]\")",
       "Bash(python3 -c \" import sys, json data = json.load\\(sys.stdin\\) for path, methods in data.get\\('paths', {}\\).items\\(\\): for method in methods: print\\(f'{method.upper\\(\\)} {path}'\\) \")",
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d.get\\('response',''\\)[:2000]\\)\")",
-      "Bash(python3 -c \" import sys, json data = json.load\\(sys.stdin\\) statuses = data.get\\('statuses', {}\\) for status in ['processed', 'processing', 'pending']: docs = statuses.get\\(status, []\\) if docs: print\\(f'=== {status.upper\\(\\)} \\({len\\(docs\\)}\\) ==='\\) for d in docs: print\\(f' {d.get\\(\\\\\"file_path\\\\\", \\\\\"?\\\\\"\\)}'[:80]\\) \")"
+      "Bash(python3 -c \" import sys, json data = json.load\\(sys.stdin\\) statuses = data.get\\('statuses', {}\\) for status in ['processed', 'processing', 'pending']: docs = statuses.get\\(status, []\\) if docs: print\\(f'=== {status.upper\\(\\)} \\({len\\(docs\\)}\\) ==='\\) for d in docs: print\\(f' {d.get\\(\\\\\"file_path\\\\\", \\\\\"?\\\\\"\\)}'[:80]\\) \")",
+      "Bash(xargs -I {} basename {})",
+      "Bash(dotnet maui *)",
+      "Bash(dotnet add *)",
+      "Bash(dotnet msbuild *)",
+      "Bash(xargs -I{} dotnet dump --diagnostics {})",
+      "Read(//c/Users/KLN/.nuget/packages/microsoft.maui.controls.maps/**)",
+      "Read(//c/Users/KLN/.nuget/packages/microsoft.maui.core/9.0.120/lib/net9.0-windows10.0.19041/**)",
+      "Read(//c/Users/KLN/.nuget/packages/microsoft.maui.core/9.0.120/**)",
+      "Bash(dotnet list *)",
+      "Bash(dotnet remove *)",
+      "Bash(echo \"EXIT: $?\")"
     ]
   }
 }

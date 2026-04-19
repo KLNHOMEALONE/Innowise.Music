@@ -465,6 +465,22 @@
     - [x] Register in Dependency Injection container
     - [x] Refactor existing ViewModels to use the new service
 
+## Task: Events Map
+- **Status**: Completed
+- **Description**: Implemented interactive map in the Events page showing event locations as pins. Uses Microsoft.Maui.Controls.Maps on Android/iOS/MacCatalyst; shows placeholder on Windows (Maps not supported).
+- **Steps**:
+  - [x] Added `Microsoft.Maui.Controls.Maps` NuGet package (v9.0.50, matching MAUI v9)
+  - [x] Initialized maps with `.UseMauiMaps()` in `MauiProgram.cs` (skipped on Windows via `#if`)
+  - [x] Added location permissions: `ACCESS_FINE_LOCATION`/`ACCESS_COARSE_LOCATION` on Android, `NSLocationWhenInUseUsageDescription` on iOS
+  - [x] Extracted `MusicEvent` and `EventGroup` from ViewModel into separate model files with `Latitude`/`Longitude` properties
+  - [x] Replaced "Map Placeholder" label with `<maps:Map>` control in `EventsPage.xaml`
+  - [x] Created `Pin` elements for each event with label and address
+  - [x] Added location permission request on page appearing — centers on user if granted, otherwise Warsaw default
+  - [x] Added "📍" button to re-center on user location
+  - [x] Pin click shows alert with event details (date, venue)
+  - [x] Windows: replaced map with "Map is not available on Windows" label
+- **Files**: `Innowise.Music/View/EventsPage.xaml`, `Innowise.Music/View/EventsPage.xaml.cs`, `Innowise.Music/ViewModel/EventsPageViewModel.cs`, `Innowise.Music/Model/MusicEvent.cs`, `Innowise.Music/Model/EventGroup.cs`, `Innowise.Music/MauiProgram.cs`, `Innowise.Music/Platforms/Android/AndroidManifest.xml`, `Innowise.Music/Platforms/iOS/Info.plist`
+
 ## Task: TabBar and Main Pages Implementation
 - **Status**: Completed
 - **Description**: Implement main navigation using a TabBar, create Home, Search, Library, and Events pages with ViewModels, and update login navigation flow to point to Home.
