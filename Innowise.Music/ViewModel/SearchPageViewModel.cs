@@ -21,8 +21,8 @@ public partial class SearchPageViewModel : ObservableObject
     private readonly IAudioService _audioService;
     private readonly IFavoriteService _favoriteService;
     private readonly MiniPlayerViewModel _miniPlayerViewModel;
+    private readonly Innowise.Music.Configuration.ApiSettings _apiSettings;
     private CancellationTokenSource? _searchCancellationTokenSource;
-    private readonly int _pageSize;
 
     [ObservableProperty]
     private string _searchQuery = string.Empty;
@@ -66,7 +66,7 @@ public partial class SearchPageViewModel : ObservableObject
         _audioService = audioService;
         _favoriteService = favoriteService;
         _miniPlayerViewModel = miniPlayerViewModel;
-        _pageSize = apiSettings.Value.SearchPageSize;
+        _apiSettings = apiSettings.Value;
     }
 
     async partial void OnSearchQueryChanged(string value)
@@ -110,7 +110,7 @@ public partial class SearchPageViewModel : ObservableObject
         try
         {
             System.Diagnostics.Debug.WriteLine($"[SearchVM] Searching: {SearchQuery}, Page: {CurrentPage}");
-            var response = await _searchService.UnifiedSearchAsync(SearchQuery, CurrentPage, _pageSize);
+            var response = await _searchService.UnifiedSearchAsync(SearchQuery, CurrentPage, _apiSettings.SearchPageSize);
 
             if (response != null)
             {
@@ -118,7 +118,7 @@ public partial class SearchPageViewModel : ObservableObject
                 ProcessResponse(response);
                 
                 int totalItems = response.TotalTracks + response.TotalArtists + response.TotalAlbums;
-                TotalPages = (int)Math.Ceiling((double)totalItems / _pageSize);
+                TotalPages = (int)Math.Ceiling((double)totalItems / _apiSettings.SearchPageSize);
                 if (TotalPages == 0) TotalPages = 1;
                 
                 HasResults = SearchResults.Count > 0;
@@ -211,8 +211,8 @@ public partial class SearchPageViewModel : ObservableObject
         if (item == null || item.Type != SearchResultType.Track || item.Track == null) return;
 
         var streamBaseUrl = DeviceInfo.Platform == DevicePlatform.Android
-            ? "http://10.0.2.2:5236"
-            : "http://localhost:5236";
+            ? _apiSettings.AndroidStreamBaseUrl
+            : _apiSettings.StreamBaseUrl;
 
         var track = new Track
         {

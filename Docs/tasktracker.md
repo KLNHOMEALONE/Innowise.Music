@@ -508,6 +508,18 @@
     - [ ] Implement load testing and performance tuning
 - **Dependencies**: Production deployment, Monitoring infrastructure
 
+## Task: Fix Hardcoded URLs and Centralize Configuration
+- **Status**: Completed
+- **Description**: Moved hardcoded streaming URLs (e.g., `http://localhost:5236`) from services and ViewModels to `appsettings.json` and the `ApiSettings` configuration model. This improves environment flexibility and maintainability.
+- **Steps**:
+  - [x] Added `StreamBaseUrl` and `AndroidStreamBaseUrl` to `ApiSettings.cs`
+  - [x] Configured new streaming URL fields in `appsettings.json`
+  - [x] Updated `SearchPageViewModel` to use centralized settings instead of hardcoded strings
+  - [x] Updated `HistoryService` to use centralized settings for recently played tracks
+  - [x] Updated `FavoriteService` to use centralized settings for favorite tracks
+  - [x] Updated `RecommendationService` to use centralized settings for recommended tracks
+- **Files**: `Innowise.Music/Configuration/ApiSettings.cs`, `Innowise.Music/appsettings.json`, `Innowise.Music/ViewModel/SearchPageViewModel.cs`, `Innowise.Music/Services/HistoryService.cs`, `Innowise.Music/Services/FavoriteService.cs`, `Innowise.Music/Services/RecommendationService.cs`
+
 ---
 
 ## Known Issues / Tech Debt
@@ -515,7 +527,6 @@
 - [ ] `HttpClient` shared between `AuthenticationService` and `GoogleAuthService` — potential race condition on DefaultRequestHeaders
 - [ ] No loading states / spinners in most pages
 - [ ] No offline support or caching
-- [ ] Stream URLs hardcoded with port numbers — should be configurable
 - [ ] No unit or integration tests
 - [ ] `DateOnly` serialization may cause issues with some JSON serializers
 

@@ -149,8 +149,8 @@ public class FavoriteService : IFavoriteService
             System.Diagnostics.Debug.WriteLine($"[Favorite] Response tracks: {response?.Tracks?.Count ?? 0}");
 
             var streamBaseUrl = DeviceInfo.Platform == DevicePlatform.Android
-                ? "http://10.0.2.2:5236"
-                : "http://localhost:5236";
+                ? _apiSettings.AndroidStreamBaseUrl
+                : _apiSettings.StreamBaseUrl;
 
             var tracks = response?.Tracks?.Select(t => new Track
             {

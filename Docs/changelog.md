@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased] - Configuration & Maintainability
+
+### Changed
+- **Centralized Configuration**: Moved all hardcoded streaming URLs to `appsettings.json`.
+  - Added `StreamBaseUrl` and `AndroidStreamBaseUrl` to `ApiSettings` model.
+  - Updated `SearchPageViewModel` to use centralized settings for playback.
+  - Refactored `HistoryService`, `FavoriteService`, and `RecommendationService` to remove hardcoded `localhost:5236` and `10.0.2.2:5236` strings.
+  - Improved environment flexibility for cross-platform development (Android emulator vs. Local/Windows).
+
 ## [Unreleased] - Search Pagination
 
 ### Added
