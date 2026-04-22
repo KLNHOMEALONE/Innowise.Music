@@ -7,8 +7,6 @@
              x:DataType="vm:MiniPlayerViewModel">
     <Border IsVisible="{Binding IsVisible}" BackgroundColor="{StaticResource InputBackgroundColor}" StrokeThickness="0" StrokeShape="RoundRectangle 8" Margin="8,0,8,8" Padding="10">
         <Grid>
-            <toolkit:MediaElement x:Name="mediaElement" IsVisible="False" />
-            
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />

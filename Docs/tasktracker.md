@@ -536,6 +536,17 @@
   - [x] Updated `RecommendationService` to use centralized settings for recommended tracks
 - **Files**: `Innowise.Music/Configuration/ApiSettings.cs`, `Innowise.Music/appsettings.json`, `Innowise.Music/ViewModel/SearchPageViewModel.cs`, `Innowise.Music/Services/HistoryService.cs`, `Innowise.Music/Services/FavoriteService.cs`, `Innowise.Music/Services/RecommendationService.cs`
 
+## Task: Fix Simultaneous Audio Playback
+- **Status**: Completed
+- **Description**: Resolved an issue where multiple tracks could play simultaneously when navigating between pages. The root cause was each `MiniPlayerControl` (embedded in every page) having its own local `MediaElement` and re-initializing the singleton `AudioService` with it.
+- **Steps**:
+  - [x] Identified redundant `MediaElement` instances in `MiniPlayerControl.xaml`
+  - [x] Removed local `MediaElement` from `MiniPlayerControl.xaml`
+  - [x] Removed `AudioService.Initialize()` call from `MiniPlayerControl.xaml.cs`
+  - [x] Moved the global `MediaElement` from a hidden tab to `FlyoutHeader` in `AppShell.xaml` for more reliable lifecycle management
+  - [x] Ensured `AppShell.xaml.cs` is the only place initializing the `AudioService`
+- **Files**: `Innowise.Music/Controls/MiniPlayerControl.xaml`, `Innowise.Music/Controls/MiniPlayerControl.xaml.cs`, `Innowise.Music/AppShell.xaml`, `Innowise.Music/AppShell.xaml.cs`
+
 ---
 
 ## Known Issues / Tech Debt

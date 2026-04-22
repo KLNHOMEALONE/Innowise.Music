@@ -14,8 +14,6 @@ public partial class MiniPlayerControl : ContentView
 
     private void OnLoaded(object sender, EventArgs e)
     {
-        var audioService = this.Handler.MauiContext.Services.GetService<IAudioService>();
         BindingContext = this.Handler.MauiContext.Services.GetService<MiniPlayerViewModel>();
-        audioService.Initialize(mediaElement);
     }
 }
