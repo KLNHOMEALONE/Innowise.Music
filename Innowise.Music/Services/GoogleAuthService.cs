@@ -71,7 +71,7 @@ namespace Innowise.Music.Services
             Debug.WriteLine($"Revoke token: {responseBody}");
             SecureStorage.Remove("access_token");
             SecureStorage.Remove("refresh_token");
-            Preferences.Remove("access_token_epires_in");
+            Preferences.Remove("access_token_expires_in");
 
             _credential = null;
             _oauth2Service = null;
@@ -86,7 +86,7 @@ namespace Innowise.Music.Services
             try
             {
                 var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                var expiresIn = Preferences.Get("access_token_epires_in", 0L);
+                var expiresIn = Preferences.Get("access_token_expires_in", 0L);
                 var isExpired = expiresIn == 0L || now - 10 > expiresIn;
                 var hasRefreshToken = await SecureStorage.GetAsync("refresh_token") is not null;
 
@@ -155,7 +155,7 @@ namespace Innowise.Music.Services
             var accessToken = jsonToken!["access_token"]!.ToString();
             var accessTokenExpiresIn = DateTimeOffset.UtcNow.ToUnixTimeSeconds() + int.Parse(jsonToken!["expires_in"]!.ToString());
             await SecureStorage.SetAsync("access_token", accessToken);
-            Preferences.Set("access_token_epires_in", accessTokenExpiresIn);
+            Preferences.Set("access_token_expires_in", accessTokenExpiresIn);
         }
 
         private async Task DoAuthCodeFlowWindows()
@@ -285,7 +285,7 @@ namespace Innowise.Music.Services
             var accessToken = jsonToken!["access_token"]!.ToString();
             var accessTokenExpiresIn = DateTimeOffset.UtcNow.ToUnixTimeSeconds() + int.Parse(jsonToken!["expires_in"]!.ToString());
             await SecureStorage.SetAsync("access_token", accessToken);
-            Preferences.Set("access_token_epires_in", accessTokenExpiresIn);
+            Preferences.Set("access_token_expires_in", accessTokenExpiresIn);
 
             if (jsonToken["refresh_token"] is not null)
             {
