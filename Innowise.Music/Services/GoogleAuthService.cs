@@ -15,6 +15,7 @@ using Microsoft.Maui.Controls;
 using System;
 using System.Diagnostics;
 using System.Net;
+using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -162,16 +163,23 @@ namespace Innowise.Music.Services
         {
             var authUrl = "https://accounts.google.com/o/oauth2/v2/auth";
             var clientId = _googleAuthSettings.Google.WindowsClientId;
-            var localPort = 12345;
-            var redirectUri = $"http://localhost:{localPort}";
+            
+            // Dynamically find an available port
+            var localPort = GetUnusedPort();
+            var redirectUri = $"http://localhost:{localPort}/";
+            
             var codeVerifier = GenerateCodeVerifier();
             var codeChallenge = GenerateCodeChallenge(codeVerifier);
             var parameters = GenerateAuthParameters(redirectUri, clientId, codeChallenge);
             var queryString = string.Join("&", parameters.Select(param => $"{param.Key}={param.Value}"));
             var fullAuthUrl = $"{authUrl}?{queryString}";
 
+            // Start the listener BEFORE launching the browser to avoid race conditions
+            var serverTask = StartLocalHttpServerAsync(localPort);
+            
             await Launcher.OpenAsync(fullAuthUrl);
-            var authorizationCode = await StartLocalHttpServerAsync(localPort);
+            
+            var authorizationCode = await serverTask;
 
             await GetInitialToken(authorizationCode, redirectUri, clientId, codeVerifier);
         }
@@ -294,6 +302,15 @@ namespace Innowise.Music.Services
             }
         }
 
+        private static int GetUnusedPort()
+        {
+            var listener = new TcpListener(IPAddress.Loopback, 0);
+            listener.Start();
+            var port = ((IPEndPoint)listener.LocalEndpoint).Port;
+            listener.Stop();
+            return port;
+        }
+
         private static async Task<string> StartLocalHttpServerAsync(int port)
         {
             var listener = new HttpListener();
@@ -301,25 +318,30 @@ namespace Innowise.Music.Services
             listener.Start();
 
             Debug.WriteLine($"Listening on http://localhost:{port}/...");
-            var context = await listener.GetContextAsync();
+            
+            try
+            {
+                var context = await listener.GetContextAsync();
 
-            var code = context.Request.QueryString["code"];
-            var response = context.Response;
-            var responseString = "Authorization complete. You can close this window.";
-            var buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
-            response.ContentLength64 = buffer.Length;
-            await response.OutputStream.WriteAsync(buffer);
-            response.OutputStream.Close();
+                var code = context.Request.QueryString["code"];
+                var response = context.Response;
+                var responseString = "<html><body>Authorization complete. You can close this window.</body></html>";
+                var buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
+                response.ContentLength64 = buffer.Length;
+                await response.OutputStream.WriteAsync(buffer);
+                response.OutputStream.Close();
 
-            listener.Stop();
+                if (code is null) throw new Exception("Auth code not returned in query string.");
 
-            if (code is null) throw new Exception("Auth ode not returned");
-
-            return code;
+                return code;
+            }
+            finally
+            {
+                listener.Stop();
+            }
         }
 
 
 
     }
 }
-
