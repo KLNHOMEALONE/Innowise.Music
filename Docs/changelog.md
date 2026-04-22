@@ -2,14 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased] - Configuration & Maintainability
+## [Unreleased] - Events Map
+
+### Added
+- **Interactive map in Events page**: Shows event locations as pins on a map
+  - Uses `Microsoft.Maui.Controls.Maps` (native maps: Google Maps on Android, Apple Maps on iOS, Bing on Windows)
+  - Pins display event title and venue; clicking shows an alert with date and venue details
+  - Auto-centers on user's location when permission granted; defaults to Warsaw otherwise
+  - "📍" button to re-center map on current location
+  - Windows: shows "Map is not available on Windows" placeholder (platform limitation)
+- `MusicEvent` model extracted to `Model/MusicEvent.cs` with `Latitude`/`Longitude` properties
+- `EventGroup` model extracted to `Model/EventGroup.cs`
+- Location permissions added for Android (`ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION`) and iOS (`NSLocationWhenInUseUsageDescription`)
 
 ### Changed
-- **Centralized Configuration**: Moved all hardcoded streaming URLs to `appsettings.json`.
-  - Added `StreamBaseUrl` and `AndroidStreamBaseUrl` to `ApiSettings` model.
-  - Updated `SearchPageViewModel` to use centralized settings for playback.
-  - Refactored `HistoryService`, `FavoriteService`, and `RecommendationService` to remove hardcoded `localhost:5236` and `10.0.2.2:5236` strings.
-  - Improved environment flexibility for cross-platform development (Android emulator vs. Local/Windows).
+- `EventsPageViewModel` cleaned up — model types moved to separate files
+- Maps package pinned to v9.0.50 to match MAUI v9 (v10 caused `HandlerNotFoundException`)
 
 ## [Unreleased] - Search Pagination
 

@@ -1,5 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Innowise.Music.Model;
+using Microsoft.Maui.Devices.Sensors;
 using System.Collections.ObjectModel;
 
 namespace Innowise.Music.ViewModel
@@ -33,47 +35,33 @@ namespace Innowise.Music.ViewModel
             IsListViewVisible = true;
         }
 
+        partial void OnIsMapViewVisibleChanged(bool value)
+        {
+            if (value)
+                IsListViewVisible = false;
+        }
+
+        partial void OnIsListViewVisibleChanged(bool value)
+        {
+            if (value)
+                IsMapViewVisible = false;
+        }
+
         private void LoadMockData()
         {
             var januaryEvents = new EventGroup("January 2026")
             {
-                new MusicEvent("Chick Corea", "19 Jan 2026 at 20:00", "Jazz bar, Warsaw", "chick_corea.png"),
-                new MusicEvent("Chick Corea", "19 Jan 2026 at 20:00", "Jazz bar, Warsaw", "chick_corea.png")
+                new MusicEvent("Chick Corea Trio", "19 Jan 2026 at 20:00", "Jazz bar, Warsaw", "chick_corea.png", 52.2297, 21.0122),
+                new MusicEvent("Chick Corea Trio", "19 Jan 2026 at 20:00", "Jazz bar, Warsaw", "chick_corea.png", 52.2297, 21.0122)
             };
 
             var februaryEvents = new EventGroup("February 2026")
             {
-                new MusicEvent("Chick Corea", "15 Feb 2026 at 20:00", "Jazz bar, Warsaw", "chick_corea.png")
+                new MusicEvent("Chick Corea Trio", "15 Feb 2026 at 20:00", "Jazz bar, Warsaw", "chick_corea.png", 52.2297, 21.0122)
             };
 
             EventGroups.Add(januaryEvents);
             EventGroups.Add(februaryEvents);
-        }
-    }
-
-    public class EventGroup : ObservableCollection<MusicEvent>
-    {
-        public string Month { get; }
-
-        public EventGroup(string month)
-        {
-            Month = month;
-        }
-    }
-
-    public class MusicEvent
-    {
-        public string Title { get; }
-        public string Date { get; }
-        public string Venue { get; }
-        public string ImageUrl { get; }
-
-        public MusicEvent(string title, string date, string venue, string imageUrl)
-        {
-            Title = title;
-            Date = date;
-            Venue = venue;
-            ImageUrl = imageUrl;
         }
     }
 }
