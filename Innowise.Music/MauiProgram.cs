@@ -59,10 +59,16 @@ namespace Innowise.Music
             builder.Services.AddSingleton<IHistoryService, HistoryService>();
             builder.Services.AddSingleton<IFavoriteService, FavoriteService>();
             builder.Services.AddSingleton<INavigationService, NavigationService>();
-            builder.Services.AddSingleton<LoginPageViewModel>();
-            builder.Services.AddSingleton<LoginPage>();
-            builder.Services.AddSingleton<SignUpPageViewModel>();
-            builder.Services.AddSingleton<SignUpPage>();
+            
+            // Transient ViewModels and Pages (Resets state on each navigation)
+            builder.Services.AddTransient<LoginPageViewModel>();
+            builder.Services.AddTransient<LoginPage>();
+            builder.Services.AddTransient<SignUpPageViewModel>();
+            builder.Services.AddTransient<SignUpPage>();
+            builder.Services.AddTransient<WebPage>();
+            builder.Services.AddTransient<WebPageViewModel>();
+
+            // Singleton ViewModels and Pages (Maintains state/caches data)
             builder.Services.AddSingleton<HomePageViewModel>();
             builder.Services.AddSingleton<HomePage>();
             builder.Services.AddSingleton<SearchPageViewModel>();
@@ -75,8 +81,6 @@ namespace Innowise.Music
             builder.Services.AddTransient<MiniPlayerControl>();
             builder.Services.AddSingleton<AppShellViewModel>();
             builder.Services.AddSingleton<AppShell>();
-            builder.Services.AddSingleton<WebPage>();
-            builder.Services.AddSingleton<WebPageViewModel>();
 
 #if DEBUG
             builder.Logging.AddDebug();
