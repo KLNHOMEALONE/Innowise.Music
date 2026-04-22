@@ -11,6 +11,8 @@ public partial class LoginPageViewModel : ObservableObject
     private readonly INavigationService _navigationService;
     private readonly IAuthenticationService _authenticationService;
     private readonly IGoogleAuthService _googleAuthService;
+    private readonly IDialogService _dialogService;
+    private readonly IHealthCheckService _healthCheckService;
 
     [ObservableProperty]
     private ValidatableObject<string> _email;
@@ -18,16 +20,53 @@ public partial class LoginPageViewModel : ObservableObject
     [ObservableProperty]
     private ValidatableObject<string> _password;
 
-    public LoginPageViewModel(INavigationService navigationService, IAuthenticationService authenticationService, IGoogleAuthService googleAuthService)
+    [ObservableProperty]
+    private bool _isBusy;
+
+    private bool _initialHealthCheckDone;
+
+    public LoginPageViewModel(
+        INavigationService navigationService, 
+        IAuthenticationService authenticationService, 
+        IGoogleAuthService googleAuthService,
+        IDialogService dialogService,
+        IHealthCheckService healthCheckService)
     {
         _navigationService = navigationService;
         _authenticationService = authenticationService;
         _googleAuthService = googleAuthService;
+        _dialogService = dialogService;
+        _healthCheckService = healthCheckService;
 
         Email = new ValidatableObject<string>();
         Password = new ValidatableObject<string>();
 
         AddValidationRules();
+    }
+
+    public async Task InitializeAsync()
+    {
+        if (!_initialHealthCheckDone)
+        {
+            await EnsureServerIsReachableAsync(showAlert: true);
+            _initialHealthCheckDone = true;
+        }
+    }
+
+    private async Task<bool> EnsureServerIsReachableAsync(bool showAlert = true)
+    {
+        System.Diagnostics.Debug.WriteLine("[LoginVM] Performing health check...");
+        var isHealthy = await _healthCheckService.CheckIdentityServerHealthAsync();
+        
+        if (!isHealthy && showAlert)
+        {
+            System.Diagnostics.Debug.WriteLine("[LoginVM] Health check failed, showing alert.");
+            await _dialogService.ShowAlertAsync("Connection Issue", 
+                "The Identity Server is unreachable. Please check your connection or try again later.", "OK");
+        }
+        
+        System.Diagnostics.Debug.WriteLine($"[LoginVM] Health check result: {isHealthy}");
+        return isHealthy;
     }
 
     private void AddValidationRules()
@@ -50,25 +89,45 @@ public partial class LoginPageViewModel : ObservableObject
     [RelayCommand]
     private async Task Login()
     {
+        if (IsBusy) return;
+        
         if (!Validate())
         {
             return;
         }
 
-        var success = await _authenticationService.LoginAsync(new Model.LoginUserDto
+        try
         {
-            Email = Email.Value,
-            Password = Password.Value
-        });
+            IsBusy = true;
 
-        if (success)
-        {
-            await _navigationService.NavigateToAsync($"///{nameof(View.HomePage)}");
+            // Check health before proceeding
+            if (!await EnsureServerIsReachableAsync(showAlert: true))
+            {
+                return;
+            }
+
+            var success = await _authenticationService.LoginAsync(new Model.LoginUserDto
+            {
+                Email = Email.Value,
+                Password = Password.Value
+            });
+
+            if (success)
+            {
+                await _navigationService.NavigateToAsync($"///{nameof(View.HomePage)}");
+            }
+            else
+            {
+                await _dialogService.ShowAlertAsync("Login Failed", "Invalid email or password. Please try again.", "OK");
+            }
         }
-        else
+        catch (Exception ex)
         {
-            // Handle error
-            System.Diagnostics.Debug.WriteLine("Login failed");
+            await _dialogService.ShowAlertAsync("Error", $"An unexpected error occurred: {ex.Message}", "OK");
+        }
+        finally
+        {
+            IsBusy = false;
         }
     }
 
@@ -81,24 +140,42 @@ public partial class LoginPageViewModel : ObservableObject
     [RelayCommand]
     private async Task GoogleLogin()
     {
-        //await _googleAuthService.SignOut();
-        var userInfoDto = await _googleAuthService.AcquireTokenAsync();
-        if (string.IsNullOrEmpty(userInfoDto.Token))
+        if (IsBusy) return;
+
+        try
         {
-            // Handle error
-            System.Diagnostics.Debug.WriteLine("Google login failed");
-            return;
+            IsBusy = true;
+
+            // Check health before proceeding
+            if (!await EnsureServerIsReachableAsync(showAlert: true))
+            {
+                return;
+            }
+
+            var userInfoDto = await _googleAuthService.AcquireTokenAsync();
+            if (string.IsNullOrEmpty(userInfoDto.Token))
+            {
+                await _dialogService.ShowAlertAsync("Google Login", "Failed to retrieve information from Google.", "OK");
+                return;
+            }
+
+            var success = await _authenticationService.GoogleLoginAsync(userInfoDto);
+            if (success)
+            {
+                await _navigationService.NavigateToAsync($"///{nameof(View.HomePage)}");
+            }
+            else
+            {
+                await _dialogService.ShowAlertAsync("Login Failed", "Failed to authenticate with Identity Server using Google.", "OK");
+            }
         }
-        //await _navigationService.NavigateToAsync($"///{nameof(View.HomePage)}");
-        var success = await _authenticationService.GoogleLoginAsync(userInfoDto);
-        if (success)
+        catch (Exception ex)
         {
-            await _navigationService.NavigateToAsync($"///{nameof(View.HomePage)}");
+            await _dialogService.ShowAlertAsync("Error", $"Google login error: {ex.Message}", "OK");
         }
-        else
+        finally
         {
-            // Handle error
-            System.Diagnostics.Debug.WriteLine("Google login failed");
+            IsBusy = false;
         }
     }
 }

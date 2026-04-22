@@ -8,7 +8,7 @@ public class HttpHelper : IHttpHelper
         var handler = new Xamarin.Android.Net.AndroidMessageHandler();
         handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) =>
         {
-            if (cert != null && cert.Issuer.Equals("CN=localhost"))
+            if (cert != null && cert.Issuer.Contains("localhost", StringComparison.OrdinalIgnoreCase))
                 return true;
             return errors == System.Net.Security.SslPolicyErrors.None;
         };
@@ -16,14 +16,14 @@ public class HttpHelper : IHttpHelper
 #elif IOS
         var handler = new NSUrlSessionHandler
         {
-            TrustOverrideForUrl = (sender, url, trust) => url.StartsWith("https://localhost") || url.StartsWith("https://10.0.2.2")
+            TrustOverrideForUrl = (sender, url, trust) => url.Contains("localhost") || url.Contains("10.0.2.2")
         };
         return handler;
 #else
         HttpClientHandler handler = new HttpClientHandler();
         handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) =>
         {
-            if (cert != null && cert.Issuer.Equals("CN=localhost"))
+            if (cert != null && cert.Issuer.Contains("localhost", StringComparison.OrdinalIgnoreCase))
                 return true;
             return errors == System.Net.Security.SslPolicyErrors.None;
         };
