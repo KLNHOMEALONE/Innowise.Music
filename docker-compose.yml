@@ -51,6 +51,10 @@ services:
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_HTTPS_PORTS=8081
       - ConnectionStrings__PostgresAppDbConnection=Server=postgres;Port=5432;Database=musicidentity;User Id=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - GoogleAuthentication__Google__ClientId=${GOOGLE_CLIENT_ID}
+      - GoogleAuthentication__Google__WindowsClientId=${GOOGLE_WINDOWS_CLIENT_ID}
+      - GoogleAuthentication__Google__AndroidClientId=${GOOGLE_ANDROID_CLIENT_ID}
+      - JwtSettings__Key=${JWT_KEY}
     ports:
       - "5236:8080" # Mapping to launchSettings.json port
       - "7008:8081" # HTTPS mapping for MAUI app

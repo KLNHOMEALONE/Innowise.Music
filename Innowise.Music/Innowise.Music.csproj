@@ -43,18 +43,21 @@
 		<AndroidSigningKeyStore>innowisemusic.keystore</AndroidSigningKeyStore>
 	</PropertyGroup>
 
+	<!-- Import local signing properties if they exist -->
+	<Import Project="..\LocalSigning.props" Condition="Exists('..\LocalSigning.props')" />
+
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-android|AnyCPU'">
 	  <AndroidKeyStore>True</AndroidKeyStore>
-	  <AndroidSigningStorePass>123456</AndroidSigningStorePass>
-	  <AndroidSigningKeyAlias>innowisemusic</AndroidSigningKeyAlias>
-	  <AndroidSigningKeyPass>123456</AndroidSigningKeyPass>
+	  <AndroidSigningStorePass>$(ANDROID_STORE_PASS)</AndroidSigningStorePass>
+	  <AndroidSigningKeyAlias>$(ANDROID_KEY_ALIAS)</AndroidSigningKeyAlias>
+	  <AndroidSigningKeyPass>$(ANDROID_KEY_PASS)</AndroidSigningKeyPass>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-android|AnyCPU'">
 	  <AndroidKeyStore>True</AndroidKeyStore>
-	  <AndroidSigningStorePass>123456</AndroidSigningStorePass>
-	  <AndroidSigningKeyAlias>innowisemusic</AndroidSigningKeyAlias>
-	  <AndroidSigningKeyPass>123456</AndroidSigningKeyPass>
+	  <AndroidSigningStorePass>$(ANDROID_STORE_PASS)</AndroidSigningStorePass>
+	  <AndroidSigningKeyAlias>$(ANDROID_KEY_ALIAS)</AndroidSigningKeyAlias>
+	  <AndroidSigningKeyPass>$(ANDROID_KEY_PASS)</AndroidSigningKeyPass>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -93,6 +96,7 @@
 
 	<ItemGroup>
 		<EmbeddedResource Include="appsettings.json" />
+		<EmbeddedResource Include="appsettings.local.json" Condition="Exists('appsettings.local.json')" />
 	</ItemGroup>
 
 	<ItemGroup>

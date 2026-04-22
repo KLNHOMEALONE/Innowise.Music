@@ -364,8 +364,14 @@ FodyWeavers.xsd
 /.gemini/key.txt
 
 # Secrets files
+# Local signing properties
+LocalSigning.props
 .env
-/.env
+Innowise.Music/appsettings.local.json
+/# Local signing properties
+LocalSigning.props
+.env
+Innowise.Music/appsettings.local.json
 /Innowise.Music/Platforms/Android/AndroidManifest.xml
 /Docs/keys.txt
 /Docs/example.txt

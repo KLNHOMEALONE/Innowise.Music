@@ -17,11 +17,19 @@ namespace Innowise.Music
             var builder = MauiApp.CreateBuilder();
             
             var assembly = Assembly.GetExecutingAssembly();
-            var stream = assembly.GetManifestResourceStream("Innowise.Music.appsettings.json");
             
+            // Load main appsettings.json
+            var stream = assembly.GetManifestResourceStream("Innowise.Music.appsettings.json");
             if (stream != null)
             {
                 builder.Configuration.AddJsonStream(stream);
+            }
+
+            // Load local overrides if they exist
+            var localStream = assembly.GetManifestResourceStream("Innowise.Music.appsettings.local.json");
+            if (localStream != null)
+            {
+                builder.Configuration.AddJsonStream(localStream);
             }
             
             builder
