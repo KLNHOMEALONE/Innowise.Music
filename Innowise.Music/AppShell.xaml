@@ -46,12 +46,6 @@
         </Style>
     </Shell.Resources>
 
-    <Shell.FlyoutHeader>
-        <Grid HeightRequest="0" IsVisible="False">
-            <toolkit:MediaElement x:Name="mediaElement" IsVisible="False" ShouldShowPlaybackControls="False" />
-        </Grid>
-    </Shell.FlyoutHeader>
-
     <TabBar Shell.TabBarBackgroundColor="#0A0000"
             Shell.TabBarTitleColor="#D90429"
             Shell.TabBarForegroundColor="#D90429"
@@ -67,6 +61,15 @@
         </Tab>
         <Tab Title="Events" Style="{StaticResource EventsTabStyle}">
             <ShellContent ContentTemplate="{DataTemplate view:EventsPage}" Route="EventsPage" />
+        </Tab>
+        <Tab Title="Player" IsVisible="True" FlyoutItemIsVisible="False">
+            <ShellContent>
+                <ContentPage BackgroundColor="Black">
+                    <Grid HeightRequest="0.1" WidthRequest="0.1" Opacity="0" IsVisible="True">
+                        <toolkit:MediaElement x:Name="mediaElement" ShouldShowPlaybackControls="False" />
+                    </Grid>
+                </ContentPage>
+            </ShellContent>
         </Tab>
     </TabBar>
     

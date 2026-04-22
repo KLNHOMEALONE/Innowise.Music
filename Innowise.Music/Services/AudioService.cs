@@ -76,6 +76,7 @@ namespace Innowise.Music.Services
 
             _mediaElement.ShouldAutoPlay = true;
             _mediaElement.Source = MediaSource.FromUri(mediaUrl);
+            _mediaElement.Play();
 
             return Task.CompletedTask;
         }
