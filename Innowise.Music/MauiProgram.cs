@@ -41,15 +41,17 @@ namespace Innowise.Music
             // Register configuration
             builder.Services.Configure<ApiSettings>(builder.Configuration.GetSection(ApiSettings.SectionName));
             builder.Services.Configure<GoogleAuthenticationSettings>(builder.Configuration.GetSection(GoogleAuthenticationSettings.SectionName));
-            builder.Services.AddSingleton<HttpHelper>();
+            builder.Services.AddSingleton<IHttpHelper, HttpHelper>();
             builder.Services.AddSingleton<HttpClient>(provider =>
             {
-                var httpHelper = provider.GetRequiredService<HttpHelper>();
+                var httpHelper = provider.GetRequiredService<IHttpHelper>();
                 return new HttpClient(httpHelper.GetInsecureHandler());
             });
 
             builder.Services.AddSingleton<IAuthenticationService, AuthenticationService>();
             builder.Services.AddSingleton<IGoogleAuthService, GoogleAuthService>();
+            builder.Services.AddSingleton<IDialogService, DialogService>();
+            builder.Services.AddSingleton<IHealthCheckService, HealthCheckService>();
             builder.Services.AddSingleton<IAudioService, AudioService>();
             builder.Services.AddSingleton<ISearchService, SearchService>();
             builder.Services.AddSingleton<IStreamTokenService, StreamTokenService>();
