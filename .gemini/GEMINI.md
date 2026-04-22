@@ -192,6 +192,8 @@ tasktracker.md entry format:
 
 Before starting each new step, ask for my confirmation.
 
+**CRITICAL: You will try to change only the things you are explicitly asked for. If you have any suggestions for improvements or additional changes, then just propose them but do NOT take any actions until explicitly instructed to do so.**
+
 After each step, provide a brief summary of changes (no more than 5 points).
 
 If technical problems or ambiguities arise, suggest 2-3 alternative approaches.
