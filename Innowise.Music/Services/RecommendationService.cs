@@ -55,7 +55,7 @@ public class RecommendationService : IRecommendationService
                 return new List<Track>();
             }
 
-            var recommendationsResponse = await response.Content.ReadFromJsonAsync<RecommendationsResponse>();
+            var recommendationsResponse = await response.Content.ReadFromJsonAsync<TracksResponse>();
             System.Diagnostics.Debug.WriteLine($"[Recommendations] Response tracks: {recommendationsResponse?.Tracks?.Count ?? 0}");
 
             // Use HTTP for stream URLs (MediaElement can't handle self-signed HTTPS certs)
@@ -114,47 +114,15 @@ public class RecommendationService : IRecommendationService
                 return new List<Artist>();
             }
 
-            var artists = await response.Content.ReadFromJsonAsync<List<ArtistDto>>(url);
+            var artists = await response.Content.ReadFromJsonAsync<List<Artist>>();
             System.Diagnostics.Debug.WriteLine($"[RecommendedArtists] Response artists: {artists?.Count ?? 0}");
 
-            return artists?.Select(a => new Artist
-            {
-                Id = a.Id,
-                Name = a.Name,
-                ImageUrl = a.ImageUrl
-            }).ToList() ?? new List<Artist>();
+            return artists ?? new List<Artist>();
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"[RecommendedArtists] Error: {ex.GetType().Name}: {ex.Message}");
             return new List<Artist>();
         }
-    }
-
-    private class RecommendationsResponse
-    {
-        public List<TrackDto> Tracks { get; set; } = new();
-    }
-
-    private class TrackDto
-    {
-        public Guid Id { get; set; }
-        public string Title { get; set; } = string.Empty;
-        public ArtistDto? Artist { get; set; }
-        public AlbumDto? Album { get; set; }
-    }
-
-    private class ArtistDto
-    {
-        public Guid Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string? ImageUrl { get; set; }
-    }
-
-    private class AlbumDto
-    {
-        public Guid Id { get; set; }
-        public string Title { get; set; } = string.Empty;
-        public string? CoverImageUrl { get; set; }
     }
 }

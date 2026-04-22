@@ -153,7 +153,7 @@ namespace Innowise.Music.Services
             Debug.WriteLine($"Refresh token: {responseBody}");
             var jsonToken = JsonObject.Parse(responseBody);
             var accessToken = jsonToken!["access_token"]!.ToString();
-            var accessTokenExpiresIn = DateTimeOffset.UtcNow.ToUnixTimeSeconds() + int.Parse(jsonToken!["epires_in"]!.ToString());
+            var accessTokenExpiresIn = DateTimeOffset.UtcNow.ToUnixTimeSeconds() + int.Parse(jsonToken!["expires_in"]!.ToString());
             await SecureStorage.SetAsync("access_token", accessToken);
             Preferences.Set("access_token_epires_in", accessTokenExpiresIn);
         }
@@ -283,7 +283,7 @@ namespace Innowise.Music.Services
             Debug.WriteLine($"Access token: {responseBody}");
             var jsonToken = JsonObject.Parse(responseBody);
             var accessToken = jsonToken!["access_token"]!.ToString();
-            var accessTokenExpiresIn = DateTimeOffset.UtcNow.ToUnixTimeSeconds() + int.Parse(jsonToken!["epires_in"]!.ToString());
+            var accessTokenExpiresIn = DateTimeOffset.UtcNow.ToUnixTimeSeconds() + int.Parse(jsonToken!["expires_in"]!.ToString());
             await SecureStorage.SetAsync("access_token", accessToken);
             Preferences.Set("access_token_epires_in", accessTokenExpiresIn);
 

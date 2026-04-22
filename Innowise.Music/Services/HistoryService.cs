@@ -100,7 +100,7 @@ public class HistoryService : IHistoryService
                 return new List<Track>();
             }
 
-            var recentTracksResponse = await response.Content.ReadFromJsonAsync<RecentTracksResponse>();
+            var recentTracksResponse = await response.Content.ReadFromJsonAsync<TracksResponse>();
             System.Diagnostics.Debug.WriteLine($"[History] Response tracks: {recentTracksResponse?.Tracks?.Count ?? 0}");
 
             var streamBaseUrl = DeviceInfo.Platform == DevicePlatform.Android
@@ -123,32 +123,5 @@ public class HistoryService : IHistoryService
             System.Diagnostics.Debug.WriteLine($"[History] Error: {ex.GetType().Name}: {ex.Message}");
             return new List<Track>();
         }
-    }
-
-    private class RecentTracksResponse
-    {
-        public List<TrackDto> Tracks { get; set; } = new();
-    }
-
-    private class TrackDto
-    {
-        public Guid Id { get; set; }
-        public string Title { get; set; } = string.Empty;
-        public ArtistDto? Artist { get; set; }
-        public AlbumDto? Album { get; set; }
-    }
-
-    private class ArtistDto
-    {
-        public Guid Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string? ImageUrl { get; set; }
-    }
-
-    private class AlbumDto
-    {
-        public Guid Id { get; set; }
-        public string Title { get; set; } = string.Empty;
-        public string? CoverImageUrl { get; set; }
     }
 }
