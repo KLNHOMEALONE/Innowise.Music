@@ -15,16 +15,16 @@ public interface IHistoryService
 
 public class HistoryService : IHistoryService
 {
-    private readonly HttpHelper _httpHelper;
+    private readonly HttpClient _httpClient;
     private readonly IAuthenticationService _authenticationService;
     private readonly ApiSettings _apiSettings;
 
     public HistoryService(
-        HttpHelper httpHelper,
+        HttpClient httpClient,
         IAuthenticationService authenticationService,
         IOptions<ApiSettings> apiSettings)
     {
-        _httpHelper = httpHelper;
+        _httpClient = httpClient;
         _authenticationService = authenticationService;
         _apiSettings = apiSettings.Value;
     }
@@ -48,14 +48,13 @@ public class HistoryService : IHistoryService
                 return;
             }
 
-            using var httpClient = new HttpClient(_httpHelper.GetInsecureHandler());
-            httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", token);
-
             var url = GetApiUrl($"tracks/{trackId}/history");
             System.Diagnostics.Debug.WriteLine($"[History] Recording play: POST {url}");
 
-            var response = await httpClient.PostAsync(url, null);
+            using var request = new HttpRequestMessage(HttpMethod.Post, url);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _httpClient.SendAsync(request);
 
             if (response.IsSuccessStatusCode)
             {
@@ -88,21 +87,27 @@ public class HistoryService : IHistoryService
                 return new List<Track>();
             }
 
-            using var httpClient = new HttpClient(_httpHelper.GetInsecureHandler());
-            httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", token);
-
             var url = GetApiUrl($"history/recent?count={count}");
             System.Diagnostics.Debug.WriteLine($"[History] Fetching recent: GET {url}");
 
-            var response = await httpClient.GetFromJsonAsync<RecentTracksResponse>(url);
-            System.Diagnostics.Debug.WriteLine($"[History] Response tracks: {response?.Tracks?.Count ?? 0}");
+            using var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _httpClient.SendAsync(request);
+            if (!response.IsSuccessStatusCode)
+            {
+                System.Diagnostics.Debug.WriteLine($"[History] Failed to fetch recent: {response.StatusCode}");
+                return new List<Track>();
+            }
+
+            var recentTracksResponse = await response.Content.ReadFromJsonAsync<RecentTracksResponse>();
+            System.Diagnostics.Debug.WriteLine($"[History] Response tracks: {recentTracksResponse?.Tracks?.Count ?? 0}");
 
             var streamBaseUrl = DeviceInfo.Platform == DevicePlatform.Android
                 ? _apiSettings.AndroidStreamBaseUrl
                 : _apiSettings.StreamBaseUrl;
 
-            var tracks = response?.Tracks?.Select(t => new Track
+            var tracks = recentTracksResponse?.Tracks?.Select(t => new Track
             {
                 Id = t.Id,
                 Title = t.Title,

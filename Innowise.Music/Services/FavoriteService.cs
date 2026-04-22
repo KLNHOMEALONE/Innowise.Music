@@ -16,16 +16,16 @@ public interface IFavoriteService
 
 public class FavoriteService : IFavoriteService
 {
-    private readonly HttpHelper _httpHelper;
+    private readonly HttpClient _httpClient;
     private readonly IAuthenticationService _authenticationService;
     private readonly ApiSettings _apiSettings;
 
     public FavoriteService(
-        HttpHelper httpHelper,
+        HttpClient httpClient,
         IAuthenticationService authenticationService,
         IOptions<ApiSettings> apiSettings)
     {
-        _httpHelper = httpHelper;
+        _httpClient = httpClient;
         _authenticationService = authenticationService;
         _apiSettings = apiSettings.Value;
     }
@@ -49,14 +49,13 @@ public class FavoriteService : IFavoriteService
                 return false;
             }
 
-            using var httpClient = new HttpClient(_httpHelper.GetInsecureHandler());
-            httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", token);
-
             var url = GetApiUrl($"tracks/{trackId}/favorite");
             System.Diagnostics.Debug.WriteLine($"[Favorite] Toggle: POST {url}");
 
-            var response = await httpClient.PostAsync(url, null);
+            using var request = new HttpRequestMessage(HttpMethod.Post, url);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _httpClient.SendAsync(request);
 
             if (response.IsSuccessStatusCode)
             {
@@ -95,14 +94,13 @@ public class FavoriteService : IFavoriteService
                 return false;
             }
 
-            using var httpClient = new HttpClient(_httpHelper.GetInsecureHandler());
-            httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", token);
-
             var url = GetApiUrl($"tracks/{trackId}/is-favorite");
             System.Diagnostics.Debug.WriteLine($"[Favorite] Check: GET {url}");
 
-            var response = await httpClient.GetAsync(url);
+            using var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _httpClient.SendAsync(request);
 
             if (response.IsSuccessStatusCode)
             {
@@ -138,21 +136,27 @@ public class FavoriteService : IFavoriteService
                 return new List<Track>();
             }
 
-            using var httpClient = new HttpClient(_httpHelper.GetInsecureHandler());
-            httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", token);
-
             var url = GetApiUrl("favorites");
             System.Diagnostics.Debug.WriteLine($"[Favorite] Fetching all favorites: GET {url}");
 
-            var response = await httpClient.GetFromJsonAsync<FavoritesResponse>(url);
-            System.Diagnostics.Debug.WriteLine($"[Favorite] Response tracks: {response?.Tracks?.Count ?? 0}");
+            using var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _httpClient.SendAsync(request);
+            if (!response.IsSuccessStatusCode)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Favorite] Failed to fetch favorites: {response.StatusCode}");
+                return new List<Track>();
+            }
+
+            var favoritesResponse = await response.Content.ReadFromJsonAsync<FavoritesResponse>();
+            System.Diagnostics.Debug.WriteLine($"[Favorite] Response tracks: {favoritesResponse?.Tracks?.Count ?? 0}");
 
             var streamBaseUrl = DeviceInfo.Platform == DevicePlatform.Android
                 ? _apiSettings.AndroidStreamBaseUrl
                 : _apiSettings.StreamBaseUrl;
 
-            var tracks = response?.Tracks?.Select(t => new Track
+            var tracks = favoritesResponse?.Tracks?.Select(t => new Track
             {
                 Id = t.Id,
                 Title = t.Title,

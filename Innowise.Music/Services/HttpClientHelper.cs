@@ -1,4 +1,4 @@
-﻿namespace Innowise.Music.Services;
+namespace Innowise.Music.Services;
 
 public class HttpHelper : IHttpHelper
 {

@@ -9,16 +9,16 @@ namespace Innowise.Music.Services;
 
 public class RecommendationService : IRecommendationService
 {
-    private readonly HttpHelper _httpHelper;
+    private readonly HttpClient _httpClient;
     private readonly IAuthenticationService _authenticationService;
     private readonly ApiSettings _apiSettings;
 
     public RecommendationService(
-        HttpHelper httpHelper,
+        HttpClient httpClient,
         IAuthenticationService authenticationService,
         IOptions<ApiSettings> apiSettings)
     {
-        _httpHelper = httpHelper;
+        _httpClient = httpClient;
         _authenticationService = authenticationService;
         _apiSettings = apiSettings.Value;
     }
@@ -42,22 +42,28 @@ public class RecommendationService : IRecommendationService
                 return new List<Track>();
             }
 
-            using var httpClient = new HttpClient(_httpHelper.GetInsecureHandler());
-            httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", token);
-
             var url = GetApiUrl("recommendations");
             System.Diagnostics.Debug.WriteLine($"[Recommendations] Calling: {url}");
 
-            var response = await httpClient.GetFromJsonAsync<RecommendationsResponse>(url);
-            System.Diagnostics.Debug.WriteLine($"[Recommendations] Response tracks: {response?.Tracks?.Count ?? 0}");
+            using var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _httpClient.SendAsync(request);
+            if (!response.IsSuccessStatusCode)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Recommendations] Failed: {response.StatusCode}");
+                return new List<Track>();
+            }
+
+            var recommendationsResponse = await response.Content.ReadFromJsonAsync<RecommendationsResponse>();
+            System.Diagnostics.Debug.WriteLine($"[Recommendations] Response tracks: {recommendationsResponse?.Tracks?.Count ?? 0}");
 
             // Use HTTP for stream URLs (MediaElement can't handle self-signed HTTPS certs)
             var streamBaseUrl = DeviceInfo.Platform == DevicePlatform.Android
                 ? _apiSettings.AndroidStreamBaseUrl
                 : _apiSettings.StreamBaseUrl;
 
-            var tracks = response?.Tracks?.Select(t => new Track
+            var tracks = recommendationsResponse?.Tracks?.Select(t => new Track
             {
                 Id = t.Id,
                 Title = t.Title,
@@ -95,14 +101,20 @@ public class RecommendationService : IRecommendationService
                 return new List<Artist>();
             }
 
-            using var httpClient = new HttpClient(_httpHelper.GetInsecureHandler());
-            httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", token);
-
             var url = GetApiUrl("recommendations/artists");
             System.Diagnostics.Debug.WriteLine($"[RecommendedArtists] Calling: {url}");
 
-            var artists = await httpClient.GetFromJsonAsync<List<ArtistDto>>(url);
+            using var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _httpClient.SendAsync(request);
+            if (!response.IsSuccessStatusCode)
+            {
+                System.Diagnostics.Debug.WriteLine($"[RecommendedArtists] Failed: {response.StatusCode}");
+                return new List<Artist>();
+            }
+
+            var artists = await response.Content.ReadFromJsonAsync<List<ArtistDto>>(url);
             System.Diagnostics.Debug.WriteLine($"[RecommendedArtists] Response artists: {artists?.Count ?? 0}");
 
             return artists?.Select(a => new Artist

@@ -13,16 +13,16 @@ public interface IStreamTokenService
 
 public class StreamTokenService : IStreamTokenService
 {
-    private readonly HttpHelper _httpHelper;
+    private readonly HttpClient _httpClient;
     private readonly IAuthenticationService _authenticationService;
     private readonly ApiSettings _apiSettings;
 
     public StreamTokenService(
-        HttpHelper httpHelper,
+        HttpClient httpClient,
         IAuthenticationService authenticationService,
         IOptions<ApiSettings> apiSettings)
     {
-        _httpHelper = httpHelper;
+        _httpClient = httpClient;
         _authenticationService = authenticationService;
         _apiSettings = apiSettings.Value;
     }
@@ -45,13 +45,19 @@ public class StreamTokenService : IStreamTokenService
                 return null;
             }
 
-            using var httpClient = new HttpClient(_httpHelper.GetInsecureHandler());
-            httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", token);
-
             var url = GetApiUrl($"tracks/{trackId}/stream-token");
-            var response = await httpClient.GetFromJsonAsync<StreamTokenResponse>(url);
-            return response?.Token;
+            
+            using var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _httpClient.SendAsync(request);
+            if (response.IsSuccessStatusCode)
+            {
+                var tokenResponse = await response.Content.ReadFromJsonAsync<StreamTokenResponse>();
+                return tokenResponse?.Token;
+            }
+            
+            return null;
         }
         catch (Exception ex)
         {
