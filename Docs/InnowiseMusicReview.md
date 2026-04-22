@@ -1,235 +1,114 @@
 # Code Review: Innowise.Music MAUI Client
 
-**Date:** 2026-04-07
+**Date:** 2026-04-22
 **Project:** Innowise.Music (MAUI Client)
-**Framework:** .NET 9 MAUI
-**Platforms:** Android, iOS, macOS (MacCatalyst), Windows
+**Reviewer:** Rocket (Subject 89P13)
 
 ---
 
-## 1. Architecture Overview
-
-### Project Structure
-
-The project follows a clean **MVVM** architecture with clear separation of concerns:
-
-```
-Innowise.Music/
-├── Configuration/     — Strongly-typed settings (ApiSettings, GoogleAuthenticationSettings)
-├── Controls/          — Reusable XAML controls (InputEntryControl, MiniPlayerControl)
-├── Converters/        — Value converters (BoolToColor, BoolToFavoriteIcon, FirstValidationError)
-├── Model/             — DTOs (LoginUserDto, UserDto, Track, News, etc.)
-├── Services/          — Business logic (Auth, Audio, Navigation, News)
-├── Validations/       — Generic validation framework
-├── View/              — XAML pages (9 pages)
-├── ViewModel/         — Presentation logic (11 ViewModels)
-└── Resources/         — Fonts, images, styles
-```
-
-### Design Patterns
-
-| Pattern | Usage |
-|---------|-------|
-| **MVVM** | All pages use View + ViewModel separation with data binding |
-| **Dependency Injection** | All services, ViewModels, and Views registered as singletons in `MauiProgram.cs` |
-| **Service Layer** | Business logic isolated in services behind interfaces |
-| **Observable Pattern** | `ObservableObject` (CommunityToolkit.Mvvm) for INotifyPropertyChanged |
-| **Async/Await** | All I/O operations are properly async |
+## 1. Executive Summary
+The `Innowise.Music` project is a well-structured .NET MAUI application utilizing a clean MVVM architecture. It demonstrates strong use of dependency injection, a robust validation framework, and a clever global media playback strategy. However, critical security vulnerabilities regarding credential management and insecure communication must be addressed before production.
 
 ---
 
-## 2. What's Done Well
+## 2. Security Vulnerabilities (High Priority)
 
-### 2.1 Clean MVVM Implementation
-- Consistent use of `[ObservableProperty]` and `[RelayCommand]` attributes from CommunityToolkit.Mvvm
-- Constructor injection throughout — no service locator anti-pattern
-- Views and ViewModels are properly decoupled
-
-### 2.2 Validation Framework
-The generic `ValidatableObject<T>` with composable `IValidationRule<T>` rules is well-designed:
-- Reusable across any type
-- Real-time validation on `TextChanged` via `EventToCommandBehavior`
-- Clear error display through `FirstValidationErrorConverter`
-- Three built-in rules: `IsNotNullOrEmptyRule`, `EmailRule`, `CompareRule`
-
-### 2.3 Authentication Architecture
-- JWT tokens stored in `SecureStorage` (platform-secure storage)
-- Automatic token refresh with 1-minute buffer before expiry
-- Fallback to logout when refresh fails
-- Platform-aware API URL configuration (Android uses `10.0.2.2` for localhost)
-
-### 2.4 Google OAuth2 Integration
-- Full PKCE flow with SHA-256 code challenge
-- Platform-specific flows: Windows (local HTTP listener) and Android (WebAuthenticator)
-- Token refresh and revocation support
-- Semaphore-based concurrency protection to prevent race conditions during token acquisition
-
-### 2.5 Configuration Management
-- `appsettings.json` embedded as a resource
-- Strongly-typed settings classes with `IOptions<T>` pattern
-- Platform-specific configuration (different API URLs, different Google client IDs)
-
-### 2.6 Nullable Reference Types
-- Enabled project-wide (`<Nullable>enable</Nullable>`)
-- Helps catch null-reference bugs at compile time
-
----
-
-## 3. Issues and Concerns
-
-### 3.1 Security: Hardcoded Signing Credentials (HIGH)
-
-**File:** `Innowise.Music.csproj:46-58`
-
+### 2.1 Hardcoded Signing Credentials
+**File:** `Innowise.Music/Innowise.Music.csproj`
+The Android keystore and key passwords are hardcoded in plaintext:
 ```xml
 <AndroidSigningStorePass>123456</AndroidSigningStorePass>
 <AndroidSigningKeyPass>123456</AndroidSigningKeyPass>
 ```
+**Risk:** High. If the repository is compromised, the app's signing identity is leaked.
+**Recommendation:** Move these to environment variables or a secure build-time secret manager.
 
-The Android keystore password is hardcoded as `123456` in the project file. This is a very weak password and should be:
-- Stored in a secure secrets manager or user prompt at build time
-- At minimum, moved to environment variables
+### 2.2 Insecure HTTP Handler
+**File:** `Innowise.Music/Services/HttpClientHelper.cs`
+The `GetInsecureHandler()` method bypasses SSL validation for `localhost` and `10.0.2.2`. 
+**Risk:** Medium. While useful for local development, this logic is currently active in all build configurations.
+**Recommendation:** Wrap the insecure callback logic in `#if DEBUG` to ensure production builds strictly enforce SSL.
 
-### 3.2 Security: Insecure HTTP Handler (MEDIUM)
+### 2.3 Hardcoded Client IDs
+**File:** `Innowise.Music/appsettings.json`
+Google OAuth Client IDs are stored in a configuration file committed to source control.
+**Recommendation:** Use a more secure configuration strategy for production secrets, such as Azure Key Vault or platform-specific secure storage.
 
-**File:** `HttpHelper.cs`
+---
 
-The `GetInsecureHandler()` method disables SSL certificate validation globally:
+## 3. Error Handling & User Experience
 
+### 3.1 Silent Failures in Authentication
+**Files:** `AuthenticationService.cs`, `LoginPageViewModel.cs`, `GoogleAuthService.cs`
+Exceptions and failed responses are caught but only logged to `System.Diagnostics.Debug.WriteLine`. 
+**Example:**
 ```csharp
-// Accepts self-signed certificates for development
-```
-
-This is acceptable for development but must be guarded by `#if DEBUG` or replaced with certificate pinning for production to prevent man-in-the-middle attacks.
-
-### 3.3 Security: Google Client IDs in Source (MEDIUM)
-
-**File:** `appsettings.json`
-
-Google OAuth client IDs are committed to source control. While client IDs are technically public (they're embedded in the app binary), best practice is to use a configuration system that separates secrets from code, especially if this repository is public.
-
-### 3.4 Silent Error Handling (MEDIUM)
-
-**File:** `AuthenticationService.cs`, `GoogleAuthService.cs`
-
-Exceptions are caught and only logged via `Debug.WriteLine()`:
-
-```csharp
-catch (Exception ex)
-{
-    System.Diagnostics.Debug.WriteLine($"AuthenticationService Login Error: {ex.Message}");
+else {
+    // Handle error
+    System.Diagnostics.Debug.WriteLine("Login failed");
 }
-return false;
 ```
+**Risk:** High UX impact. Users receive no feedback when a login fails or the network is down.
+**Recommendation:** Implement a user-facing notification service (e.g., `IDialogService`) to display error messages.
 
-This means:
-- Users get no feedback when authentication fails
-- Errors silently disappear in release builds (Debug output not visible)
-- No structured logging or error telemetry
+---
 
-**Recommendation:** Return meaningful error messages to the UI, or use a user-facing notification system.
+## 4. Google Authentication Implementation
 
-### 3.5 Typo in Storage Key (LOW)
+### 4.1 Persistent Typo in Storage Key
+**File:** `Innowise.Music/Services/GoogleAuthService.cs`
+The key used for storing token expiry is misspelled as `access_token_epires_in` in several locations:
+- `RevokeTokens()`
+- `AcquireTokenAsync()`
+- `RefreshToken()`
+- `GetInitialToken()`
+**Recommendation:** Standardize on `access_token_expires_in` and implement a migration for existing local data.
 
-**File:** `GoogleAuthService.cs:158`
-
-```csharp
-Preferences.Set("access_token_epires_in", accessTokenExpiresIn);
-```
-
-The key is misspelled as `epires_in` instead of `expires_in`. This is consistent across the codebase but should be fixed (with a migration strategy for existing installs).
-
-### 3.6 Null Reference Risk in RevokeTokens (MEDIUM)
-
-**File:** `GoogleAuthService.cs:56-63`
-
-```csharp
-var access_token = await SecureStorage.GetAsync("access_token");
-// ...
-new KeyValuePair<string, string>("token", access_token!)
-```
-
-The null-forgiving operator `!` is used on `access_token` which could be null. If `SecureStorage` returns null, this will throw at runtime. Should validate before use.
-
-### 3.7 Local HTTP Server on Fixed Port (LOW)
-
-**File:** `GoogleAuthService.cs:165`
-
+### 4.2 Fixed OAuth Port (Windows)
+**File:** `Innowise.Music/Services/GoogleAuthService.cs:165`
 ```csharp
 var localPort = 12345;
 ```
+**Risk:** Low/Medium. If port 12345 is occupied by another process, the Windows OAuth flow will fail.
+**Recommendation:** Implement a strategy to find an available dynamic port.
 
-The Windows OAuth flow uses a hardcoded port. If another process is using port 12345, the auth flow will fail. Should use a random available port or handle port conflicts gracefully.
-
-### 3.8 Mock Data in ViewModels (LOW)
-
-**Files:** `HomePageViewModel.cs`, `SearchPageViewModel.cs`, `LibraryPageViewModel.cs`, `EventsPageViewModel.cs`
-
-These ViewModels contain hardcoded mock data rather than fetching from the API. This is fine for development but should be replaced with real service calls before production.
-
-### 3.9 No Unit Tests
-
-There are no test projects in the solution. The interface-based architecture makes the code testable, but no tests exist to verify behavior. Key areas that need tests:
-- `AuthenticationService` (login, register, token refresh)
-- `ValidatableObject<T>` validation logic
-- `NavigationService` routing
-
-### 3.10 Singleton Lifetime for ViewModels (MEDIUM)
-
-All ViewModels are registered as singletons. This means:
-- State persists across navigation (e.g., login form retains entered email after back navigation)
-- Multiple users on shared devices could see previous user's data
-- Memory usage grows with cached ViewModel state
-
-Consider using scoped or transient lifetimes for ViewModels that hold user-specific state.
-
-### 3.11 Missing iOS Auth Flow (MEDIUM)
-
-**File:** `GoogleAuthService.cs:109-111`
-
-```csharp
-else
-{
-    throw new NotImplementedException($"Auth flow for platform {DeviceInfo.Current.Platform} not implemented.");
-}
-```
-
-iOS and MacCatalyst platforms are targeted in the `.csproj` but Google auth is not implemented for them. This will crash at runtime if a user attempts Google login on these platforms.
+### 4.3 Platform Gaps
+**File:** `Innowise.Music/Services/GoogleAuthService.cs:111`
+Auth flows for iOS and MacCatalyst are not yet implemented, resulting in a `NotImplementedException` if triggered.
 
 ---
 
-## 4. Code Quality Summary
+## 5. Architectural Observations & Code Quality
 
-| Category | Rating | Notes |
-|----------|--------|-------|
-| Architecture | Good | Clean MVVM, proper DI, service layer separation |
-| Code Style | Good | Consistent naming, nullable reference types enabled |
-| Error Handling | Poor | Silent failures, no user feedback, no structured logging |
-| Security | Fair | Weak keystore password, disabled SSL validation, hardcoded client IDs |
-| Testability | Good | Interface-based design, but no tests written |
-| Platform Support | Fair | iOS/Mac auth flows missing, Android/Windows complete |
-| Documentation | Fair | File headers present, but inline comments are sparse |
+### 5.1 HttpClient Lifecycle Management
+**File:** `Innowise.Music/Services/RecommendationService.cs`
+The service creates a new `HttpClient` instance for every request instead of using the shared client registered in `MauiProgram.cs`.
+**Risk:** Socket exhaustion under high load.
+**Recommendation:** Inject the shared `HttpClient` via constructor injection, consistent with `SearchService`.
 
----
+### 5.2 DTO Redundancy
+**File:** `Innowise.Music/Services/RecommendationService.cs`
+The service defines private DTO classes (`TrackDto`, `ArtistDto`, etc.) that mirror models already existing in the `Innowise.Music.Model` namespace.
+**Recommendation:** Consolidate data models into the shared `Model/` folder to improve maintainability.
 
-## 5. Recommendations (Priority Order)
-
-1. **Fix the Android signing password** — move to environment variables or secure storage
-2. **Add user-facing error notifications** — replace silent `Debug.WriteLine` with actionable feedback
-3. **Guard the insecure HTTP handler** — wrap in `#if DEBUG` or implement certificate pinning
-4. **Fix the null reference in `RevokeTokens`** — validate `access_token` before use
-5. **Implement iOS/Mac Google auth flow** — or gracefully disable the Google login button on those platforms
-6. **Use a dynamic port for Windows OAuth** — or handle port conflicts with retry
-7. **Fix the `epires_in` typo** — with a migration for existing users
-8. **Add unit tests** — start with `AuthenticationService` and the validation framework
-9. **Consider ViewModel lifetime** — evaluate whether singleton is appropriate for all ViewModels
+### 5.3 ViewModel Lifetimes
+**File:** `Innowise.Music/MauiProgram.cs`
+Most ViewModels are registered as `Singletons`. 
+**Observation:** This persists state (like half-entered forms) across navigation cycles. 
+**Recommendation:** Evaluate using `Transient` lifetimes for ViewModels that should reset when the user re-enters a page (e.g., `LoginPageViewModel`).
 
 ---
 
-## 6. Verdict
+## 6. Positive Highlights
+- **Validation Framework:** The generic `ValidatableObject<T>` and `IValidationRule<T>` system is elegant, reusable, and cleanly implemented.
+- **Global Media State:** Hosting `MediaElement` in `AppShell` and initializing `AudioService` with it is a clever way to maintain persistent audio across page transitions.
+- **Control Reuse:** `InputEntryControl` effectively encapsulates complex validation UI logic.
 
-The Innowise.Music MAUI client is **well-architected** with a solid MVVM foundation, proper dependency injection, and clean separation of concerns. The validation framework is particularly well-designed and reusable.
+---
 
-The primary concerns are in **security** (hardcoded credentials, disabled SSL validation) and **error handling** (silent failures that leave users confused). These are fixable and don't require architectural changes.
-
-The codebase is in good shape for a development/preview stage but needs the security and error handling improvements listed above before production release.
+## 7. Final Recommendations
+1. **Secure the signing process** by removing passwords from `.csproj`.
+2. **Improve error transparency** by adding user-facing alerts for failed API operations.
+3. **Refactor `RecommendationService`** to use the centralized `HttpClient` and shared models.
+4. **Fix the `epires_in` typo** across the `GoogleAuthService`.
+5. **Implement dynamic port selection** for Windows OAuth.
