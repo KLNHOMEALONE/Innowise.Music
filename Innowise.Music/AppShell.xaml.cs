@@ -19,12 +19,24 @@ namespace Innowise.Music
             _authenticationService = authenticationService;
             _audioService = audioService;
             
-            _audioService.Initialize(mediaElement);
-
             Routing.RegisterRoute(nameof(SignUpPage), typeof(SignUpPage));
             Routing.RegisterRoute(nameof(WebPage), typeof(WebPage));
 
             this.Loaded += OnShellLoaded;
+        }
+
+        protected override void OnHandlerChanged()
+        {
+            base.OnHandlerChanged();
+            if (Handler != null && mediaElement != null)
+            {
+                System.Diagnostics.Debug.WriteLine("[AppShell] Initializing AudioService with global MediaElement.");
+                _audioService.Initialize(mediaElement);
+            }
+            else if (mediaElement == null)
+            {
+                System.Diagnostics.Debug.WriteLine("[AppShell] WARNING: mediaElement is NULL in OnHandlerChanged!");
+            }
         }
 
         private async void OnShellLoaded(object sender, EventArgs e)

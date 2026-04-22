@@ -9,7 +9,14 @@
     xmlns:toolkit="clr-namespace:CommunityToolkit.Maui.Views;assembly=CommunityToolkit.Maui.MediaElement"
     x:DataType="vm:AppShellViewModel"
     Title="Innowise.Music"
-    FlyoutBehavior="Disabled">
+    FlyoutBehavior="Locked"
+    FlyoutWidth="0">
+
+    <Shell.FlyoutHeader>
+        <Grid HeightRequest="1" WidthRequest="1" Opacity="0.01" IsVisible="True">
+            <toolkit:MediaElement x:Name="mediaElement" ShouldShowPlaybackControls="False" />
+        </Grid>
+    </Shell.FlyoutHeader>
 
     <Shell.Resources>
         <Style x:Key="HomeTabStyle" TargetType="Tab">
@@ -61,15 +68,6 @@
         </Tab>
         <Tab Title="Events" Style="{StaticResource EventsTabStyle}">
             <ShellContent ContentTemplate="{DataTemplate view:EventsPage}" Route="EventsPage" />
-        </Tab>
-        <Tab Title="Player" IsVisible="True" FlyoutItemIsVisible="False">
-            <ShellContent>
-                <ContentPage BackgroundColor="Black">
-                    <Grid HeightRequest="0.1" WidthRequest="0.1" Opacity="0" IsVisible="True">
-                        <toolkit:MediaElement x:Name="mediaElement" ShouldShowPlaybackControls="False" />
-                    </Grid>
-                </ContentPage>
-            </ShellContent>
         </Tab>
     </TabBar>
     

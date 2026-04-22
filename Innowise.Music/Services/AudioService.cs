@@ -32,9 +32,16 @@ namespace Innowise.Music.Services
 
         public void Initialize(MediaElement player)
         {
+            if (player == null)
+            {
+                System.Diagnostics.Debug.WriteLine("[AudioService] WARNING: Initialized with NULL player!");
+                return;
+            }
+
             // Clean up existing instance before reinitializing
             if (_mediaElement != null)
             {
+                System.Diagnostics.Debug.WriteLine("[AudioService] Cleaning up existing MediaElement before reinitializing.");
                 _mediaElement.StateChanged -= OnMediaElementStateChanged;
                 _mediaElement.PositionChanged -= OnMediaElementPositionChanged;
             }
@@ -42,6 +49,7 @@ namespace Innowise.Music.Services
             _mediaElement = player;
             _mediaElement.StateChanged += OnMediaElementStateChanged;
             _mediaElement.PositionChanged += OnMediaElementPositionChanged;
+            System.Diagnostics.Debug.WriteLine("[AudioService] Successfully initialized with global MediaElement.");
         }
 
         public Task Play(string mediaUrl)
@@ -60,18 +68,10 @@ namespace Innowise.Music.Services
             }
 
             // Stop and clean up before playing to release native audio buffers
-            // On Android, failing to stop before reassigning the source causes
-            // buffer accumulation leading to distortion after multiple plays
             if (_mediaElement.CurrentState == MediaElementState.Playing ||
                 _mediaElement.CurrentState == MediaElementState.Paused)
             {
                 _mediaElement.Stop();
-            }
-
-            // If MediaElement is in Failed state, reset it
-            if (_mediaElement.CurrentState == MediaElementState.Failed)
-            {
-                _mediaElement.Source = null;
             }
 
             _mediaElement.ShouldAutoPlay = true;
@@ -90,7 +90,9 @@ namespace Innowise.Music.Services
         }
         public Task Resume()
         {
-            if (_mediaElement?.CurrentState == MediaElementState.Paused)
+            if (_mediaElement != null && 
+                (_mediaElement.CurrentState == MediaElementState.Paused || 
+                 _mediaElement.CurrentState == MediaElementState.Stopped))
             {
                 _mediaElement.Play();
             }
